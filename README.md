@@ -11,7 +11,7 @@ Having said that, `cxgo` uses a few tricks to make this process easier.
 
 **TL;DR for the [project goals](CONTRIBUTING.md#project-goals-and-principles):**
 
-1. Implement a practical C to Go translator (no C++ for now).
+1. Implement a practical C to Go translator ([no C++](https://github.com/gotranspile/cxgo/issues/1) for now).
 2. Keep the output program code correct.
 3. Make the generated code human-readable and as idiomatic as possible.
 4. Make it easy to use and customize.
@@ -79,4 +79,4 @@ See [CONTRIBUTING](CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE.md)
+[MIT](LICENSE)

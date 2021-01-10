@@ -1,7 +1,8 @@
 # Community
 
 - Our [Gophers Slack](https://gophers.slack.com/messages/cxgo)
-- Our [Gitter]() and [Matrix]() rooms
+- Our [Gitter](https://gitter.im/gotranspile/community) and
+  [Matrix](https://matrix.to/#/#gotranspile_community:gitter.im) rooms
 
 ## Other projects
 

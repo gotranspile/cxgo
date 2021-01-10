@@ -65,9 +65,9 @@ This project aims to provide a generic C-to-Go conversion tool. Ideally, everyth
 C compiler should be accepted and translated by `cxgo`. It means we always aim to support real-world C code and add
 any workarounds that might be required. However, no tool is perfect, so the output is provided on the best-effort basis.
 
-Note that we **don't plan to support C++** yet! We do believe that full C support will eventually help us bootstrap C++
-support (by converting GCC), but that requires a ton of work. So do not file issues about C++ code, unless you are ready
-to bootstrap C++ support yourself :D
+Note that we [don't plan](https://github.com/gotranspile/cxgo/issues/1) to support C++** yet! We do believe that full C
+support will eventually help us bootstrap C++ support (by converting GCC), but that requires a ton of work.
+So do not file issues about C++ code, unless you are ready to bootstrap C++ support yourself :D
 
 So the goal number one can be summarized as: be practical in converting C code to Go. Ideally without human intervention,
 but even minimizing the intervention is a huge win for us.
