@@ -1,0 +1,498 @@
+vcs: https://github.com/skyrpex/potrace.git
+branch: '1.15'
+root: ./src
+out: ../../.examples/potrace-go
+package: gotrace
+int_size: 8
+ptr_size: 8
+use_go_int: true
+define:
+  - name: VERSION
+    value: '"dev"'
+  - name: POTRACE
+    value: '"potrace"'
+  - name: MKBITMAP
+    value: '"potrace"'
+idents:
+  # rename functions and types to be more Go-like
+  - name: bm_new
+    rename: NewBitmap
+  - name: bm_read
+    rename: BitmapRead
+  - name: potrace_trace
+    rename: Trace
+  - name: potrace_param_default
+    rename: ParamDefault
+  - name: potrace_word
+    rename: Word
+  - name: potrace_dpoint_s
+    rename: DPoint
+  - name: point_s
+    rename: Point
+  - name: potrace_param_s
+    rename: Param
+    fields:
+      - name: opticurve
+        type: bool
+  - name: potrace_curve_s
+    rename: Curve
+    fields:
+      - name: tag
+        type: slice
+      - name: c
+        type: slice
+  - name: privcurve_s
+    rename: privCurve
+    fields:
+      - name: tag
+        type: slice
+      - name: c
+        type: slice
+      - name: vertex
+        type: slice
+      - name: alpha
+        type: slice
+      - name: alpha0
+        type: slice
+      - name: beta
+        type: slice
+  - name: potrace_path_s
+    rename: Path
+  - name: potrace_state_s
+    rename: State
+  - name: potrace_bitmap_s
+    rename: Bitmap
+    fields:
+      - name: map
+        type: slice
+  # looks like a way to introduce private types or something
+  # alias those types directly
+  - name: potrace_dpoint_t
+    alias: true
+  - name: dpoint_t
+    alias: true
+  - name: point_t
+    alias: true
+  - name: potrace_state_t
+    alias: true
+  - name: potrace_path_t
+    alias: true
+  - name: potrace_privpath_t
+    alias: true
+  - name: potrace_privpath_s
+    fields:
+      - name: pt
+        type: slice
+      - name: sums
+        type: slice
+      - name: lon
+        type: slice
+      - name: po
+        type: slice
+  - name: potrace_curve_t
+    alias: true
+  - name: potrace_bitmap_t
+    alias: true
+  - name: potrace_param_t
+    alias: true
+  - name: greymap_s
+    rename: Greymap
+    fields:
+      - name: base
+        type: slice
+      - name: map
+        type: slice
+  - name: greymap_t
+    alias: true
+  - name: gm_new
+    rename: NewGreymap
+  - name: gm_read
+    rename: GreymapRead
+  - name: imginfo_s
+    rename: ImgInfo
+  - name: imginfo_t
+    alias: true
+  - name: dim_t
+    alias: true
+  - name: dim_s
+    rename: Dim
+  - name: trans_t
+    alias: true
+  - name: trans_s
+    rename: Trans
+  - name: path_t
+    alias: true
+  - name: privpath_t
+    alias: true
+  - name: privcurve_t
+    alias: true
+  - name: sums_t
+    alias: true
+  - name: dpoint3_t
+    alias: true
+files:
+  - name: auxiliary.h
+    skip:
+      - potrace_dpoint_s
+    idents:
+      - name: interval
+        rename: aux_interval
+  - name: backend_svg.c
+    idents:
+      - name: info_s
+        rename: BackendInfo
+        fields:
+          - name: debug
+            type: bool
+          - name: opaque
+            type: bool
+    replace:
+      - old: 'func unit('
+        new: 'func unit(info *BackendInfo, '
+      - old: 'func svg_moveto('
+        new: 'func svg_moveto(info *BackendInfo, '
+      - old: 'func svg_rmoveto('
+        new: 'func svg_rmoveto(info *BackendInfo, '
+      - old: 'func svg_lineto('
+        new: 'func svg_lineto(info *BackendInfo, '
+      - old: 'func svg_curveto('
+        new: 'func svg_curveto(info *BackendInfo, '
+      - old: 'func svg_path('
+        new: 'func svg_path(info *BackendInfo, '
+      - old: 'func svg_jaggy_path('
+        new: 'func svg_jaggy_path(info *BackendInfo, '
+      - old: 'func write_paths_opaque('
+        new: 'func write_paths_opaque(info *BackendInfo, '
+      - old: 'func write_paths_transparent_rec('
+        new: 'func write_paths_transparent_rec(info *BackendInfo, '
+      - old: 'func write_paths_transparent('
+        new: 'func write_paths_transparent(info *BackendInfo, '
+      - old: 'func page_svg('
+        new: 'func page_svg(info *BackendInfo, '
+      - old: 'func page_gimp('
+        new: 'func page_gimp(info *BackendInfo, '
+      - old: 'unit(p)'
+        new: 'unit(info, p)'
+      - old: 'unit(p1)'
+        new: 'unit(info, p1)'
+      - old: 'unit(p2)'
+        new: 'unit(info, p2)'
+      - old: 'unit(p3)'
+        new: 'unit(info, p3)'
+      - old: 'svg_moveto(fout'
+        new: 'svg_moveto(info, fout'
+      - old: 'svg_rmoveto(fout'
+        new: 'svg_rmoveto(info, fout'
+      - old: 'svg_lineto(fout'
+        new: 'svg_lineto(info, fout'
+      - old: 'svg_curveto(fout'
+        new: 'svg_curveto(info, fout'
+      - old: 'svg_jaggy_path(fout'
+        new: 'svg_jaggy_path(info, fout'
+      - old: 'svg_path(fout'
+        new: 'svg_path(info, fout'
+      - old: 'write_paths_opaque(fout'
+        new: 'write_paths_opaque(info, fout'
+      - old: 'write_paths_transparent_rec(fout'
+        new: 'write_paths_transparent_rec(info, fout'
+      - old: 'write_paths_transparent(fout'
+        new: 'write_paths_transparent(info, fout'
+      - old: 'page_svg(fout'
+        new: 'page_svg(info, fout'
+  - name: backend_pdf.c
+    idents:
+      - name: ship
+        rename: pdf_ship
+      - name: unit
+        rename: pdf_unit
+      - name: info_s
+        rename: BackendInfo
+        fields:
+          - name: debug
+            type: bool
+          - name: opaque
+            type: bool
+    replace:
+      - old: 'func render0('
+        new: 'func render0(info *BackendInfo, '
+      - old: 'func render0_opaque('
+        new: 'func render0_opaque(info *BackendInfo, '
+      - old: 'func pdf_render('
+        new: 'func pdf_render(info *BackendInfo, '
+      - old: 'func pdf_callbacks('
+        new: 'func pdf_callbacks(info *BackendInfo, '
+      - old: 'func pdf_unit('
+        new: 'func pdf_unit(info *BackendInfo, '
+      - old: 'func pdf_coords('
+        new: 'func pdf_coords(info *BackendInfo, '
+      - old: 'func pdf_moveto('
+        new: 'func pdf_moveto(info *BackendInfo, '
+      - old: 'func pdf_lineto('
+        new: 'func pdf_lineto(info *BackendInfo, '
+      - old: 'func pdf_curveto('
+        new: 'func pdf_curveto(info *BackendInfo, '
+      - old: 'func pdf_path('
+        new: 'func pdf_path(info *BackendInfo, '
+      - old: 'func pdf_pageinit('
+        new: 'func pdf_pageinit(info *BackendInfo, '
+      - old: 'func page_pdfpage('
+        new: 'func page_pdfpage(info *BackendInfo, '
+      - old: 'func page_pdf('
+        new: 'func page_pdf(info *BackendInfo, '
+      - old: 'func init_pdf('
+        new: 'func init_pdf(info *BackendInfo, '
+      - old: 'func term_pdf('
+        new: 'func term_pdf(info *BackendInfo, '
+      - old: 'render0_opaque(plist)'
+        new: 'render0_opaque(info, plist)'
+      - old: 'render0(plist)'
+        new: 'render0(info, plist)'
+      - old: 'pdf_unit(p'
+        new: 'pdf_unit(info, p'
+      - old: 'pdf_coords(p'
+        new: 'pdf_coords(info, p'
+      - old: 'pdf_moveto(*'
+        new: 'pdf_moveto(info, *'
+      - old: 'pdf_lineto(*'
+        new: 'pdf_lineto(info, *'
+      - old: 'pdf_curveto(*'
+        new: 'pdf_curveto(info, *'
+      - old: 'pdf_callbacks(fout'
+        new: 'pdf_callbacks(info, fout'
+      - old: 'pdf_pageinit(imginfo'
+        new: 'pdf_pageinit(info, imginfo'
+      - old: 'pdf_render(plist'
+        new: 'pdf_render(info, plist'
+      - old: 'pdf_path(&'
+        new: 'pdf_path(info, &'
+  - name: bbox.c
+    skip:
+      - potrace_dpoint_s
+  - name: bitmap.h
+    skip:
+      # it "flips" the bitmap by allowing to index a pointer with negative offsets
+      # this conflicts with override of that field type to a Go slice
+      # in any case, we can implement that tiny function on our own
+      - bm_flip
+    replace:
+      # we cannot replace this pattern automatically because it doesn't refer to
+      # a slice element inside the calloc
+      - old: 'bm.Map = ([]Word)((*Word)(libc.Calloc(1, int(size))))'
+        new: 'bm.Map = make([]Word, uintptr(size)/unsafe.Sizeof(Word(0)))'
+      # TODO: allow changing type of local variables
+      - old: 'newmap  *Word'
+        new: 'newmap []Word'
+      - old: 'newmap = (*Word)(libc.Realloc(unsafe.Pointer(&bm.Map[0]), int(newsize)))'
+        new: 'newmap = make([]Word, uintptr(newsize)/unsafe.Sizeof(Word(0))); copy(newmap, bm.Map)'
+      - old: 'bm.Map = ([]Word)(newmap)'
+        new: 'bm.Map = newmap'
+      - old: 'bm_base(bm) = nil'
+        new: 'bm.Map = nil'
+  - name: bitmap_io.c
+  - name: bitops.h
+  - name: curve.c
+    skip:
+      - potrace_path_s
+    replace:
+      - old: 'import "unsafe"'
+      - old: '}())[0] == nil {'
+        new: '}()) == nil {'
+      - old: 'curve.C = ([][3]DPoint)((*[3]DPoint)(unsafe.Pointer(&make([][3]DPoint, n)[0][0])))'
+        new: 'curve.C = make([][3]DPoint, n)'
+  - name: decompose.c
+    replace:
+      - old: 'pt1 = (*Point)(libc.Realloc(unsafe.Pointer(pt), size*int(unsafe.Sizeof(Point{}))))'
+        new: 'pt1 = make([]Point, size); copy(pt1, pt)'
+      - old: |
+          pt   *Point
+          		pt1  *Point
+        new: |
+          pt, pt1   []Point
+      - old: 'p.Priv.Pt = ([]Point)(pt)'
+        new: 'p.Priv.Pt = pt'
+      - old: '(*(*Point)(unsafe.Pointer(uintptr(unsafe.Pointer(pt)) + unsafe.Sizeof(Point{})*uintptr(len_)))).X = x'
+        new: 'pt[len_].X = x'
+      - old: '(*(*Point)(unsafe.Pointer(uintptr(unsafe.Pointer(pt)) + unsafe.Sizeof(Point{})*uintptr(len_)))).Y = y'
+        new: 'pt[len_].Y = y'
+  - name: flate.c
+    skip:
+      - lzw_xship
+  - name: greymap.c
+    skip:
+      - fgetc_ws
+      - readnum
+      - readbit
+      - bmp_info_s
+      - bmp_info_t
+      - bmp_count
+      - bmp_pos
+      - bmp_readint
+      - bmp_pad_reset
+      - bmp_pad
+      - bmp_forward
+      - gm_flip
+    idents:
+      - name: getsize
+        rename: gm_getsize
+    replace:
+      - old: 'gm.Base = ([]gm_sample_t)((*gm_sample_t)(libc.Calloc(1, int(size))))'
+        new: 'gm.Base = make([]gm_sample_t, uintptr(size)/unsafe.Sizeof(gm_sample_t(0)))'
+      - old: 'newbase *gm_sample_t'
+        new: 'newbase []gm_sample_t'
+      - old: 'newbase = (*gm_sample_t)(libc.Realloc(unsafe.Pointer(&gm.Base[0]), int(newsize)))'
+        new: 'newbase = make([]gm_sample_t, uintptr(newsize)/unsafe.Sizeof(gm_sample_t(0))); copy(newbase, gm.Base)'
+      - old: '([]gm_sample_t)(newbase)'
+        new: 'newbase'
+  - name: trace.c
+    idents:
+      # collisions with functions defined in other files
+      # and yes, those functions do different things
+      - name: iprod
+        rename: trace_iprod
+      - name: interval
+        rename: aux_interval
+      - name: bezier
+        rename: trace_bezier
+  - name: trans.c
+  - name: progress.h
+  - name: progress_bar.c
+  - name: potracelib.c
+  - name: main.h
+    skip:
+      - info_t
+    idents:
+      - name: info_s
+        rename: BackendInfo
+        fields:
+          - name: debug
+            type: bool
+          - name: opaque
+            type: bool
+  - name: mkbitmap.c
+    idents:
+      - name: process_file
+        rename: ProcessFile
+      - name: info_s
+        rename: Config
+        fields:
+          - name: invert
+            type: bool
+          - name: lowpass
+            type: bool
+          - name: highpass
+            type: bool
+          - name: linear
+            type: bool
+          - name: bilevel
+            type: bool
+    skip:
+      # we don't need the cli itself
+      - longopts
+      - shortopts
+      - dopts
+      - main
+      - make_outfilename
+      - license
+      - usage
+      - my_fopen_read
+      - my_fopen_write
+      - my_fclose
+      # we use replace directive to pass it as an arg
+      - info
+      - info_t
+    replace:
+      - old: 'func ProcessFile('
+        new: 'func ProcessFile(info *Config, '
+  - name: hacks.go
+    content: |
+      package gotrace
+
+      // C flips bitmaps by using negative bitmap strides, which we cannot represent in Go with slices
+
+      func bm_flip(bm *Bitmap) {
+      	// TODO: implement
+      }
+
+      func gm_flip(gm *Greymap) {
+      	// TODO: implement
+      }
+
+      // unused in the code
+
+      type backend_s struct {}
+      type potrace_privstate_s struct {}
+  - name: potrace_test.go
+    content: |
+      package gotrace
+
+      import (
+      	"io"
+      	"io/ioutil"
+      	"net/http"
+      	"os"
+      	"testing"
+
+      	"github.com/dennwc/cxgo/runtime/stdio"
+      )
+
+      func checkErr(t testing.TB, err error) {
+      	t.Helper()
+      	if err != nil {
+      		t.Fatal(err)
+      	}
+      }
+
+      func TestPotrace(t *testing.T) {
+      	resp, err := http.Get("http://potrace.sourceforge.net/img/stanford.pbm")
+      	checkErr(t, err)
+      	defer resp.Body.Close()
+
+      	if resp.StatusCode != 200 {
+      		t.Fatal(resp.Status)
+      	}
+
+      	tfile, err := ioutil.TempFile("", "potrace_")
+      	checkErr(t, err)
+      	defer func() {
+      		_ = tfile.Close()
+      		_ = os.Remove(tfile.Name())
+      	}()
+
+      	_, err = io.Copy(tfile, resp.Body)
+      	checkErr(t, err)
+      	tfile.Seek(0, io.SeekStart)
+
+      	var bm *Bitmap
+      	e := BitmapRead(stdio.OpenFrom(tfile), 0.5, &bm)
+      	if e != 0 {
+      		t.Fatal(e)
+      	}
+
+      	p := ParamDefault()
+      	st := Trace(p, bm)
+      	if st.Status != 0 {
+      		t.Fatal(st.Status)
+      	}
+      	var tr Trans
+      	trans_from_rect(&tr, float64(bm.W), float64(bm.H))
+      	bi := &BackendInfo{
+      		Unit: 1,
+      	}
+      	iinfo := &ImgInfo{
+      		Pixwidth: bm.W, Pixheight: bm.H,
+      		Width: float64(bm.W), Height: float64(bm.H),
+      		Trans: tr,
+      	}
+
+      	svgOut, err := os.Create("stanford.svg")
+      	checkErr(t, err)
+      	defer svgOut.Close()
+      	page_svg(bi, stdio.OpenFrom(svgOut), st.Plist, iinfo)
+
+      	pdfOut, err := os.Create("stanford.pdf")
+      	checkErr(t, err)
+      	defer pdfOut.Close()
+      	init_pdf(bi, stdio.OpenFrom(pdfOut))
+      	page_pdf(bi, stdio.OpenFrom(pdfOut), st.Plist, iinfo)
+      	term_pdf(bi, stdio.OpenFrom(pdfOut))
+      }

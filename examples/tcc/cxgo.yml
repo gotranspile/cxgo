@@ -1,0 +1,159 @@
+vcs: https://repo.or.cz/tinycc.git
+branch: 'release_0_9_27'
+root: ./
+out: ../../.examples/tcc
+package: main
+int_size: 8
+ptr_size: 8
+use_go_int: true
+ignore_include_dir: true
+exec_before: ['./configure']
+files:
+  - name: elf.h
+  - name: libtcc.c
+    skip:
+      - TCCState
+      - gnu_ext
+      - tcc_ext
+      - tcc_state
+    replace:
+      - old: 'goto err'
+        new: 'tcc_error(libc.CString("unsupported linker option ''%s''"), option)'
+      - old: '		err:'
+        new: ''
+      - old: 'goto set_output_type'
+        new: |
+          if s.Output_type != 0 {
+              tcc_warning(libc.CString("-%s: overriding compiler action already specified"), popt.Name)
+          }
+          s.Output_type = x
+      - old: 'set_output_type:'
+        new: ''
+      - old: |
+          unsupported_option:
+          			if s.Warn_unsupported != 0 {
+          				tcc_warning(libc.CString("unsupported option '%s'"), r)
+          			}
+          		}
+        new: |
+          if s.Warn_unsupported != 0 {
+          				tcc_warning(libc.CString("unsupported option '%s'"), r)
+          			}
+          		}
+                 unsupported_option_after:
+      - old: 'goto unsupported_option'
+        new: |
+          if s.Warn_unsupported != 0 {
+              tcc_warning(libc.CString("unsupported option '%s'"), r)
+          }
+          goto unsupported_option_after
+      - old: 'goto extra_action'
+        new: |
+          arg_start = optind - 1
+          if arg_start != noaction {
+              tcc_error(libc.CString("cannot parse %s here"), r)
+          }
+          tool = x
+      - old: 'extra_action:'
+        new: ''
+  - name: tcc.c
+    skip:
+      - reg_classes
+    replace:
+      - old: 'type tcc_token int64'
+        new: 'type tcc_token = int'
+  - name: tccpp.c
+    replace:
+      - old: 'goto fail'
+        new: 'return 1'
+      - old: 'fail:'
+        new: ''
+      - old: 'addv:'
+        new: ''
+      - old: 'goto unterminated_string'
+        new: 'tcc_error(libc.CString("missing terminating %c character"), sep)'
+      - old: 'unterminated_string:'
+        new: ''
+      - old: 'add_char:'
+        new: ''
+      - old: 'goto add_char'
+        new: |
+          if str != nil {
+              cstr_ccat(str, c)
+          }
+          p = (*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 1))
+      - old: 'goto addv'
+        new: |
+          *func() *byte {
+              p := &p
+              x := *p
+              *p = (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(*p)) + 1))
+              return x
+          }() = byte(v)
+          *p = '\x00'
+      - old: |
+          break
+          		_default:
+          			;
+          			fallthrough
+          		default:
+          			p = (*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 1))
+          		}
+        new: |
+          default:
+              p = (*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 1))
+          }
+          _default_after:
+      - old: 'goto _default'
+        new: |
+          p = (*uint8)(unsafe.Pointer(uintptr(unsafe.Pointer(p)) + 1))
+          goto _default_after
+  - name: tccelf.c
+  - name: tccgen.c
+    flatten:
+      - gen_opl
+      - gen_op
+      - parse_btype
+    replace:
+      - old: 'save_found:'
+        new: ''
+      - old: 'goto save_found'
+        new: |
+          save_reg(r)
+          return r
+      - old: 'general_case:'
+        new: ''
+      - old: 'goto general_case'
+        new: |
+          if t1 == 4 || t2 == 4 || 4 == 8 && (t1 == 5 || t2 == 5) {
+              gen_opl(op)
+          } else {
+              gen_opi(op)
+          }
+          return
+      - old: 'goto invalid_operands'
+        new: 'tcc_error(libc.CString("invalid operands to binary %s"), get_tok_str(op, nil))'
+      - old: 'invalid_operands:'
+        new: ''
+      - old: 'add_tstr:'
+        new: ''
+      - old: 'goto add_tstr'
+        new: |
+          pstrcat(buf, buf_size, tstr)
+          break
+      - old: 'tstruct:'
+        new: ''
+      - old: 'goto tstruct'
+        new: |
+          pstrcat(buf, buf_size, tstr)
+          v = type_.Ref.V & ^int(0x40000000)
+          if v >= 0x10000000 {
+              pstrcat(buf, buf_size, libc.CString("<anonymous>"))
+          } else {
+              pstrcat(buf, buf_size, get_tok_str(v, nil))
+          }
+  - name: tcctools.c
+  - name: i386-gen.c
+    flatten:
+      - gen_opi
+  - name: i386-link.c

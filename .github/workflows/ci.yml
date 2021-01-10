@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-20.04
+    steps:
+      - name: actions/checkout
+        uses: actions/checkout@v2
+      - name: actions/cache
+        uses: actions/cache@v2
+        with:
+          path: ~/go
+          key: ${{ env.GO_CACHE_PREFIX }}${{ hashFiles('go.mod') }}
+          restore-keys: ${{ env.GO_CACHE_PREFIX }}
+      - name: Install SDL # TODO: split into a separate package to avoid this dependency
+        run: sudo apt-get update && sudo apt-get install -y libsdl2-dev
+      - name: script
+        run: |
+          set -x
+          go test -v ./...
+          go build ./cmd/cxgo
+
+  test-tcc:
+    name: TCC Tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: actions/checkout
+        uses: actions/checkout@v2
+      - name: actions/cache
+        uses: actions/cache@v2
+        with:
+          path: ~/go
+          key: ${{ env.GO_CACHE_PREFIX }}${{ hashFiles('go.mod') }}
+          restore-keys: ${{ env.GO_CACHE_PREFIX }}
+      - name: actions/cache
+        uses: actions/cache@v2
+        with:
+          path: ./.testdata/tcc
+          key: tcc_${{ hashFiles('tcc_test.go') }}
+          restore-keys: tcc_${{ hashFiles('tcc_test.go') }}
+      - name: script
+        run: |
+          set -x
+          CXGO_RUN_TESTS_TCC=true go test -v -run=TestTCCExecute
+
+#  test-gcc:
+#    name: GCC Tests
+#    runs-on: ubuntu-20.04
+#    steps:
+#      - name: actions/checkout
+#        uses: actions/checkout@v2
+#      - name: actions/cache
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/go
+#          key: ${{ env.GO_CACHE_PREFIX }}${{ hashFiles('go.mod') }}
+#          restore-keys: ${{ env.GO_CACHE_PREFIX }}
+#      - name: actions/cache
+#        uses: actions/cache@v2
+#        with:
+#          path: ./.testdata/gcc
+#          key: gcc_${{ hashFiles('gcc_test.go') }}
+#          restore-keys: gcc_${{ hashFiles('gcc_test.go') }}
+#      - name: script
+#        run: |
+#          set -x
+#          CXGO_RUN_TESTS_GCC=true go test -timeout=15m -v -run=TestGCCExecute
