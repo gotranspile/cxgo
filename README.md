@@ -1,5 +1,9 @@
 # C to Go translator
 
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/gotranspile/cxgo/master/LICENSE)
+[![Gitter](https://badges.gitter.im/gotranspile/community.svg)](https://gitter.im/gotranspile/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![GoDoc](https://godoc.org/github.com/gotranspile/cxgo?status.svg)](https://godoc.org/github.com/gotranspile/cxgo)
+
 CxGo is a tool for translating C source code to Go (aka transpiler, source-to-source compiler).
 
 It uses [cc](https://godoc.org/modernc.org/cc/v3) for preprocessing and parsing C (no clang/gcc dependencies!) and
