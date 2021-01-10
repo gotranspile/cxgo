@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/types"
 )
 
 func (g *translator) cCast(typ types.Type, x Expr) Expr {

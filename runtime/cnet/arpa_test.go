@@ -4,7 +4,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 	"github.com/stretchr/testify/require"
 )
 

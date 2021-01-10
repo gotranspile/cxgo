@@ -3,7 +3,7 @@ package libs
 import (
 	"errors"
 
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/types"
 )
 
 // NewEnv creates a new environment. It uses GOARCH env to set sensible defaults.

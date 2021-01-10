@@ -6,7 +6,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 const (

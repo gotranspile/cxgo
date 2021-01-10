@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 const (

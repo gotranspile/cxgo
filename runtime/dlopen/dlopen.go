@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 // TODO: set correct values

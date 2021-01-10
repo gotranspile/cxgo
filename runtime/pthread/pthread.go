@@ -4,7 +4,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 const MUTEX_RECURSIVE = 1

@@ -6,7 +6,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 type FileI interface {

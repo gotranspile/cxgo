@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dennwc/cxgo/libs"
+	"github.com/gotranspile/cxgo/libs"
 	"modernc.org/cc/v3"
 )
 

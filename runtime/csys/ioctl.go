@@ -3,7 +3,7 @@ package csys
 import (
 	"syscall"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 const FIONREAD uintptr = 21531

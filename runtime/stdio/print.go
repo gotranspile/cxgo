@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 func FprintfGo(w io.Writer, format string, args ...interface{}) (int, error) {

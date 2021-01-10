@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 func GetHostname(buf *byte, sz int) int {

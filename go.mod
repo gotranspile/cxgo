@@ -1,4 +1,4 @@
-module github.com/dennwc/cxgo
+module github.com/gotranspile/cxgo
 
 go 1.13
 

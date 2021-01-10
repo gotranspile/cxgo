@@ -1,8 +1,8 @@
 package libs
 
 import (
-	"github.com/dennwc/cxgo/runtime/dlopen"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/runtime/dlopen"
+	"github.com/gotranspile/cxgo/types"
 )
 
 const (

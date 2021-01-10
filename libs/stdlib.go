@@ -3,9 +3,9 @@ package libs
 import (
 	"os"
 
-	"github.com/dennwc/cxgo/runtime/cmath"
-	"github.com/dennwc/cxgo/runtime/libc"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/runtime/cmath"
+	"github.com/gotranspile/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/types"
 )
 
 const StdlibH = "stdlib.h"

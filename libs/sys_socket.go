@@ -1,8 +1,8 @@
 package libs
 
 import (
-	"github.com/dennwc/cxgo/runtime/cnet"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/runtime/cnet"
+	"github.com/gotranspile/cxgo/types"
 )
 
 const (

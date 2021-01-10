@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/types"
 	"modernc.org/cc/v3"
 	"modernc.org/token"
 )

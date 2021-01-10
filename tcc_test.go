@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dennwc/cxgo/internal/git"
-	"github.com/dennwc/cxgo/libs"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/internal/git"
+	"github.com/gotranspile/cxgo/libs"
+	"github.com/gotranspile/cxgo/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -121,9 +121,9 @@ func TestTCCExecute(t *testing.T) {
 	err = ioutil.WriteFile(filepath.Join(out, "go.mod"), []byte(fmt.Sprintf(`module main
 go 1.13
 require (
-	github.com/dennwc/cxgo v0.0.0
+	github.com/gotranspile/cxgo v0.0.0
 )
-replace github.com/dennwc/cxgo => %s`, wd)), 0644)
+replace github.com/gotranspile/cxgo => %s`, wd)), 0644)
 	require.NoError(t, err)
 
 	for _, path := range files {

@@ -7,9 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/dennwc/cxgo"
-	"github.com/dennwc/cxgo/libs"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo"
+	"github.com/gotranspile/cxgo/libs"
+	"github.com/gotranspile/cxgo/types"
 )
 
 func init() {

@@ -17,10 +17,10 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/dennwc/cxgo"
-	"github.com/dennwc/cxgo/internal/git"
-	"github.com/dennwc/cxgo/libs"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo"
+	"github.com/gotranspile/cxgo/internal/git"
+	"github.com/gotranspile/cxgo/libs"
+	"github.com/gotranspile/cxgo/types"
 )
 
 var Root = &cobra.Command{

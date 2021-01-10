@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"sync/atomic"
 
-	"github.com/dennwc/cxgo/runtime/libc"
-	"github.com/dennwc/cxgo/runtime/stdio"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/stdio"
+	"github.com/gotranspile/cxgo/types"
 )
 
 // TODO: spec URL
@@ -17,7 +17,7 @@ const (
 
 	typeFixedIntPref = "_cxgo_"
 
-	RuntimePackage     = "github.com/dennwc/cxgo"
+	RuntimePackage     = "github.com/gotranspile/cxgo"
 	RuntimePackageVers = "main"
 	RuntimePrefix      = RuntimePackage + "/runtime/"
 	RuntimeLibc        = RuntimePrefix + "libc"

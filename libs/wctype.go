@@ -3,8 +3,8 @@ package libs
 import (
 	"unicode"
 
-	"github.com/dennwc/cxgo/runtime/libc"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/types"
 )
 
 // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/wctype.h.html

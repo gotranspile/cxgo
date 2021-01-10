@@ -5,8 +5,8 @@ import (
 	"math"
 	"os"
 
-	"github.com/dennwc/cxgo/runtime/csys"
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/csys"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 func Create(path *byte, mode csys.Mode) uintptr {

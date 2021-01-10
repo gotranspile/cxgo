@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dennwc/cxgo/libs"
-	"github.com/dennwc/cxgo/libs/libcc"
+	"github.com/gotranspile/cxgo/libs"
+	"github.com/gotranspile/cxgo/libs/libcc"
 	"modernc.org/cc/v3"
 )
 

@@ -461,7 +461,7 @@ files:
       	"math"
       	"testing"
 
-      	"github.com/dennwc/cxgo/runtime/libc"
+      	"github.com/gotranspile/cxgo/runtime/libc"
       )
 
       func TestPotrace(t *testing.T) {
@@ -538,8 +538,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dennwc/cxgo/runtime/libc"
-	"github.com/dennwc/cxgo/runtime/stdio"
+	"github.com/gotranspile/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/stdio"
 )
 
 func TestPotrace(t *testing.T) {
@@ -747,8 +747,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/dennwc/cxgo/runtime/libc"
-	"github.com/dennwc/cxgo/runtime/stdio"
+	"github.com/gotranspile/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/stdio"
 )
 
 func TestPotrace(t *testing.T) {
@@ -1124,8 +1124,8 @@ files:
       	"os"
       	"testing"
 
-      	"github.com/dennwc/cxgo/runtime/libc"
-      	"github.com/dennwc/cxgo/runtime/stdio"
+      	"github.com/gotranspile/cxgo/runtime/libc"
+      	"github.com/gotranspile/cxgo/runtime/stdio"
       )
 
       func TestPotrace(t *testing.T) {

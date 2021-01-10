@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/types"
 )
 
 const (

@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 func FscanfGo(r io.Reader, format string, args ...interface{}) (int, error) {

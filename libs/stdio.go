@@ -1,8 +1,8 @@
 package libs
 
 import (
-	"github.com/dennwc/cxgo/runtime/stdio"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/runtime/stdio"
+	"github.com/gotranspile/cxgo/types"
 )
 
 // TODO: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stdio.h.html

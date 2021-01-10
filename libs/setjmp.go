@@ -1,6 +1,6 @@
 package libs
 
-import "github.com/dennwc/cxgo/types"
+import "github.com/gotranspile/cxgo/types"
 
 const (
 	setjmpH = "setjmp.h"

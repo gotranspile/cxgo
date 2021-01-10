@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/types"
 )
 
 // TODO: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stddef.h.html

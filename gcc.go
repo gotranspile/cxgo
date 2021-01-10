@@ -1,6 +1,6 @@
 package cxgo
 
-import "github.com/dennwc/cxgo/libs"
+import "github.com/gotranspile/cxgo/libs"
 
 const gccPredefine = `
 #include <` + libs.BuiltinH + `>

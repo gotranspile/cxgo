@@ -29,7 +29,7 @@ It should generate a file `main.go` with content similar to this:
 ```go
 package main
 
-import "github.com/dennwc/cxgo/runtime/stdio"
+import "github.com/gotranspile/cxgo/runtime/stdio"
 
 func main() {
 	stdio.Printf("Hello world!\n")
@@ -38,7 +38,7 @@ func main() {
 
 This single-file mode is useful when testing `cxgo` behavior in comparison with `gcc` and other compilers.
 
-Note that the file imports `github.com/dennwc/cxgo/runtime` - this is the C standard library that `cxgo` uses.
+Note that the file imports `github.com/gotranspile/cxgo/runtime` - this is the C standard library that `cxgo` uses.
 Although we try to use Go stdlib as much as possible, in some cases it's still necessary to use wrappers to preserve
 different C semantics.
 
@@ -131,7 +131,7 @@ This mode is useful when generating types, constants and functions from a self-c
 The downside is that it gives no control regarding variable/function names, Go types used, etc.
 For more control, see [this example](#using-a-config-file).
 
-Note that the Go code has no references to `github.com/dennwc/cxgo/runtime` this time, although the original C code
+Note that the Go code has no references to `github.com/gotranspile/cxgo/runtime` this time, although the original C code
 did use the `stdlib.h`. cxgo recognizes some common patterns like struct and array allocation and automatically replaces
 them with Go equivalents.
 

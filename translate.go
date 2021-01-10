@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dennwc/cxgo/libs"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/libs"
+	"github.com/gotranspile/cxgo/types"
 	"modernc.org/cc/v3"
 )
 

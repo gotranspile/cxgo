@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/types"
 )
 
 func (c *Env) NewIdent(cname, goname string, v interface{}, typ types.Type) *types.Ident {

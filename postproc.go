@@ -1,6 +1,6 @@
 package cxgo
 
-import "github.com/dennwc/cxgo/types"
+import "github.com/gotranspile/cxgo/types"
 
 func (g *translator) adaptMain(decl []CDecl) []CDecl {
 	for _, d := range decl {

@@ -1,7 +1,7 @@
 package cxgo
 
 import (
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/types"
 	"testing"
 )
 

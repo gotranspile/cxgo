@@ -31,7 +31,7 @@ Although it can successfully transpile multiple projects, it might _change the b
 ## Installation
 
 ```bash
-go get -u github.com/dennwc/cxgo/cmd/cxgo
+go get -u github.com/gotranspile/cxgo/cmd/cxgo
 ```
 
 ## How to use

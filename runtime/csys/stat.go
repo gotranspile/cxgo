@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 const modeDir = 1

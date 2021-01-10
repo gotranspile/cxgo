@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/types"
 	"github.com/stretchr/testify/require"
 )
 

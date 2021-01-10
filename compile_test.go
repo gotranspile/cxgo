@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/dennwc/cxgo/libs"
-	"github.com/dennwc/cxgo/types"
+	"github.com/gotranspile/cxgo/libs"
+	"github.com/gotranspile/cxgo/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -100,9 +100,9 @@ func goProject(t testing.TB, out, cxgo string) {
 	gomod := fmt.Sprintf(`module main
 go 1.13
 require (
-	github.com/dennwc/cxgo v0.0.0
+	github.com/gotranspile/cxgo v0.0.0
 )
-replace github.com/dennwc/cxgo => %s`, cxgo)
+replace github.com/gotranspile/cxgo => %s`, cxgo)
 
 	err = ioutil.WriteFile(filepath.Join(out, "go.mod"), []byte(gomod), 0644)
 	require.NoError(t, err)

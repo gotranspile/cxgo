@@ -4,7 +4,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/dennwc/cxgo/runtime/libc"
+	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
 type HostEnt struct {

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dennwc/cxgo/libs"
+	"github.com/gotranspile/cxgo/libs"
 )
 
 func PrintGo(w io.Writer, pkg string, decls []GoDecl) error {
