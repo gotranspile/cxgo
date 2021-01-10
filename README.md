@@ -56,18 +56,18 @@ You may also check [FAQ](FAQ.md) if you have any issues.
 
 The following C features are currently accepted by `cxgo`, but may be implemented partially or not implemented at all:
 
-- converting `#define` directives to Go constants
-- preserving comments from C code
-- `static`
-- `auto`
-- bitfields
-- `union` with C-identical data layout
-- `packed` structs
+- converting `#define` directives to Go constants ([#3](https://github.com/gotranspile/cxgo/issues/3))
+- preserving comments from C code ([#2](https://github.com/gotranspile/cxgo/issues/2))
+- `static` ([#4](https://github.com/gotranspile/cxgo/issues/4))
+- `auto` ([#5](https://github.com/gotranspile/cxgo/issues/5))
+- bitfields ([#6](https://github.com/gotranspile/cxgo/issues/6))
+- `union` with C-identical data layout ([#7](https://github.com/gotranspile/cxgo/issues/7))
+- `packed` structs ([#8](https://github.com/gotranspile/cxgo/issues/8))
 - `asm`
-- `case` in weird places
-- `goto` forbidden by Go (there is a workaround, though)
-- label variables
-- thread local storage
+- `case` in weird places ([#9](https://github.com/gotranspile/cxgo/issues/9))
+- `goto` forbidden by Go (there is a [workaround](docs/config.md#identsflatten), though, see [#10](https://github.com/gotranspile/cxgo/issues/10))
+- label variables ([#11](https://github.com/gotranspile/cxgo/issues/11))
+- thread local storage ([#12](https://github.com/gotranspile/cxgo/issues/12))
 - `setjmp` (will compile, but panics at runtime)
 - some stdlib functions and types are missing ([good first issue!](CONTRIBUTING.md))
 - deep type inference (when converting to Go string/slices)
