@@ -6,7 +6,7 @@
 
 CxGo is a tool for translating C source code to Go (aka transpiler, source-to-source compiler).
 
-It uses [cc](https://godoc.org/modernc.org/cc/v3) for preprocessing and parsing C (no clang/gcc dependencies!) and
+It uses [cc](https://modernc.org/cc/v3) for preprocessing and parsing C (no clang/gcc dependencies!) and
 a custom type-checker and AST translation layer to make the best output possible.
 
 The only requirement is: C code **must compile** with `cxgo`, including headers.

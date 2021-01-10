@@ -4,7 +4,7 @@ On a higher level, `cxgo` works like a regular C compiler. It operates on a "tra
 it considers a single file at a time with all included files concatenated.
 
 As a regular C compiler, it runs a preprocessor and then parses the output to generate C code AST.
-This part of the work is done by [cc](https://gitlab.com/cznic/cc), a C compiler frontend written in Go.
+This part of the work is done by [cc](https://modernc.org/cc/v3), a C compiler frontend written in Go.
 
 The C AST produced by `cc` is then converted by `cxgo` into a Go equivalent. `cxgo` uses a custom AST to be able to
 represent both C concepts and Go concepts at the same time. Most of the decisions are taken when the translator
