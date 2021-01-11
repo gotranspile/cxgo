@@ -727,6 +727,90 @@ func foo() {
 }
 `,
 	},
+	{
+		name: "macro empty",
+		src: `
+#define MY_DEF
+
+int a;
+`,
+		exp: `
+var a int32
+`,
+	},
+	{
+		name: "macro untyped int",
+		src: `
+#define MY_CONST 1
+
+int a = MY_CONST;
+`,
+		exp: `
+const MY_CONST = 1
+
+var a int32 = MY_CONST
+`,
+		// TODO: we can't associate a macro with its replacements yet
+		skipExp: `
+const MY_CONST = 1
+
+var a int32 = 1
+`,
+	},
+	{
+		// TODO: cc.AST.Eval() doesn't support cast expressions?
+		skip: true,
+		name: "macro typed int",
+		src: `
+#define MY_CONST ((int)1)
+
+int a = MY_CONST;
+`,
+		exp: `
+const MY_CONST = int32(1)
+
+var a int32 = MY_CONST
+`,
+	},
+	{
+		// TODO: cc.AST.Eval() doesn't support string literals?
+		skip: true,
+		name: "macro string",
+		src: `
+#define MY_CONST "abc"
+
+char* a = MY_CONST;
+`,
+		exp: `
+const MY_CONST = "abc"
+
+var a *byte = libc.CString(MY_CONST)
+`,
+	},
+	{
+		name: "macro order",
+		src: `
+#define MY_CONST 1
+
+int a = MY_CONST;
+
+#define MY_CONST_2 2
+`,
+		exp: `
+const MY_CONST = 1
+
+var a int32 = MY_CONST
+
+const MY_CONST_2 = 2
+`,
+		// TODO: we don't handle order yet
+		skipExp: `
+const MY_CONST = 1
+const MY_CONST_2 = 2
+
+var a int32 = 1
+`,
+	},
 }
 
 func TestDecls(t *testing.T) {

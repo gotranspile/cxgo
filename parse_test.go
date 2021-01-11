@@ -82,6 +82,8 @@ int v3 = BLAH;
 #pragma pop_macro("NON_EXISTENT")
 `,
 		exp: `
+const BLAH = 10
+
 var v1 int32 = 10
 var v2 int32 = 5
 var v3 int32 = 10

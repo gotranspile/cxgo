@@ -295,6 +295,8 @@ int x;
 int y = x - MONE;
 `,
 		exp: `
+const MONE = -1
+
 var x int32
 var y int32 = x - int32(-1)
 `,

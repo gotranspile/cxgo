@@ -290,9 +290,10 @@ func (g *translator) translate(cur string, ast *cc.AST) []GoDecl {
 
 func (g *translator) translateC(cur string, ast *cc.AST) []CDecl {
 	g.file, g.cur = ast, strings.TrimLeft(cur, "./")
-	tu := ast.TranslationUnit
 
-	var decl []CDecl
+	decl := g.convertMacros(ast)
+
+	tu := ast.TranslationUnit
 	for tu != nil {
 		d := tu.ExternalDeclaration
 		tu = tu.TranslationUnit
