@@ -20,8 +20,12 @@ Having this in mind you could either:
 - Add a config file [directive](docs/config.md#sys_include): `sys_include: ['/your/path/here']`
   (or [`include`](docs/config.md#include) if the file is included as `"xyz.h"` and not `<xyz.h>`)
 - Find and copy an included file into `./include`
-- If this is a header in question is from a C stdlib, consider [contributing it](CONTRIBUTING.md#adding-a-new-stdlib-header) to `cxgo`
+- If this is a header in question is from a C stdlib, consider [contributing it](CONTRIBUTING.md#adding-a-new-known-header) to `cxgo`
 
 ## How to add support for a new header file?
 
-See the [contribution guide](CONTRIBUTING.md#adding-a-new-stdlib-header).
+See the corresponding [contribution guide section](CONTRIBUTING.md#adding-a-new-known-header).
+
+## How to add support for a new function in existing library?
+
+See the corresponding [contribution guide section](CONTRIBUTING.md#adding-c-symbol-definitions-to-the-library).

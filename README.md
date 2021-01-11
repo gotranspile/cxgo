@@ -69,7 +69,7 @@ The following C features are currently accepted by `cxgo`, but may be implemente
 - label variables ([#11](https://github.com/gotranspile/cxgo/issues/11))
 - thread local storage ([#12](https://github.com/gotranspile/cxgo/issues/12))
 - `setjmp` (will compile, but panics at runtime)
-- some stdlib functions and types are missing ([good first issue!](CONTRIBUTING.md))
+- some stdlib functions and types are missing ([good first issue!](CONTRIBUTING.md#adding-a-new-known-header))
 - deep type inference (when converting to Go string/slices)
 - considering multiple `#ifdef` paths for different OS/envs
 

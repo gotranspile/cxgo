@@ -7,7 +7,7 @@ Here is how you can help the project:
 - Find a C file or project that `cxgo` fails to translate. Please file an issue with your config and link to the project.
 - Or find a case when `cxgo` changes the program behavior after the transpilation.
   We consider these bugs critical, and they definitely deserve an issue.
-- Found a missing C signature in `cxgo` stdlib? Feel free to PR a fix! It's usually a single line change.
+- Found a missing C signature in `cxgo` stdlib? Feel free to PR a fix! It's usually a [single line](#adding-c-symbol-definitions-to-the-library) change.
 - `cxgo` might be missing a specific C stdlib implementation in our Go runtime. Again, feel free to PR an implementation.
   Even the most naive implementation is better than nothing!
 - If you found one of the edge cases and filed an issue, you may go one step further and narrow down that edge case to a
@@ -43,13 +43,160 @@ GCC tests are also available, but are too slow to check for each iteration. You 
 CXGO_RUN_TESTS_GCC=true go test ./gcc_test.go
 ```
 
-## Adding a missing stdlib function
+## Adding a new known header
 
-_TODO: explain how to add function signatures to existing headers_
+`cxgo` bundles well-known headers to simplify the transpilation and provide the mapping to native Go libraries.
 
-## Adding a new stdlib header
+The support for the new header can be added incrementally:
 
-_TODO: explain how to add new bundled headers_
+1. Define an empty header. This helps avoid "not found" errors. Only useful to get one step further.
+2. Define (a subset) of declarations to the header. This will help avoid "unexpected identifier" errors, but Go compilation
+   will still fail without an implementation. Might still be useful, since functions can still be defined manually.
+3. Provide a mapping between C and Go. This will help `cxgo` automatically replace functions with Go equivalents.
+
+Let's consider each step separately.
+
+### Adding a header stub
+
+For example, let's define a new header called `mylib/xyz.h`. All known headers are defined in a separate files in the
+[libs](./libs) package of `cxgo`. We can take one of the smaller files in that package as the reference (e.g. [assert](libs/assert.go))
+and add our own header in a new Go file (`mylib_xyz.go`):
+
+```go
+package libs
+
+const xyzH = "mylib/xyz.h"
+
+func init() {
+	RegisterLibrary(xyzH, func(c *Env) *Library {
+		return &Library{}
+	})
+}
+```
+
+This is a minimal possible definition that just registers the known header without defining anything in it.
+
+Library is registered with a full path, as used in `#include`. In our case the library can be used with `#include <mylib/xyz.h>`.
+
+The second argument to `RegisterLibrary` is a constructor for a `Library` instance. The reason why it's needed because a
+library might define different symbols depending on the environment (e.g. OS), architecture, or symbols defined in other
+libraries. We will consider this in the following sections.
+
+### Adding C symbol definitions to the library
+
+C header is controlled by `Library.Header` field. We can either define it as a constant string, or build it incrementally
+depending on some environment variables.
+
+```go
+RegisterLibrary(xyzH, func(env *Env) *Library {
+	l := &Library{
+		Header: `
+#define MY_CONST 1
+`,
+    }
+    l.Header += fmt.Sprintf("#define MY_PTR_SIZE %d\n", env.PtrSize())
+	return l
+})
+```
+
+Note that you don't need to add header guards - `cxgo` takes care of that.
+
+As the first step for supporting a new library, it makes sense to add only a few declarations that we care about.
+At this stage aim for simplicity: add stub types where necessary, use builtin C types instead of copying the library 1:1.
+
+For example, if your code fails to transpile when using function `foo` from `mylib/xyz.h`, then find the declaration in
+the original header (or in online docs), simplify it as much as possible and add it to the `Header`.
+
+```go
+RegisterLibrary(xyzH, func(env *Env) *Library {
+	l := &Library{
+		Header: `
+void foo(void* ptr, int n);
+`,
+    }
+	return l
+})
+```
+
+Eventually all necessary declarations will be added. We consider adding original headers in full a bad practice since
+it will be necessary to rewrite it partially anyway to get a better Go mapping. It also allows dropping legacy declarations
+or compatibility `#ifdef` conditions that might be unused in `cxgo`.
+
+The following step will be to introduce Go mapping to the new library.
+
+### Mapping to Go
+
+Mapping to Go allows to solve the following issues:
+
+- Different names in C and Go
+- Automatically importing Go package(s) for symbols
+- Using native Go types
+- Adding methods to struct types
+
+We will explain how those issues are resolved in `cxgo` on the following examples.
+
+#### Mapping functions and variables
+
+Let's start by defining our function `foo` to map to the `Foo` function from a `github.com/example/mylib` package in Go.
+We need two things for this: define the import map and the function identifier with corresponding type and names.
+
+Import map is as simple as specifying a short and a long name for all Go packages imported by this library:
+
+```go
+Imports: map[string]string{
+	"mylib": "github.com/example/mylib",
+},
+```
+
+Defining a function is more interesting. We need to define the signature as expected by Go using builtin `cxgo` helpers:
+
+```go
+Idents: map[string]*types.Ident{
+    "foo": types.NewIdentGo("foo", "mylib.Foo", env.FuncTT(nil, env.PtrT(nil), env.C().Int())),
+},
+```
+
+Here we specify that the symbol `foo` as found in the include header will be mapped to an identifier that has a C name
+`foo` and Go name `mylib.Foo`. We also specify an exact signature of a function: retuning no type (`nil`, mapped to `void`)
+and accepting a `void*` and a C `int`. 
+
+To build those types we use our `Env` object that is passed to the constructor. It allows getting builtin types for C, Go,
+as well as using types from other mapped C libraries.
+
+If you are mapping one of the funtions defined in Go stdlib or `cxgo` runtime, it's strongly advised to use the following
+helper instead:
+
+```go
+Idents: map[string]*types.Ident{
+    "foo": env.NewIdent("foo", "mylib.Foo", mylib.Foo, env.FuncTT(nil, env.PtrT(nil), env.C().Int())),
+},
+```
+
+Notice that it uses a reference to the real `mylib.Foo` function in the `cxgo` code. It allows the helper to verify that
+the signature matches the actual Go function that you want to map. This, however, must not be used for external libraries
+because it introduces a new dependency to `cxgo`.
+
+Two approaches described above allow the maximal level of control: you can declare C header separately and the mapped
+symbol separately. There is an easier way to achieve the same and to let `cxgo` define the C header for this function:
+
+```go
+RegisterLibrary(xyzH, func(env *Env) *Library {
+    l := &Library{
+        Header: `
+// no declarations here
+`,
+        Imports: map[string]string{
+            "mylib": "github.com/example/mylib",
+        },
+    }
+    l.Declare(
+        types.NewIdentGo("foo", "mylib.Foo", env.FuncTT(nil, env.PtrT(nil), env.C().Int())),
+    )
+    return l
+})
+```
+
+This way we can omit the declaration in the header and avoid repetition of the C symbol name.
 
 ## Useful resources
 
