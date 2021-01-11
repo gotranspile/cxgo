@@ -23,10 +23,15 @@ type parseCase struct {
 	inc         string
 	src         string
 	exp         string
+	skipExp     string
 	skip        bool
 	builtins    bool
 	configFuncs []configFunc
 	envFuncs    []envFunc
+}
+
+func (c parseCase) shouldSkip() bool {
+	return c.skip || c.skipExp != ""
 }
 
 func withIdent(ic IdentConfig) configFunc {
@@ -734,7 +739,7 @@ func TestTranslate(t *testing.T) {
 }
 
 func runTestTranslateCase(t *testing.T, c parseCase) {
-	if c.skip {
+	if c.shouldSkip() {
 		defer func() {
 			if r := recover(); r != nil {
 				defer debug.PrintStack()
@@ -780,7 +785,11 @@ func runTestTranslateCase(t *testing.T, c parseCase) {
 	exp := c.exp
 	a, b := strings.TrimSpace(exp), strings.TrimSpace(strings.TrimPrefix(buf.String(), "package lib"))
 	if a != b {
-		if c.skip {
+		if c.skipExp != "" {
+			a = strings.TrimSpace(c.skipExp)
+			require.Equal(t, a, b)
+			t.SkipNow()
+		} else if c.skip {
 			t.SkipNow()
 		} else {
 			require.Equal(t, a, b)
