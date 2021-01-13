@@ -14,7 +14,11 @@ func (g *translator) convertTypeOper(p cc.Operand, where token.Position) types.T
 	if d := p.Declarator(); d != nil {
 		where = d.Position()
 	}
-	return g.convertTypeRoot(IdentConfig{}, p.Type(), where)
+	var conf IdentConfig
+	if d := p.Declarator(); d != nil {
+		conf = g.idents[d.Name().String()]
+	}
+	return g.convertTypeRoot(conf, p.Type(), where)
 }
 
 // convertType is similar to newTypeCC but it will first consult the type cache.

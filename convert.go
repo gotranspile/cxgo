@@ -96,12 +96,13 @@ func (g *translator) convertFuncDef(d *cc.FunctionDefinition) []CDecl {
 	decl := d.Declarator
 	switch dd := decl.DirectDeclarator; dd.Case {
 	case cc.DirectDeclaratorFuncParam, cc.DirectDeclaratorFuncIdent:
-		conf := g.idents[decl.Name().String()]
+		sname := decl.Name().String()
+		conf := g.idents[sname]
 		ft := g.convertFuncType(conf, decl, decl.Type(), decl.Position())
 		if !g.inCurFile(d) {
 			return nil
 		}
-		name := g.convertIdentWith(decl.NameTok().String(), ft, decl)
+		name := g.convertIdentWith(sname, ft, decl)
 		return []CDecl{
 			&CFuncDecl{
 				Name: name.Ident,
@@ -467,7 +468,8 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 		switch id.Case {
 		case cc.InitDeclaratorDecl, cc.InitDeclaratorInit:
 			dd := id.Declarator
-			conf := g.idents[dd.Name().String()]
+			dname := dd.Name().String()
+			conf := g.idents[dname]
 			vt := g.convertTypeRootOpt(conf, dd.Type(), id.Position())
 			var init Expr
 			if id.Initializer != nil && inCur {
