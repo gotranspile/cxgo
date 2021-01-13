@@ -38,7 +38,7 @@ void foo(int a, ...) {
 		exp: `
 func foo(a int32, _rest ...interface{}) {
 	var va libc.ArgList
-	va.Start(uint(a), _rest)
+	va.Start(a, _rest)
 	var b int32 = va.Arg().(int32)
 	_ = b
 }

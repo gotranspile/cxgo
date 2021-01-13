@@ -7,11 +7,11 @@ import (
 
 type ArgList struct {
 	cur  int
-	typ  uint
+	typ  interface{}
 	args []interface{}
 }
 
-func (va *ArgList) Start(typ uint, rest []interface{}) {
+func (va *ArgList) Start(typ interface{}, rest []interface{}) {
 	va.cur = 0
 	va.typ = typ
 	va.args = rest
@@ -56,7 +56,7 @@ func (va *ArgList) ArgUintptr() uintptr {
 
 func (va *ArgList) End() {
 	va.cur = 0
-	va.typ = 0
+	va.typ = nil
 	va.args = nil
 }
 

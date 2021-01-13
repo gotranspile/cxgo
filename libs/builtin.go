@@ -43,12 +43,11 @@ func init() {
 		psz := c.PtrT(nil).Sizeof()
 
 		// builtin variable arguments list
-		typT := c.Go().Uint()
 		ifaceT := c.Go().Iface()
 		sliceT := c.Go().IfaceSlice()
 		valistPtr := c.PtrT(nil)
 		valistT := types.NamedTGo("__builtin_va_list", "libc.ArgList", c.MethStructT(map[string]*types.FuncType{
-			"Start": c.FuncTT(nil, typT, sliceT),
+			"Start": c.FuncTT(nil, ifaceT, sliceT),
 			"Arg":   c.FuncTT(ifaceT),
 			"End":   c.FuncTT(nil),
 		}))
