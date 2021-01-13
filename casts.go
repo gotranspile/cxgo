@@ -53,7 +53,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 			} else if types.Same(xt, g.env.C().WString()) {
 				fnc = g.env.WStringC2Go()
 			} else {
-				return g.cCast(typ, g.cCast(g.env.C().String(), x))
+				return g.cCast(g.env.C().String(), x)
 			}
 			return g.NewCCallExpr(FuncIdent{fnc}, []Expr{x})
 		}
