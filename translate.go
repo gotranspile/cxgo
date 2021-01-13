@@ -45,6 +45,7 @@ const (
 
 type IdentConfig struct {
 	Name    string        `yaml:"name" json:"name"`       // identifier name in C
+	Index   int           `yaml:"index" json:"index"`     // argument index, only for Fields in the function decl
 	Rename  string        `yaml:"rename" json:"rename"`   // rename the identifier
 	Alias   bool          `yaml:"alias" json:"alias"`     // omit declaration, use underlying type instead
 	Type    TypeHint      `yaml:"type" json:"type"`       // changes the Go type of this identifier

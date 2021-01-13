@@ -392,16 +392,26 @@ func (g *translator) convertFuncType(conf IdentConfig, d *cc.Declarator, t cc.Ty
 		where = d.Position()
 	}
 	aconf := make(map[string]IdentConfig)
+	iconf := make(map[int]IdentConfig)
 	for _, f := range conf.Fields {
-		aconf[f.Name] = f
+		if f.Name != "" {
+			aconf[f.Name] = f
+		} else {
+			iconf[f.Index] = f
+		}
 	}
 	var args []*types.Field
-	for _, p := range t.Parameters() {
+	for i, p := range t.Parameters() {
 		pt := p.Type()
 		if pt.Kind() == cc.Void {
 			continue
 		}
-		fc := aconf[p.Name().String()]
+		var fc IdentConfig
+		if ac, ok := aconf[p.Name().String()]; ok {
+			fc = ac
+		} else if ac, ok = iconf[i]; ok {
+			fc = ac
+		}
 		at := g.convertTypeRoot(fc, pt, where)
 		var name *types.Ident
 		if d != nil && p.Name() != 0 {

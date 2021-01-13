@@ -223,6 +223,10 @@ A list of configurations for translating identifiers (functions/types/variables)
 
 A name of the identifier in C.
 
+### `idents.index`
+
+An index of the identifier in the arguments list. Used only in [`idents.fields`](#identsfields).
+
 ### `idents.rename`
 
 Sets a name for this identifier in Go
