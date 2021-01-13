@@ -256,7 +256,8 @@ Allows overriding Go type for this identifier.
 
 Valid values are:
 - `bool` - uses Go `bool` instead of C `int`
-- `slice` - uses Go `[]T` instead of C `*T`
+- `string` - uses Go `string` instead of C `char*`
+- `slice` - uses Go `[]T` instead of C `T*`
 - `iface` - uses Go `interface{}`
 
 Example:

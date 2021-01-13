@@ -27,6 +27,8 @@ func (g *translator) convertType(conf IdentConfig, t cc.Type, where token.Positi
 		return g.env.Go().Bool()
 	case HintIface:
 		return g.env.Go().Iface()
+	case HintString:
+		return g.env.Go().String()
 	case HintSlice:
 		ct := g.newTypeCC(IdentConfig{}, t, where)
 		var elem types.Type

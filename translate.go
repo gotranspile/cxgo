@@ -37,9 +37,10 @@ type Config struct {
 type TypeHint string
 
 const (
-	HintBool  = TypeHint("bool")  // force the type to Go bool
-	HintSlice = TypeHint("slice") // force type to Go slice (for pointers and arrays)
-	HintIface = TypeHint("iface") // force type to Go interface{}
+	HintBool   = TypeHint("bool")   // force the type to Go bool
+	HintSlice  = TypeHint("slice")  // force type to Go slice (for pointers and arrays)
+	HintIface  = TypeHint("iface")  // force type to Go interface{}
+	HintString = TypeHint("string") // force type to Go string
 )
 
 type IdentConfig struct {
