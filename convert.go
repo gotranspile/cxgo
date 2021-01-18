@@ -1189,10 +1189,29 @@ func (g *translator) convertIterStmt(st *cc.IterationStatement) []CStmt {
 			),
 		}
 	case cc.IterationStatementForDecl:
-		cdecl := g.convertDecl(st.Declaration)
-		if len(cdecl) != 1 {
-			// FIXME: support defining multiple vars with the same type
-			panic(fmt.Errorf("%v %s", len(cdecl), st.Position()))
+		var cur *CVarDecl
+		for _, d := range g.convertDecl(st.Declaration) {
+			d := d.(*CVarDecl)
+			if cur == nil {
+				cur = d
+				continue
+			}
+			if !types.Same(cur.Type, d.Type) {
+				panic(fmt.Errorf("different types in a declaration: %v vs %v (%s)", cur.Type, d.Type, st.Position()))
+			}
+			n1, n2 := len(cur.Names), len(d.Names)
+			cur.Names = append(cur.Names, d.Names...)
+			if len(cur.Inits) == 0 && len(d.Inits) == 0 {
+				continue
+			}
+			if len(cur.Inits) == 0 {
+				cur.Inits = make([]Expr, n1, n1+n2)
+			}
+			if len(d.Inits) == 0 {
+				cur.Inits = append(cur.Inits, make([]Expr, n2)...)
+			} else {
+				cur.Inits = append(cur.Inits, d.Inits...)
+			}
 		}
 		x := g.convertExprOpt(st.Expression)
 		var cond BoolExpr
@@ -1201,7 +1220,7 @@ func (g *translator) convertIterStmt(st *cc.IterationStatement) []CStmt {
 		}
 		return []CStmt{
 			g.NewCForDeclStmt(
-				cdecl[0],
+				cur,
 				cond,
 				g.convertExprOpt(st.Expression2),
 				[]CStmt{g.convertBlockStmt(st.Statement)},
