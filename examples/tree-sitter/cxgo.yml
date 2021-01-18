@@ -1,0 +1,19 @@
+vcs: https://github.com/tree-sitter/tree-sitter.git
+branch: '0.18.0'
+root: ./lib
+out: ../../.examples/tree-sitter-go
+package: gositter
+int_size: 8
+ptr_size: 8
+use_go_int: true
+files:
+  - name: ./src/language.c
+  - name: ./src/lexer.c
+  - name: ./src/node.c
+  - name: ./src/parser.c
+  - name: ./src/query.c
+  - name: ./src/stack.c
+  - name: ./src/subtree.c
+  - name: ./src/tree_cursor.c
+  - name: ./src/tree.c
+  - name: ./src/get_changed_ranges.c
