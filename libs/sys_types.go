@@ -33,6 +33,7 @@ func init() {
 #define pid_t _cxgo_uint64
 #define gid_t _cxgo_uint32
 #define uid_t _cxgo_uint32
+#define ino_t _cxgo_uint64
 
 #define u_short unsigned short
 #define u_long unsigned long
