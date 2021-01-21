@@ -205,7 +205,7 @@ func init() {
 #define Sint32 _cxgo_sint32
 #define Sint16 _cxgo_sint16
 #define Sint8 _cxgo_sint8
-#define SDL_bool _cxgo_bool
+#define SDL_bool _cxgo_go_bool
 typedef Sint32 SDL_FingerID;
 typedef Sint32 SDL_Scancode;
 typedef Sint32 SDL_Keymod;
