@@ -11,6 +11,7 @@ type C struct {
 	charT    Type
 	wcharT   Type
 	mallocF  *Ident
+	freeF    *Ident
 	callocF  *Ident
 	memmoveF *Ident
 	memcpyF  *Ident
@@ -60,6 +61,7 @@ func (c *C) init() {
 
 	unsafePtr := g.UnsafePtr()
 	c.mallocF = NewIdentGo("__builtin_malloc", "libc.Malloc", c.e.FuncTT(unsafePtr, g.Int()))
+	c.freeF = NewIdentGo("free", "libc.Free", c.e.FuncTT(nil, unsafePtr))
 	c.callocF = NewIdentGo("calloc", "libc.Calloc", c.e.FuncTT(unsafePtr, g.Int(), g.Int()))
 	c.memmoveF = NewIdentGo("__builtin_memmove", "libc.MemMove", c.e.FuncTT(unsafePtr, unsafePtr, unsafePtr, g.Int()))
 	c.memcpyF = NewIdentGo("__builtin_memcpy", "libc.MemCpy", c.e.FuncTT(unsafePtr, unsafePtr, unsafePtr, g.Int()))
@@ -206,6 +208,11 @@ func (c *C) BytesN(n int) Type {
 // MallocFunc returns C malloc function ident.
 func (c *C) MallocFunc() *Ident {
 	return c.mallocF
+}
+
+// FreeFunc returns C free function ident.
+func (c *C) FreeFunc() *Ident {
+	return c.freeF
 }
 
 // CallocFunc returns C calloc function ident.

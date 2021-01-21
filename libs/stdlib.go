@@ -33,7 +33,7 @@ func init() {
 				"malloc":   c.C().MallocFunc(),
 				"calloc":   c.C().CallocFunc(),
 				"realloc":  c.NewIdent("realloc", "libc.Realloc", libc.Realloc, c.FuncTT(voidPtr, voidPtr, gintT)),
-				"free":     c.NewIdent("free", "libc.Free", libc.Free, c.FuncTT(nil, voidPtr)),
+				"free":     c.C().FreeFunc(),
 				"atoi":     c.NewIdent("atoi", "libc.Atoi", libc.Atoi, c.FuncTT(gintT, gstrT)),
 				"atol":     c.NewIdent("atol", "libc.Atoi", libc.Atoi, c.FuncTT(gintT, gstrT)),
 				"atof":     c.NewIdent("atof", "libc.Atof", libc.Atof, c.FuncTT(types.FloatT(8), gstrT)),
@@ -52,7 +52,7 @@ func init() {
 
 #define malloc __builtin_malloc
 #define abort __builtin_abort
-#define free(x) x = 0
+void free(void*);
 
 typedef struct {
 	int quot;

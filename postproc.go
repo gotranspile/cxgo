@@ -188,3 +188,48 @@ func (g *translator) fixImplicitReturnStmt(ret types.Type, st CStmt) bool {
 		return false
 	}
 }
+
+func (g *translator) rewriteFree(decl []CDecl) {
+	for _, d := range decl {
+		f, ok := d.(*CFuncDecl)
+		if !ok || f.Body == nil {
+			continue
+		}
+		g.rewriteFreeStmts(f.Body.Stmts)
+	}
+}
+
+func (g *translator) rewriteFreeStmts(stmts []CStmt) {
+	for i, st := range stmts {
+		if s, ok := g.rewriteFreeStmt(st); ok {
+			stmts[i] = s
+		}
+	}
+}
+
+func (g *translator) rewriteFreeStmt(st CStmt) (CStmt, bool) {
+	switch st := st.(type) {
+	case *CExprStmt:
+		if c, ok := st.Expr.(*CallExpr); ok && len(c.Args) == 1 && canAssignTo(c.Args[0]) {
+			if id, ok := c.Fun.(Ident); ok && id.Identifier() == g.env.C().FreeFunc() {
+				return g.NewCAssignStmtP(c.Args[0], "", g.Nil()), true
+			}
+		}
+	case *BlockStmt:
+		g.rewriteFreeStmts(st.Stmts)
+	case *CIfStmt:
+		g.rewriteFreeStmts(st.Then.Stmts)
+		if st.Else != nil {
+			if e, ok := g.rewriteFreeStmt(st.Else); ok {
+				st.Else = g.toElseStmt(e)
+			}
+		}
+	case *CForStmt:
+		g.rewriteFreeStmts(st.Body.Stmts)
+	case *CSwitchStmt:
+		for _, c := range st.Cases {
+			g.rewriteFreeStmts(c.Stmts)
+		}
+	}
+	return st, false
+}

@@ -256,6 +256,7 @@ func (g *translator) translateMain(d *CFuncDecl) {
 
 func (g *translator) translate(cur string, ast *cc.AST) []GoDecl {
 	decl := g.translateC(cur, ast)
+	g.rewriteFree(decl)
 	if g.conf.FixImplicitReturns {
 		g.fixImplicitReturns(decl)
 	}

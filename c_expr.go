@@ -18,6 +18,15 @@ type Expr interface {
 	Uses() []types.Usage
 }
 
+func canAssignTo(x Expr) bool {
+	x = cUnwrap(x)
+	switch x.(type) {
+	case Ident, *Deref, *CSelectExpr, *CIndexExpr:
+		return true
+	}
+	return false
+}
+
 type Ident interface {
 	Expr
 	Identifier() *types.Ident
