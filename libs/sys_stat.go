@@ -13,8 +13,7 @@ func init() {
 	RegisterLibrary(sysStatH, func(c *Env) *Library {
 		intT := types.IntT(4)
 		strT := c.C().String()
-		timeLib := c.GetLib(timeH)
-		timevalT := timeLib.GetType("timeval")
+		timevalT := c.GetLibraryType(timeH, "timeval")
 		modeT := types.NamedTGo("mode_t", "csys.Mode", intT)
 		statT := types.NamedTGo("stat", "csys.StatRes", types.StructT([]*types.Field{
 			{Name: types.NewIdentGo("st_dev", "Dev", intT)},
