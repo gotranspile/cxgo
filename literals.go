@@ -313,7 +313,7 @@ func (l FloatLit) CType(exp types.Type) types.Type {
 
 func (l FloatLit) AsExpr() GoExpr {
 	s := strconv.FormatFloat(l.val, 'g', -1, 64)
-	if float64(int(l.val)) == l.val && !strings.Contains(s, ".") {
+	if float64(int(l.val)) == l.val && !strings.ContainsAny(s, ".e") {
 		s += ".0"
 	}
 	return &ast.BasicLit{
