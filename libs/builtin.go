@@ -78,9 +78,9 @@ func init() {
 #define __ORDER_LITTLE_ENDIAN__ 1234
 #define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
 
-#define __cxgo__
+#define __CXGO__
 #define __linux__
-#define _cxgo_WINAPI
+#define _CXGO_WINAPI
 
 #define __SIZEOF_INT8__ 1
 #define __SIZEOF_INT16__ 2
