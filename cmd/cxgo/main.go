@@ -24,14 +24,39 @@ import (
 )
 
 var Root = &cobra.Command{
-	Use:  "cxgo",
-	RunE: run,
+	Use:   "cxgo",
+	Short: "transpile a C project to Go",
+	RunE:  run,
 }
+
+const (
+	version = "dev"
+	commit  = ""
+	date    = ""
+)
 
 var configPath = "cxgo.yml"
 
+func printVersion() {
+	vers := version
+	if s := commit; s != "" {
+		vers = fmt.Sprintf("%s (%s)", vers, s[:8])
+	}
+	fmt.Printf("version: %s\n", vers)
+	if date != "" {
+		fmt.Printf("built: %s\n", date)
+	}
+}
+
 func init() {
 	Root.Flags().StringVarP(&configPath, "config", "c", configPath, "config file path")
+	Root.AddCommand(&cobra.Command{
+		Use:   "version",
+		Short: "print cxgo version",
+		Run: func(cmd *cobra.Command, args []string) {
+			printVersion()
+		},
+	})
 }
 
 func main() {

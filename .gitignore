@@ -3,3 +3,4 @@
 /.testdata*/
 /.examples/
 .idea/
+/dist/
