@@ -45,7 +45,7 @@ func init() {
 }
 
 func uintMax(buf *strings.Builder, pref string, max uint64) {
-	_, _ = fmt.Fprintf(buf, "#define %s_MAX %d\n", pref, max)
+	_, _ = fmt.Fprintf(buf, "#define %s_MAX %du\n", pref, max)
 }
 
 func intMinMax(buf *strings.Builder, pref string, min, max int64) {
