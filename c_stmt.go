@@ -464,16 +464,23 @@ func (s *CForStmt) EachStmt(fnc CStmtFunc) bool {
 func (s *CForStmt) AsStmt() []GoStmt {
 	var init GoStmt
 	if s.Init != nil {
+		// if we have only one init decl with one spec -> convert to inline for decl
 		init = cOneStmt(s.Init)
 		if s, ok := init.(*ast.DeclStmt); ok {
 			if g, ok := s.Decl.(*ast.GenDecl); ok && g.Tok == token.VAR && len(g.Specs) == 1 {
-				if sp, ok := g.Specs[0].(*ast.ValueSpec); ok && len(sp.Names) == 1 && len(sp.Values) == 1 {
+				if sp, ok := g.Specs[0].(*ast.ValueSpec); ok && len(sp.Names) == len(sp.Values) {
+					var (
+						lhs []ast.Expr
+						rhs []ast.Expr
+					)
+					for i := range sp.Names {
+						lhs = append(lhs, sp.Names[i])
+						rhs = append(rhs, &ast.CallExpr{Fun: sp.Type, Args: []ast.Expr{sp.Values[i]}})
+					}
 					init = &ast.AssignStmt{
-						Lhs: []ast.Expr{sp.Names[0]},
+						Lhs: lhs,
 						Tok: token.DEFINE,
-						Rhs: []ast.Expr{
-							&ast.CallExpr{Fun: sp.Type, Args: []ast.Expr{sp.Values[0]}},
-						},
+						Rhs: rhs,
 					}
 				}
 			}

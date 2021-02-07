@@ -1199,6 +1199,7 @@ func (g *translator) convertIterStmt(st *cc.IterationStatement) []CStmt {
 			if !types.Same(cur.Type, d.Type) {
 				panic(fmt.Errorf("different types in a declaration: %v vs %v (%s)", cur.Type, d.Type, st.Position()))
 			}
+			cur.Single = true
 			n1, n2 := len(cur.Names), len(d.Names)
 			cur.Names = append(cur.Names, d.Names...)
 			if len(cur.Inits) == 0 && len(d.Inits) == 0 {
