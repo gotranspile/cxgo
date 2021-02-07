@@ -63,6 +63,7 @@ func init() {
 				"clock_gettime":  c.NewIdent("clock_gettime", "libc.ClockGetTime", libc.ClockGetTime, c.FuncTT(intT, clockT, c.PtrT(tsT))),
 				"asctime":        c.NewIdent("asctime", "libc.AscTime", libc.AscTime, c.FuncTT(strT, c.PtrT(tmT))),
 				"CLOCK_REALTIME": c.NewIdent("CLOCK_REALTIME", "libc.CLOCK_REALTIME", libc.CLOCK_REALTIME, gintT),
+				"CLOCKS_PER_SEC": c.NewIdent("CLOCKS_PER_SEC", "libc.CLOCKS_PER_SEC", libc.CLOCKS_PER_SEC, gintT),
 			},
 			// TODO
 			Header: `
@@ -70,6 +71,7 @@ func init() {
 #include <` + sysTypesH + `>
 
 const _cxgo_go_int CLOCK_REALTIME = 1;
+const _cxgo_go_int CLOCKS_PER_SEC = 1000000;
 
 typedef _cxgo_int32 time_t;
 typedef _cxgo_uint32 timer_t;

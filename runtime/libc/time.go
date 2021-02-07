@@ -7,6 +7,8 @@ import (
 
 const CLOCK_REALTIME = 1
 
+const CLOCKS_PER_SEC = 1000000 // us
+
 type Time int32
 
 func (t Time) GoTime() time.Time {
