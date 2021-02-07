@@ -17,7 +17,8 @@ const (
 
 	typeFixedIntPref = "_cxgo_"
 
-	RuntimePackage     = "github.com/gotranspile/cxgo"
+	RuntimeOrg         = "github.com/gotranspile"
+	RuntimePackage     = RuntimeOrg + "/cxgo"
 	RuntimePackageVers = "main"
 	RuntimePrefix      = RuntimePackage + "/runtime/"
 	RuntimeLibc        = RuntimePrefix + "libc"

@@ -17,8 +17,6 @@ jobs:
           path: ~/go
           key: ${{ env.GO_CACHE_PREFIX }}${{ hashFiles('go.mod') }}
           restore-keys: ${{ env.GO_CACHE_PREFIX }}
-      - name: Install SDL # TODO: split into a separate package to avoid this dependency
-        run: sudo apt-get update && sudo apt-get install -y libsdl2-dev
       - name: script
         run: |
           set -x

@@ -121,7 +121,7 @@ func init() {
 		timerFuncT := types.NamedTGo("SDL_TimerCallback", "sdl.TimerFunc", c.FuncTT(uintT, uintT, c.PtrT(nil)))
 		return &Library{
 			Imports: map[string]string{
-				"sdl": RuntimePrefix + "sdl",
+				"sdl": RuntimeOrg + "/sdl",
 			},
 			Types: map[string]types.Type{
 				"SDL_Window":           winT,
