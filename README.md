@@ -26,17 +26,22 @@ Check the [FAQ](FAQ.md) for more common question about the project.
 
 The project is **experimental**! Do not rely on it in production and other sensitive environments!
 
-Although it can successfully transpile multiple projects, it might _change the behavior_ of the transpiled code due to yet unknown bugs.
+Although it was successfully tested on multiple projects, it might _change the behavior_ of the code due to yet unknown bugs.
 
 **Compiler test results:**
 - TCC: 62/89 (70%)
 - GCC: 783/1236 (63%)
+
+**Transpiled projects:**
+- [Potrace](./examples/potrace)
 
 ## Installation
 
 ```bash
 go get -u github.com/gotranspile/cxgo/cmd/cxgo
 ```
+
+or download the [latest release](https://github.com/gotranspile/cxgo/releases/latest) from Github.
 
 ## How to use
 
