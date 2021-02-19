@@ -1175,6 +1175,42 @@ func (e *CAssignExpr) Uses() []types.Usage {
 	return list
 }
 
+func mergeStructInitializers(items []*CompLitField) []*CompLitField {
+	out := make([]*CompLitField, 0, len(items))
+	byField := make(map[string]*CompLitField)
+	for _, it := range items {
+		if it.Field == nil {
+			out = append(out, it)
+			continue
+		}
+		c1, ok := cUnwrap(it.Value).(*CCompLitExpr)
+		if !ok {
+			out = append(out, it)
+			continue
+		}
+		it2 := byField[it.Field.Name]
+		if it2 == nil {
+			byField[it.Field.Name] = it
+			out = append(out, it)
+			continue
+		}
+		c2, ok := cUnwrap(it2.Value).(*CCompLitExpr)
+		if !ok {
+			out = append(out, it)
+			continue
+		}
+		if !types.Same(c1.Type, c2.Type) {
+			out = append(out, it)
+			continue
+		}
+		sub := make([]*CompLitField, 0, len(c1.Fields)+len(c2.Fields))
+		sub = append(sub, c2.Fields...)
+		sub = append(sub, c1.Fields...)
+		c2.Fields = sub
+	}
+	return out
+}
+
 func (g *translator) NewCCompLitExpr(typ types.Type, items []*CompLitField) Expr {
 	if k := typ.Kind(); k.Is(types.Struct) {
 		st := types.Unwrap(typ).(*types.StructType)
@@ -1199,6 +1235,7 @@ func (g *translator) NewCCompLitExpr(typ types.Type, items []*CompLitField) Expr
 				it.Value = g.cCast(ft, it.Value)
 			}
 		}
+		items = mergeStructInitializers(items)
 	} else if k.Is(types.Array) {
 		arr := types.Unwrap(typ).(types.ArrayType)
 		tp := arr.Elem()

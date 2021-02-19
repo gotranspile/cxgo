@@ -152,15 +152,15 @@ func (g *translator) convertInitList(typ types.Type, list *cc.InitializerList) E
 		pi   int64 = 0  // relative index added to the last seen item; see below
 	)
 	for it := list; it != nil; it = it.InitializerList {
+		val := g.convertInitExpr(it.Initializer)
 		var f *CompLitField
 		if it.Designation != nil {
-			f = g.convertOneDesignation(typ, it.Designation)
+			f = g.convertOneDesignator(typ, it.Designation.DesignatorList, val)
 		} else {
 			// no index in the initializer - assign automatically
 			pi++
-			f = &CompLitField{Index: cIntLit(prev + pi)}
+			f = &CompLitField{Index: cIntLit(prev + pi), Value: val}
 		}
-		f.Value = g.convertInitExpr(it.Initializer)
 		if lit, ok := f.Index.(IntLit); ok {
 			if prev == -1 {
 				// first item - note that we started initializing indexes
@@ -960,22 +960,32 @@ func (g *translator) convertPriExpr(d *cc.PrimaryExpression) Expr {
 	}
 }
 
-func (g *translator) convertOneDesignation(typ types.Type, ds *cc.Designation) *CompLitField {
-	list := ds.DesignatorList
-	if list.DesignatorList != nil {
-		panic("expected one item")
-	}
+func (g *translator) convertOneDesignator(typ types.Type, list *cc.DesignatorList, val Expr) *CompLitField {
 	d := list.Designator
+	var (
+		f   *CompLitField
+		sub types.Type
+	)
 	switch d.Case {
 	case cc.DesignatorIndex:
-		return &CompLitField{Index: g.convertConstExpr(d.ConstantExpression)}
+		f = &CompLitField{Index: g.convertConstExpr(d.ConstantExpression)}
+		sub = typ.(types.ArrayType).Elem()
 	case cc.DesignatorField:
-		return &CompLitField{Field: g.convertIdentOn(typ, d.Token2)}
+		f = &CompLitField{Field: g.convertIdentOn(typ, d.Token2)}
+		sub = f.Field.CType(nil)
 	case cc.DesignatorField2:
-		return &CompLitField{Field: g.convertIdentOn(typ, d.Token)}
+		f = &CompLitField{Field: g.convertIdentOn(typ, d.Token)}
+		sub = f.Field.CType(nil)
 	default:
 		panic(d.Case.String() + " " + d.Position().String())
 	}
+	if list.DesignatorList == nil {
+		f.Value = val
+		return f
+	}
+	f2 := g.convertOneDesignator(sub, list.DesignatorList, val)
+	f.Value = g.NewCCompLitExpr(sub, []*CompLitField{f2})
+	return f
 }
 
 func (g *translator) convertPostfixExpr(d *cc.PostfixExpression) Expr {

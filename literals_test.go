@@ -259,6 +259,41 @@ var arr [7]int32 = [7]int32{0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6}
 `,
 	},
 	{
+		name: "nested struct fields init",
+		src: `
+struct inner {
+   int f;
+   int g;
+   int h;
+};
+struct outer {
+   int A;
+   struct inner B;
+   int C;
+};
+struct outer x = {
+   .C = 100,
+   .B.g = 200,
+   .A = 300,
+   .B.f = 400,
+};
+	`,
+		exp: `
+type inner struct {
+	F int32
+	G int32
+	H int32
+}
+type outer struct {
+	A int32
+	B inner
+	C int32
+}
+
+var x outer = outer{C: 100, B: inner{G: 200, F: 400}, A: 300}
+	`,
+	},
+	{
 		name: "string literal ternary",
 		src: `
 int a;
