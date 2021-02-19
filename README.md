@@ -61,7 +61,6 @@ You may also check [FAQ](FAQ.md) if you have any issues.
 
 The following C features are currently accepted by `cxgo`, but may be implemented partially or not implemented at all:
 
-- converting `#define` directives to Go constants ([#3](https://github.com/gotranspile/cxgo/issues/3))
 - preserving comments from C code ([#2](https://github.com/gotranspile/cxgo/issues/2))
 - `static` ([#4](https://github.com/gotranspile/cxgo/issues/4))
 - `auto` ([#5](https://github.com/gotranspile/cxgo/issues/5))
