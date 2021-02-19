@@ -11,11 +11,23 @@ import (
 
 func (g *translator) newIdent(name string, t types.Type) *types.Ident {
 	if id, ok := g.env.IdentByName(name); ok {
-		if id.CType(nil).Kind().Major() == t.Kind().Major() {
+		if it := id.CType(nil); it.Kind().Major() == t.Kind().Major() || (it.Kind().IsBool() && t.Kind().IsInt()) {
 			return id // FIXME: this is invalid, we should consult scopes instead
 		}
 	}
 	return types.NewIdent(name, t)
+}
+
+func (g *translator) convMacro(name string, fnc func() Expr) Expr {
+	id, ok := g.macros[name]
+	if ok {
+		return IdentExpr{id}
+	}
+	x := fnc()
+	typ := x.CType(nil)
+	id = g.newIdent(name, typ)
+	g.macros[name] = id
+	return IdentExpr{id}
 }
 
 func (g *translator) convertIdent(scope cc.Scope, tok cc.Token, t types.Type) IdentExpr {
@@ -847,45 +859,81 @@ func (g *translator) convertPriExpr(d *cc.PrimaryExpression) Expr {
 	case cc.PrimaryExpressionEnum: // X
 		return g.convertIdent(d.ResolvedIn(), d.Token, g.convertTypeOper(d.Operand, d.Position()))
 	case cc.PrimaryExpressionInt: // 1
-		v, err := parseCIntLit(d.Token.String())
-		if err != nil {
-			panic(err)
-		}
-		return v
-	case cc.PrimaryExpressionFloat: // 0.0
-		v, err := parseCFloatLit(d.Token.String())
-		if err != nil {
-			panic(err)
-		}
-		if d.Operand == nil {
+		fnc := func() Expr {
+			v, err := parseCIntLit(d.Token.String())
+			if err != nil {
+				panic(err)
+			}
 			return v
 		}
-		return g.cCast(
-			g.convertTypeOper(d.Operand, d.Position()),
-			v,
-		)
+		if m := d.Token.Macro(); m != 0 {
+			return g.convMacro(m.String(), fnc)
+		}
+		return fnc()
+	case cc.PrimaryExpressionFloat: // 0.0
+		fnc := func() Expr {
+			v, err := parseCFloatLit(d.Token.String())
+			if err != nil {
+				panic(err)
+			}
+			if d.Operand == nil {
+				return v
+			}
+			return g.cCast(
+				g.convertTypeOper(d.Operand, d.Position()),
+				v,
+			)
+		}
+		if m := d.Token.Macro(); m != 0 {
+			return g.convMacro(m.String(), fnc)
+		}
+		return fnc()
 	case cc.PrimaryExpressionChar: // 'x'
-		return cLitT(
-			d.Token.String(), CLitChar,
-			g.convertTypeOper(d.Operand, d.Position()),
-		)
+		fnc := func() Expr {
+			return cLitT(
+				d.Token.String(), CLitChar,
+				g.convertTypeOper(d.Operand, d.Position()),
+			)
+		}
+		if m := d.Token.Macro(); m != 0 {
+			return g.convMacro(m.String(), fnc)
+		}
+		return fnc()
 	case cc.PrimaryExpressionLChar: // 'x'
-		return cLitT(
-			d.Token.String(), CLitWChar,
-			g.convertTypeOper(d.Operand, d.Position()),
-		)
+		fnc := func() Expr {
+			return cLitT(
+				d.Token.String(), CLitWChar,
+				g.convertTypeOper(d.Operand, d.Position()),
+			)
+		}
+		if m := d.Token.Macro(); m != 0 {
+			return g.convMacro(m.String(), fnc)
+		}
+		return fnc()
 	case cc.PrimaryExpressionString: // "x"
-		v, err := g.parseCStringLit(d.Token.String())
-		if err != nil {
-			panic(err)
+		fnc := func() Expr {
+			v, err := g.parseCStringLit(d.Token.String())
+			if err != nil {
+				panic(err)
+			}
+			return v
 		}
-		return v
+		if m := d.Token.Macro(); m != 0 {
+			return g.convMacro(m.String(), fnc)
+		}
+		return fnc()
 	case cc.PrimaryExpressionLString: // L"x"
-		v, err := g.parseCWStringLit(d.Token.String())
-		if err != nil {
-			panic(err)
+		fnc := func() Expr {
+			v, err := g.parseCWStringLit(d.Token.String())
+			if err != nil {
+				panic(err)
+			}
+			return v
 		}
-		return v
+		if m := d.Token.Macro(); m != 0 {
+			return g.convMacro(m.String(), fnc)
+		}
+		return fnc()
 	case cc.PrimaryExpressionExpr: // "(x)"
 		e := g.convertExpr(d.Expression)
 		return cParen(e)

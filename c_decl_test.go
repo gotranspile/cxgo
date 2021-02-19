@@ -750,12 +750,6 @@ const MY_CONST = 1
 
 var a int32 = MY_CONST
 `,
-		// TODO: we can't associate a macro with its replacements yet
-		skipExp: `
-const MY_CONST = 1
-
-var a int32 = 1
-`,
 	},
 	{
 		// TODO: cc.AST.Eval() doesn't support cast expressions?
@@ -808,7 +802,7 @@ const MY_CONST_2 = 2
 const MY_CONST = 1
 const MY_CONST_2 = 2
 
-var a int32 = 1
+var a int32 = MY_CONST
 `,
 	},
 }

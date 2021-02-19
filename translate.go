@@ -173,6 +173,7 @@ func newTranslator(env *libs.Env, conf Config) *translator {
 		namedPtrs: make(map[string]types.PtrType),
 		named:     make(map[string]types.Named),
 		aliases:   make(map[string]types.Type),
+		macros:    make(map[string]*types.Ident),
 	}
 	for _, v := range conf.Idents {
 		tr.idents[v.Name] = v
@@ -196,6 +197,7 @@ type translator struct {
 	namedPtrs map[string]types.PtrType
 	named     map[string]types.Named
 	aliases   map[string]types.Type
+	macros    map[string]*types.Ident
 	decls     map[cc.Node]*types.Ident
 }
 

@@ -15,8 +15,10 @@ const (
 
 func init() {
 	RegisterLibrary(stdintH, func(c *Env) *Library {
+		idents := make(map[string]*types.Ident)
 		return &Library{
-			Header: incStdInt(c.Env),
+			Idents: idents,
+			Header: incStdInt(c.Env, idents),
 			Types:  typesStdInt(c.Env),
 		}
 	})
@@ -67,32 +69,23 @@ func maxIntTypes(e *types.Env) string {
 	return buf.String()
 }
 
-func intMinMaxDef(buf *strings.Builder, name string, min, max int64) {
-	_, _ = fmt.Fprintf(buf, "#define %s_MIN %#x\n", name, min)
-	_, _ = fmt.Fprintf(buf, "#define %s_MAX %#x\n", name, max)
+func intLimitsDef(buf *strings.Builder, m map[string]*types.Ident, part string, min, max int64, umax uint64, size int) {
+	intMinMax(buf, m, "INT"+part, "Int", min, max, size)
+	uintMax(buf, m, "UINT"+part, "Uint", umax, size)
 }
 
-func uintMaxDef(buf *strings.Builder, name string, max uint64) {
-	_, _ = fmt.Fprintf(buf, "#define %s_MAX %#x\n", name, max)
-}
-
-func intLimitsDef(buf *strings.Builder, part string, min, max int64, umax uint64) {
-	intMinMaxDef(buf, "INT"+part, min, max)
-	uintMaxDef(buf, "UINT"+part, umax)
-}
-
-func intLimitsDefs(buf *strings.Builder, part string) {
+func intLimitsDefs(buf *strings.Builder, m map[string]*types.Ident, part string) {
 	for i, sz := range intSizes {
-		intLimitsDef(buf, part+strconv.Itoa(sz), minInts[i], maxInts[i], maxUints[i])
+		intLimitsDef(buf, m, part+strconv.Itoa(sz), minInts[i], maxInts[i], maxUints[i], sz)
 	}
 	buf.WriteByte('\n')
 }
 
-func intLimits() string {
+func intLimits(m map[string]*types.Ident) string {
 	var buf strings.Builder
-	intLimitsDefs(&buf, "")
-	intLimitsDefs(&buf, "_LEAST")
-	intLimitsDefs(&buf, "_FAST")
+	intLimitsDefs(&buf, m, "")
+	intLimitsDefs(&buf, m, "_LEAST")
+	intLimitsDefs(&buf, m, "_FAST")
 	return buf.String()
 }
 
@@ -111,44 +104,44 @@ func intSizeInd(sz int) int {
 	}
 }
 
-func maxIntLimits(e *types.Env) string {
+func maxIntLimits(e *types.Env, m map[string]*types.Ident) string {
 	var buf strings.Builder
 	i := intSizeInd(e.PtrSize())
-	intLimitsDef(&buf, "PTR", minInts[i], maxInts[i], maxUints[i])
+	intLimitsDef(&buf, m, "PTR", minInts[i], maxInts[i], maxUints[i], e.PtrSize()*8)
 	buf.WriteByte('\n')
 
 	i = len(intSizes) - 1
-	intLimitsDef(&buf, "MAX", minInts[i], maxInts[i], maxUints[i])
+	intLimitsDef(&buf, m, "MAX", minInts[i], maxInts[i], maxUints[i], e.PtrSize()*8)
 	buf.WriteByte('\n')
 	return buf.String()
 }
 
-func otherLimits(e *types.Env) string {
+func otherLimits(e *types.Env, m map[string]*types.Ident) string {
 	var buf strings.Builder
 
 	i := intSizeInd(e.PtrSize())
-	intMinMaxDef(&buf, "PTRDIFF", minInts[i], maxInts[i])
+	intMinMax(&buf, m, "PTRDIFF", "Int", minInts[i], maxInts[i], e.PtrSize()*8)
 	buf.WriteByte('\n')
 
 	// TODO: SIG_ATOMIC
 
 	i = intSizeInd(e.PtrSize())
-	uintMaxDef(&buf, "SIZE", maxUints[i])
+	uintMax(&buf, m, "SIZE", "Uint", maxUints[i], e.PtrSize()*8)
 	buf.WriteByte('\n')
 
 	i = intSizeInd(e.C().WCharSize())
 	if e.C().WCharSigned() {
-		intMinMaxDef(&buf, "WCHAR", minInts[i], maxInts[i])
+		intMinMax(&buf, m, "WCHAR", "Int", minInts[i], maxInts[i], e.C().WCharSize()*8)
 	} else {
-		intMinMaxDef(&buf, "WCHAR", 0, int64(maxUints[i]))
+		intMinMax(&buf, m, "WCHAR", "Uint", 0, int64(maxUints[i]), e.C().WCharSize()*8)
 	}
 	buf.WriteByte('\n')
 
 	i = intSizeInd(e.C().WIntSize())
 	if e.C().WCharSigned() {
-		intMinMaxDef(&buf, "WINT", minInts[i], maxInts[i])
+		intMinMax(&buf, m, "WINT", "Int", minInts[i], maxInts[i], e.C().WIntSize()*8)
 	} else {
-		intMinMaxDef(&buf, "WINT", 0, int64(maxUints[i]))
+		intMinMax(&buf, m, "WINT", "Uint", 0, int64(maxUints[i]), e.C().WIntSize()*8)
 	}
 	buf.WriteByte('\n')
 	return buf.String()
@@ -161,14 +154,14 @@ var (
 	maxUints = []uint64{math.MaxUint8, math.MaxUint16, math.MaxUint32, math.MaxUint64}
 )
 
-func incStdInt(e *types.Env) string {
+func incStdInt(e *types.Env, m map[string]*types.Ident) string {
 	var buf strings.Builder
 	buf.WriteString("#include <" + BuiltinH + ">\n")
 	buf.WriteString(fixedIntTypes())
 	buf.WriteString(maxIntTypes(e))
-	buf.WriteString(intLimits())
-	buf.WriteString(maxIntLimits(e))
-	buf.WriteString(otherLimits(e))
+	buf.WriteString(intLimits(m))
+	buf.WriteString(maxIntLimits(e, m))
+	buf.WriteString(otherLimits(e, m))
 	return buf.String()
 }
 

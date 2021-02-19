@@ -83,10 +83,18 @@ int v3 = BLAH;
 `,
 		exp: `
 const BLAH = 10
+const BLAH = 5
 
-var v1 int32 = 10
-var v2 int32 = 5
-var v3 int32 = 10
+var v1 int32 = BLAH
+var v2 int32 = BLAH
+var v3 int32 = BLAH
+`,
+		skipExp: `
+const BLAH = 10
+
+var v1 int32 = BLAH
+var v2 int32 = BLAH
+var v3 int32 = BLAH
 `,
 	},
 	{
