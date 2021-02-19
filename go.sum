@@ -59,10 +59,10 @@ gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2 h1:XZx7nhd5GMaZpmDaEHFVafUZC
 gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 maze.io/x/math32 v0.0.0-20181106113604-c78ed91899f1 h1:SgIJGhlYkU+wmyP0xBEOdLVRIwVR4HSp/9kfv1BSvKQ=
 maze.io/x/math32 v0.0.0-20181106113604-c78ed91899f1/go.mod h1:OL5aVu+KUQ0mSadkiIseNiKIX6dJ2Ul1RlNWSMCP5y8=
-modernc.org/cc/v3 v3.29.0 h1:e4Sa8/pXJFM3MwZbdxMjTnLu6nsU0PHvgsKAr5wbmt8=
-modernc.org/cc/v3 v3.29.0/go.mod h1:L04CWrZMProd0PBi6ZhHwy7RbJ/yoPQSiDSyh8O+akg=
-modernc.org/mathutil v1.2.1 h1:PSIN4RdyeB6MbFsNLSkFCzDjnEVEMS3H/hFHcJtAJ9g=
-modernc.org/mathutil v1.2.1/go.mod h1:mZW8CKdRPY1v87qxC/wUdX5O1qDzXMP5TH3wjfpga6E=
+modernc.org/cc/v3 v3.31.1 h1:6KH+N1irF3sJOgnz4tIzAqVa9LDp/cCWpjj/9v/K/CM=
+modernc.org/cc/v3 v3.31.1/go.mod h1:0R6jl1aZlIl2avnYfbfHBS1QB6/f+16mihBObaBC878=
+modernc.org/mathutil v1.2.2 h1:+yFk8hBprV+4c0U9GjFtL+dV3N8hOJ8JCituQcMShFY=
+modernc.org/mathutil v1.2.2/go.mod h1:mZW8CKdRPY1v87qxC/wUdX5O1qDzXMP5TH3wjfpga6E=
 modernc.org/strutil v1.1.0 h1:+1/yCzZxY2pZwwrsbH+4T7BQMoLQ9QiBshRC9eicYsc=
 modernc.org/strutil v1.1.0/go.mod h1:lstksw84oURvj9y3tn8lGvRxyRC1S2+g5uuIzNfIOBs=
 modernc.org/token v1.0.0 h1:a0jaWiNMDhDUtqOj09wvjWWAqd3q7WpBulmL9H2egsk=

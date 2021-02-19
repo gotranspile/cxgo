@@ -136,25 +136,31 @@ func (g *translator) inCurFile(p positioner) bool {
 func (g *translator) convertInitList(typ types.Type, list *cc.InitializerList) Expr {
 	var items []*CompLitField
 	var (
-		prev int64 = -1
-		pi   int64 = 0
+		prev int64 = -1 // previous array init index
+		pi   int64 = 0  // relative index added to the last seen item; see below
 	)
 	for it := list; it != nil; it = it.InitializerList {
 		var f *CompLitField
 		if it.Designation != nil {
 			f = g.convertOneDesignation(typ, it.Designation)
 		} else {
-			f = &CompLitField{}
+			// no index in the initializer - assign automatically
+			pi++
+			f = &CompLitField{Index: cIntLit(prev + pi)}
 		}
 		f.Value = g.convertInitExpr(it.Initializer)
-		// FIXME: remove this ugly workaround! is it a bug in CC?
 		if lit, ok := f.Index.(IntLit); ok {
 			if prev == -1 {
+				// first item - note that we started initializing indexes
 				prev = 0
 			} else if prev == lit.Int() {
+				// this was an old bug in CC where it returned stale indexes
+				// for items without any index designators
+				// it looks like it is fixed now, but we keep the workaround just in case
 				pi++
 				f.Index = cIntLit(prev + pi)
 			} else {
+				// valid index - set previous and reset relative index
 				prev = lit.Int()
 				pi = 0
 			}
