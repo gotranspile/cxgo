@@ -73,6 +73,7 @@ func TestTCCExecute(t *testing.T) {
 		"60_errors_and_warnings":  {},
 		"73_arm64":                {},
 		"75_array_in_struct_init": {}, // CC type checker failure
+		"77_push_pop_macro":       {}, // FIXME: cannot detect if a macro was redefined
 		"78_vla_label":            {},
 		"79_vla_continue":         {},
 		"87_dead_code":            {},
