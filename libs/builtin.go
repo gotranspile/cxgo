@@ -157,6 +157,9 @@ void* malloc(_cxgo_go_int);
 			Types: map[string]types.Type{
 				"__builtin_va_list": valistT,
 			},
+			ForceMacros: map[string]bool{
+				"NULL": true,
+			},
 		}
 		for _, t := range c.Go().Types() {
 			if nt, ok := t.(types.Named); ok {

@@ -21,6 +21,8 @@ type Library struct {
 	Idents map[string]*types.Ident
 
 	Imports map[string]string
+
+	ForceMacros map[string]bool
 }
 
 func (l *Library) GetType(name string) types.Type {
@@ -154,6 +156,9 @@ func (c *Env) GetLibrary(name string) (*Library, bool) {
 	for k, v := range l.Imports {
 		c.imports[k] = v
 	}
+	for k, v := range l.ForceMacros {
+		c.macros[k] = v
+	}
 
 	ifdef := "_cxgo_" + strings.ToUpper(defPathReplacer.Replace(name))
 	l.Header = fmt.Sprintf(`
@@ -209,4 +214,9 @@ func (c *Env) LibIdentByName(name string) (*Library, *types.Ident, bool) {
 func (c *Env) IdentByName(name string) (*types.Ident, bool) {
 	_, id, ok := c.LibIdentByName(name)
 	return id, ok
+}
+
+func (c *Env) ForceMacro(name string) bool {
+	ok := c.macros[name]
+	return ok
 }

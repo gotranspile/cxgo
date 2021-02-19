@@ -19,6 +19,9 @@ func (g *translator) newIdent(name string, t types.Type) *types.Ident {
 }
 
 func (g *translator) convMacro(name string, fnc func() Expr) Expr {
+	if g.env.ForceMacro(name) {
+		return fnc()
+	}
 	id, ok := g.macros[name]
 	if ok {
 		return IdentExpr{id}

@@ -16,6 +16,7 @@ func NewEnv(conf types.Config) *Env {
 			"math":   "math",
 			"libc":   RuntimeLibc,
 		},
+		macros: make(map[string]bool),
 	}
 }
 
@@ -23,6 +24,7 @@ type Env struct {
 	*types.Env
 	libs    map[string]*Library
 	imports map[string]string
+	macros  map[string]bool
 }
 
 func (c *Env) Clone() *Env {
@@ -34,6 +36,10 @@ func (c *Env) Clone() *Env {
 	c2.imports = make(map[string]string)
 	for k, v := range c.imports {
 		c2.imports[k] = v
+	}
+	c2.macros = make(map[string]bool)
+	for k, v := range c.macros {
+		c2.macros[k] = v
 	}
 	return c2
 }

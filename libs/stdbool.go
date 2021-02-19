@@ -22,6 +22,11 @@ func init() {
 #define true 1
 #define __bool_true_false_are_defined
 `,
+			ForceMacros: map[string]bool{
+				"bool":  true,
+				"false": true,
+				"true":  true,
+			},
 		}
 	})
 }
