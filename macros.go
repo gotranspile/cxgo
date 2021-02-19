@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/gotranspile/cxgo/types"
 	"sort"
+	"strconv"
+	"strings"
 
 	"modernc.org/cc/v3"
 )
@@ -52,8 +54,7 @@ func (g *translator) convertMacros(ast *cc.AST) []CDecl {
 	})
 	var decls []CDecl
 	for _, mc := range arr {
-		if op, err := ast.Eval(mc.m); err == nil {
-			val := g.convertValue(op.Value())
+		if val := g.evalMacro(mc.m, ast); val != nil {
 			typ := val.CType(nil)
 			id := types.NewIdent(mc.name, typ)
 			decls = append(decls, &CVarDecl{Const: true, CVarSpec: CVarSpec{
@@ -64,4 +65,49 @@ func (g *translator) convertMacros(ast *cc.AST) []CDecl {
 		}
 	}
 	return decls
+}
+
+func (g *translator) evalMacro(m *cc.Macro, ast *cc.AST) Expr {
+	toks := m.ReplacementTokens()
+	if len(toks) != 1 {
+		return evalMacro2(m, ast)
+	}
+
+	src := strings.TrimSpace(toks[0].Src.String())
+	if len(src) == 0 {
+		return nil
+	}
+
+	if src[0] == '"' {
+		if s, err := strconv.Unquote(src); err == nil {
+			if l, err := g.parseCStringLit(s); err == nil {
+				return l
+			}
+		}
+	} else {
+		if l, err := parseCIntLit(src); err == nil {
+			return l
+		}
+		if l, err := parseCFloatLit(src); err == nil {
+			return l
+		}
+	}
+
+	return evalMacro2(m, ast)
+}
+
+func evalMacro2(m *cc.Macro, ast *cc.AST) Expr {
+	op, err := ast.Eval(m)
+	if err != nil {
+		return nil
+	}
+
+	switch x := op.Value().(type) {
+	case cc.Int64Value:
+		return cIntLit(int64(x))
+	case cc.Uint64Value:
+		return cUintLit(uint64(x))
+	default:
+		return nil
+	}
 }

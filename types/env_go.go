@@ -54,6 +54,15 @@ func (g *Go) Types() []Type {
 	}
 }
 
+func (g *Go) IsBuiltinType(t Type) bool {
+	for _, t2 := range g.Types() {
+		if t == t2 {
+			return true
+		}
+	}
+	return false
+}
+
 func (g *Go) init() {
 	const cpref = GoPrefix
 

@@ -767,8 +767,6 @@ var a int32 = MY_CONST
 `,
 	},
 	{
-		// TODO: cc.AST.Eval() doesn't support string literals?
-		skip: true,
 		name: "macro string",
 		src: `
 #define MY_CONST "abc"

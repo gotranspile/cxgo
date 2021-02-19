@@ -64,7 +64,7 @@ func (d *CVarSpec) GoSpecs(isConst bool) *ast.ValueSpec {
 				ci.Type = typ
 				dropType++
 			} else if _, ok = e.(*ast.BasicLit); ok && isConst {
-				if _, ok := d.Type.(types.Named); !ok {
+				if _, ok := d.Type.(types.Named); !ok || d.g.env.Go().IsBuiltinType(d.Type) {
 					dropType++
 				}
 			}
