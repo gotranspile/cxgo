@@ -157,13 +157,14 @@ func (g *translator) convertInitList(typ types.Type, list *cc.InitializerList) E
 	for it := list; it != nil; it = it.InitializerList {
 		val := g.convertInitExpr(it.Initializer)
 		var f *CompLitField
-		if it.Designation != nil {
-			f = g.convertOneDesignator(typ, it.Designation.DesignatorList, val)
-		} else {
+		if it.Designation == nil {
 			// no index in the initializer - assign automatically
 			pi++
 			f = &CompLitField{Index: cIntLit(prev + pi), Value: val}
+			items = append(items, f)
+			continue
 		}
+		f = g.convertOneDesignator(typ, it.Designation.DesignatorList, val)
 		if lit, ok := f.Index.(IntLit); ok {
 			if prev == -1 {
 				// first item - note that we started initializing indexes

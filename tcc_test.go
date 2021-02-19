@@ -75,7 +75,6 @@ func TestTCCExecute(t *testing.T) {
 		"75_array_in_struct_init": {}, // CC type checker failure
 		"78_vla_label":            {},
 		"79_vla_continue":         {},
-		"80_flexarray":            {},
 		"87_dead_code":            {},
 		"88_codeopt":              {},
 		"89_nocode_wanted":        {},

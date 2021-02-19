@@ -1316,19 +1316,41 @@ func (e *CCompLitExpr) AsExpr() GoExpr {
 	}
 	var items []GoExpr
 	isArr := e.CType(nil).Kind().Is(types.Array)
+	ordered := false
+	if isArr {
+		// check if array elements are ordered so we can skip indexes in the init
+		at, ok := types.Unwrap(e.CType(nil)).(types.ArrayType)
+		if ok && at.Len() == len(e.Fields) {
+			ordered = true
+			for i, f := range e.Fields {
+				if f.Index == nil {
+					continue
+				}
+				v, ok := cUnwrap(f.Index).(IntLit)
+				if !ok {
+					ordered = false
+					break
+				}
+				if !v.IsUint() || i != int(v.Uint()) {
+					ordered = false
+					break
+				}
+			}
+		}
+	}
 	for _, f := range e.Fields {
 		v := f.Value.AsExpr()
 		if v, ok := v.(*ast.CompositeLit); ok && isArr {
 			v.Type = nil
 		}
-		if f.Index != nil {
-			items = append(items, &ast.KeyValueExpr{
-				Key:   f.Index.AsExpr(),
-				Value: v,
-			})
-		} else if f.Field != nil {
+		if f.Field != nil {
 			items = append(items, &ast.KeyValueExpr{
 				Key:   f.Field.GoIdent(),
+				Value: v,
+			})
+		} else if f.Index != nil && !ordered {
+			items = append(items, &ast.KeyValueExpr{
+				Key:   f.Index.AsExpr(),
 				Value: v,
 			})
 		} else {
