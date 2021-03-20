@@ -9,9 +9,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/types"
-	"github.com/stretchr/testify/require"
 )
 
 func gccCompile(t testing.TB, out, cfile string) {
@@ -60,6 +61,7 @@ func goTranspileAndExec(t testing.TB, cxgo, dir string, cfile string) progOut {
 		ForwardDecl: false,
 	})
 	require.NoError(t, err)
+	goProjectMod(t, dir)
 	gosrc, err := ioutil.ReadFile(gofile)
 	require.NoError(t, err)
 	t.Logf("// === Go source ===\n%s", string(gosrc))
@@ -70,6 +72,12 @@ type progOut struct {
 	Code int
 	Err  error
 	Out  string
+}
+
+func execInDir(wd string, bin string, args ...string) error {
+	cmd := exec.Command(bin, args...)
+	cmd.Dir = wd
+	return cmd.Run()
 }
 
 func progExecute(wd, bin string) progOut {
@@ -105,5 +113,10 @@ require (
 replace github.com/gotranspile/cxgo => %s`, cxgo)
 
 	err = ioutil.WriteFile(filepath.Join(out, "go.mod"), []byte(gomod), 0644)
+	require.NoError(t, err)
+}
+
+func goProjectMod(t testing.TB, out string) {
+	err := execInDir(out, "go", "mod", "tidy")
 	require.NoError(t, err)
 }
