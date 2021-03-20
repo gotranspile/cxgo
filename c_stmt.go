@@ -118,6 +118,9 @@ func NewCExprStmt(e Expr) []CStmt {
 	if s, ok := e.(CStmtConv); ok {
 		return s.ToStmt()
 	}
+	if ie, ok := e.(Ident); ok {
+		return []CStmt{&UnusedVar{Name: ie.Identifier()}}
+	}
 	return []CStmt{&CExprStmt{Expr: e}}
 }
 
