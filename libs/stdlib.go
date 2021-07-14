@@ -1,11 +1,12 @@
 package libs
 
 import (
+	"os"
+	
 	"fmt"
 	"github.com/gotranspile/cxgo/runtime/cmath"
 	"github.com/gotranspile/cxgo/runtime/libc"
 	"github.com/gotranspile/cxgo/types"
-	"os"
 )
 
 const StdlibH = "stdlib.h"

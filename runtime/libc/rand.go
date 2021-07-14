@@ -5,10 +5,10 @@ import (
 	"math/rand"
 )
 
-const RandMax = math.MaxInt32-1
+const RandMax = math.MaxInt32
 
 func Rand() int32 {
-	return int32(rand.Intn(RandMax+1))
+	return int32(rand.Intn(RandMax))
 }
 
 func SeedRand(seed uint32) {
