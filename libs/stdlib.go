@@ -1,11 +1,11 @@
 package libs
 
 import (
-	"os"
-
+	"fmt"
 	"github.com/gotranspile/cxgo/runtime/cmath"
 	"github.com/gotranspile/cxgo/runtime/libc"
 	"github.com/gotranspile/cxgo/types"
+	"os"
 )
 
 const StdlibH = "stdlib.h"
@@ -133,6 +133,7 @@ size_t        wcstombs(char *restrict, const wchar_t *restrict, size_t);
 int           wctomb(char *, wchar_t);
 `,
 		}
+		l.Header += fmt.Sprintf("#define RAND_MAX %d\n", libc.RandMax)
 		l.Declare(
 			c.NewIdent("getenv", "os.Getenv", os.Getenv, c.FuncTT(c.Go().String(), c.Go().String())),
 		)

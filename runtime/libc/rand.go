@@ -1,9 +1,14 @@
 package libc
 
-import "math/rand"
+import (
+	"math"
+	"math/rand"
+)
+
+const RandMax = math.MaxInt32-1
 
 func Rand() int32 {
-	return int32(rand.Int())
+	return int32(rand.Intn(RandMax+1))
 }
 
 func SeedRand(seed uint32) {
