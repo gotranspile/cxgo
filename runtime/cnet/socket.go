@@ -49,7 +49,7 @@ func Bind(fd int, addr *SockAddr, sz int) int {
 		libc.SetErr(err)
 		return -1
 	}
-	err := syscall.Bind(fd, sa)
+	err := syscall.Bind(Handle(fd), sa)
 	if err != nil {
 		log.Printf("bind(%d, %p, %d): %v", fd, addr, sz, err)
 		libc.SetErr(err)
@@ -65,7 +65,7 @@ func Socket(domain, typ, proto int) int {
 		libc.SetErr(err)
 		return -1
 	}
-	return fd
+	return int(fd)
 }
 
 func Listen(a1, a2 int32) int32 {
@@ -100,7 +100,7 @@ func SetSockOpt(fd int, level int, name int, val *byte, sz int) int {
 			panic(sz)
 		}
 		val := *(*int32)(unsafe.Pointer(val))
-		err = syscall.SetsockoptInt(fd, level, name, int(val))
+		err = syscall.SetsockoptInt(Handle(fd), level, name, int(val))
 	default:
 		log.Printf("setsockopt(%d, %d, %d, %x, %d)", fd, level, name, val, sz)
 		panic("TODO")
