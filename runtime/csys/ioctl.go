@@ -8,8 +8,6 @@ import (
 	"github.com/gotranspile/cxgo/runtime/libc"
 )
 
-const FIONREAD uintptr = 21531
-
 func Ioctl(fd uintptr, req uintptr, args ...interface{}) int32 {
 	var err syscall.Errno
 	switch req {
