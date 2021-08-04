@@ -15,7 +15,7 @@ const (
 func init() {
 	RegisterLibrary(limitsH, func(c *Env) *Library {
 		var buf strings.Builder
-		buf.WriteString("#define CHAR_BIT 8")
+		buf.WriteString("#define CHAR_BIT 8\n")
 
 		idents := make(map[string]*types.Ident)
 		intMinMax(&buf, idents, "SCHAR", "Int", math.MinInt8, math.MaxInt8, 8)
