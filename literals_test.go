@@ -337,7 +337,24 @@ char b[] = "===";
 		exp: `
 var b [4]byte = func() [4]byte {
 	var t [4]byte
-	copy(t[:], "===")
+	copy(t[:], ([]byte)("==="))
+	return t
+}()
+`,
+	},
+	{
+		name: "init named uint8_t string",
+		src: `
+#include <stdint.h>
+typedef uint8_t  MYubyte;
+MYubyte vendor[] = "something here";
+`,
+		exp: `
+type MYubyte uint8
+
+var vendor [15]MYubyte = func() [15]MYubyte {
+	var t [15]MYubyte
+	copy(t[:], ([]MYubyte)("something here"))
 	return t
 }()
 `,
