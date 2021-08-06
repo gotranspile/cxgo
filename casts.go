@@ -78,7 +78,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 	// strings are immutable, so call a specialized function for conversion
 	if types.Same(xt, g.env.Go().String()) {
 		// [N]byte = "xyz"
-		if at, ok := types.Unwrap(typ).(types.ArrayType); ok && types.Same(at.Elem(), g.env.Go().Byte()) {
+		if at, ok := types.Unwrap(typ).(types.ArrayType); ok && (types.Same(at.Elem(), g.env.Go().Byte())||xk == types.Unknown) {
 			if !at.IsSlice() {
 				tmp := types.NewIdent("t", at)
 				copyF := FuncIdent{g.env.Go().CopyFunc()}
@@ -95,7 +95,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 					&CExprStmt{Expr: &CallExpr{
 						Fun: copyF, Args: []Expr{
 							&SliceExpr{Expr: IdentExpr{tmp}}, // tmp[:]
-							x,                                // "xyz"
+							&CCastExpr{Type: types.SliceT(at.Elem()), Expr: x}, // ([]TYPE)("xyz")
 						},
 					}},
 				)
