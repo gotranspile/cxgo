@@ -1,7 +1,6 @@
 package libs
 
 import (
-	"fmt"
 	"github.com/gotranspile/cxgo/types"
 )
 
@@ -83,7 +82,6 @@ void glfwWindowHint(int, int);
 			types.NewIdentGo("glfwGetProcAddress", "glfw.GetProcAddress", env.FuncTT(env.PtrT(nil), env.Go().String())),
 			types.NewIdentGo("glfwPollEvents", "glfw.PollEvents", env.FuncTT(nil, nil)),
 		)
-		fmt.Println(l.Header)
 		return l
 	})
 }
