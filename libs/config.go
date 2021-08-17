@@ -52,8 +52,9 @@ func (c *Env) ResolveImport(name string) string {
 	return path
 }
 
+// GetLib is a wrapper around Env.GetLibrary that checks if the Library exists and panics if it doesn't
 func (c *Env) GetLib(name string) *Library {
-	l, ok := c.libs[name]
+	l, ok := c.GetLibrary(name)
 	if !ok {
 		panic(errors.New("cannot find library: " + name))
 	}
