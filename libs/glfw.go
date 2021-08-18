@@ -74,6 +74,27 @@ typedef void (* GLFWerrorfun)(int,const char*);
 typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
 typedef void (* GLFWframebuffersizefun)(GLFWwindow*,int,int);
 
+struct GLFWwindow {
+	void (*MakeContextCurrent)(void);
+	_Bool (*ShouldClose)(void);
+	void (*SwapBuffers)(void);
+	int (*GetKey)(int);
+	void (*SetShouldClose)(_Bool);
+	void (*GetFramebufferSize)(int* width, int* height);
+	void (*Destroy)();
+	void (*Focus)();
+	void (*Maximize)();
+	void (*Show)();
+	void (*Hide)();
+	void (*Iconify)();
+	void (*Restore)();
+	void (*SetTitle)(const char* title);
+	void (*SetSize)(int width, int height);
+	void (*SetPos)(int x, int y);
+
+	// callbacks
+	GLFWframebuffersizefun (*SetKeyCallback)(GLFWframebuffersizefun)
+};
 #define glfwMakeContextCurrent(win) ((GLFWwindow*)win)->MakeContextCurrent()
 #define glfwWindowShouldClose(win) ((GLFWwindow*)win)->ShouldClose()
 #define glfwSwapBuffers(win) ((GLFWwindow*)win)->SwapBuffers()
@@ -99,8 +120,6 @@ GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback); // no go equivalent
 `,
 		}
 		l.Declare(
-			// structs
-			types.NewIdentGo("GLFWwindow", "glfw.Window", windowT),
 			// functions
 			types.NewIdentGo("glfwInit", "glfw.Init", env.FuncTT(env.C().Int(), nil)), // returns an error instead of an int
 			types.NewIdentGo("glfwTerminate", "glfw.Terminate", env.FuncTT(nil, nil)),
@@ -111,8 +130,6 @@ GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback); // no go equivalent
 			types.NewIdentGo("glfwSwapInterval", "glfw.SwapInterval", env.FuncTT(nil, env.Go().Int())),
 			types.NewIdentGo("glfwGetTime", "glfw.GetTime", env.FuncTT(env.C().Float(), nil)),
 			types.NewIdentGo("glfwGetCurrentContext", "glfw.GetCurrentContext", env.FuncTT(env.PtrT(windowT), nil)),
-			types.NewIdentGo("glfwSetClipboardString", "glfw.SetClipboardString", env.FuncTT(nil, env.Go().String())),
-			types.NewIdentGo("glfwWaitEvents", "glfw.WaitEvents", env.FuncTT(nil, nil)),
 		)
 		return l
 	})
