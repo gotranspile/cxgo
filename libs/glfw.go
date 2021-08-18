@@ -47,6 +47,7 @@ func init() {
 				"GLFW_KEY_ESCAPE":            types.NewIdentGo("GLFW_KEY_ESCAPE", "glfw.KeyEscape", keyT),
 			},
 			Header: `
+#include <` + BuiltinH + `>
 const int GLFW_CONTEXT_VERSION_MAJOR = 0x00022002;
 const int GLFW_CONTEXT_VERSION_MINOR = 0x00022003;
 const int GLFW_OPENGL_PROFILE = 0x00022008;
