@@ -24,6 +24,11 @@ func init() {
 			"SetKeyCallback":     env.FuncTT(keyCbT, keyCbT),
 			"GetFramebufferSize": env.FuncTT(nil, env.Go().Int(), env.Go().Int()), //FIXME: incorrect signature
 			"Destroy":            env.FuncTT(nil, nil),
+			"Focus":              env.FuncTT(nil, nil),
+			"Maximize":           env.FuncTT(nil, nil),
+			"Show":               env.FuncTT(nil, nil),
+			"SetTitle":           env.FuncTT(nil, env.C().String()),
+			"SetSize":            env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
 		}))
 		monitorT := types.NamedTGo("GLFWmonitor", "glfw.Monitor", types.StructT(nil))
 		l := &Library{
@@ -72,6 +77,12 @@ struct GLFWwindow {
 	void (*SetShouldClose)(_Bool);
 	void (*GetFramebufferSize)(int* width, int* height);
 	void (*Destroy)();
+	void (*Focus)();
+	void (*Maximize)();
+	void (*Show)();
+	void (*SetTitle)(const char* title);
+	void (*SetSize)(int width, int height);
+
 	// callbacks
 	GLFWframebuffersizefun (*SetKeyCallback)(GLFWframebuffersizefun)
 };
@@ -83,6 +94,12 @@ struct GLFWwindow {
 #define glfwSetKeyCallback(win, cb) ((GLFWwindow*)win)->SetKeyCallback(cb)
 #define glfwGetFramebufferSize(win, w, h) ((GLFWwindow*)win)->GetFramebufferSize(w, h)
 #define glfwDestroyWindow(win) ((GLFWwindow*)win)->Destroy()
+#define glfwFocusWindow(win) ((GLFWwindow*)win)->Focus()
+#define glfwMaximizeWindow(win) ((GLFWwindow*)win)->Maximize()
+#define glfwShowWindow(win) ((GLFWwindow*)win)->Show()
+#define glfwSetWindowTitle(win, title) ((GLFWwindow*)win)->SetTitle(title)
+#define glfwSetWindowSize(win, w, h) ((GLFWwindow*)win)->SetSize(w, h)
+
 typedef struct GLFWmonitor GLFWmonitor;
 
 void glfwWindowHint(int, int);
@@ -99,6 +116,7 @@ GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback); // no go equivalent
 			types.NewIdentGo("glfwPollEvents", "glfw.PollEvents", env.FuncTT(nil, nil)),
 			types.NewIdentGo("glfwSwapInterval", "glfw.SwapInterval", env.FuncTT(nil, env.Go().Int())),
 			types.NewIdentGo("glfwGetTime", "glfw.GetTime", env.FuncTT(env.C().Float(), nil)),
+			types.NewIdentGo("glfwGetCurrentContext", "glfw.GetCurrentContext", env.FuncTT(env.PtrT(windowT), nil)),
 		)
 		return l
 	})
