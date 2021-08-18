@@ -31,6 +31,7 @@ func init() {
 				"modf":  types.NewIdent(cpkg+".Modf", c.FuncTT(doubleT, doubleT, c.PtrT(doubleT))),
 				"modff": types.NewIdent(cpkg+".Modff", c.FuncTT(floatT, floatT, c.PtrT(floatT))),
 				"ldexp": types.NewIdent("math.Ldexp", c.FuncTT(doubleT, doubleT, c.Go().Int())),
+				"fmod":  types.NewIdent("math.Mod", c.FuncTT(doubleT, doubleT, doubleT)),
 				"M_PI":  types.NewIdent("math.Pi", doubleT),
 			},
 		}
@@ -92,6 +93,7 @@ func init() {
 		buf.WriteString("double modf(double x, double *iptr);\n")
 		buf.WriteString("float modff(float value, float *iptr);\n")
 		buf.WriteString("double ldexp(double x, _cxgo_go_int exp);\n")
+		buf.WriteString("double fmod(double x, double exp);\n")
 		lib.Header = buf.String()
 		return lib
 	})
