@@ -44,7 +44,7 @@ func init() {
 				"GLFW_OPENGL_FORWARD_COMPAT": types.NewIdentGo("GLFW_OPENGL_FORWARD_COMPAT", "glfw.OpenGLForwardCompatible", hintT),
 				"GLFW_TRUE":                  types.NewIdentGo("GLFW_TRUE", "glfw.True", env.Go().Int()),
 				"GLFW_PRESS":                 types.NewIdentGo("GLFW_PRESS", "glfw.Press", actionT),
-				"GLFW_KEY_ESCAPE":            types.NewIdentGo("GLFW_KEY_ESCAPE", "glfw.KeyEscape", env.Go().Int()),
+				"GLFW_KEY_ESCAPE":            types.NewIdentGo("GLFW_KEY_ESCAPE", "glfw.KeyEscape", keyT),
 			},
 			Header: `
 const int GLFW_CONTEXT_VERSION_MAJOR = 0x00022002;
@@ -90,8 +90,9 @@ GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback); // no go equivalent
 		}
 		l.Declare(
 			// functions
-			types.NewIdentGo("glfwInit", "glfw.Init", env.FuncTT(env.C().Int(), nil)),
+			types.NewIdentGo("glfwInit", "glfw.Init", env.FuncTT(env.C().Int(), nil)), // returns an error instead of an int
 			types.NewIdentGo("glfwTerminate", "glfw.Terminate", env.FuncTT(nil, nil)),
+			// createWindow returns an error along with the window
 			types.NewIdentGo("glfwCreateWindow", "glfw.CreateWindow", env.FuncTT(env.PtrT(windowT), env.Go().Int(), env.Go().Int(), env.Go().String(), env.PtrT(monitorT), env.PtrT(windowT))),
 			types.NewIdentGo("glfwGetProcAddress", "glfw.GetProcAddress", env.FuncTT(env.PtrT(nil), env.Go().String())),
 			types.NewIdentGo("glfwPollEvents", "glfw.PollEvents", env.FuncTT(nil, nil)),
