@@ -17,7 +17,7 @@ func init() {
 		gintT := c.Go().Int()
 		uintT := types.UintT(4)
 		bytesT := c.C().String()
-		inAddrT := c.GetLib(arpaInetH).GetType("in_addr")
+		inAddrT := c.GetLibraryType(arpaInetH, "in_addr")
 		sockAddrT := types.NamedT("cnet.SockAddr", types.StructT([]*types.Field{
 			{Name: types.NewIdentGo("sa_family", "Family", int16T)},
 			{Name: types.NewIdentGo("sa_data", "Data", c.C().BytesN(14))},
