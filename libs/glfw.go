@@ -27,8 +27,12 @@ func init() {
 			"Focus":              env.FuncTT(nil, nil),
 			"Maximize":           env.FuncTT(nil, nil),
 			"Show":               env.FuncTT(nil, nil),
+			"Hide":               env.FuncTT(nil, nil),
+			"Iconify":            env.FuncTT(nil, nil),
+			"Restore":            env.FuncTT(nil, nil),
 			"SetTitle":           env.FuncTT(nil, env.C().String()),
 			"SetSize":            env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
+			"SetPos":             env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
 		}))
 		monitorT := types.NamedTGo("GLFWmonitor", "glfw.Monitor", types.StructT(nil))
 		l := &Library{
@@ -49,7 +53,8 @@ func init() {
 				"GLFW_OPENGL_FORWARD_COMPAT": types.NewIdentGo("GLFW_OPENGL_FORWARD_COMPAT", "glfw.OpenGLForwardCompatible", hintT),
 				"GLFW_TRUE":                  types.NewIdentGo("GLFW_TRUE", "glfw.True", env.Go().Int()),
 				"GLFW_PRESS":                 types.NewIdentGo("GLFW_PRESS", "glfw.Press", actionT),
-				"GLFW_KEY_ESCAPE":            types.NewIdentGo("GLFW_KEY_ESCAPE", "glfw.KeyEscape", keyT),
+				// function key constants
+				"GLFW_KEY_ESCAPE": types.NewIdentGo("GLFW_KEY_ESCAPE", "glfw.KeyEscape", keyT),
 			},
 			Header: `
 #include <` + BuiltinH + `>
@@ -80,8 +85,12 @@ struct GLFWwindow {
 	void (*Focus)();
 	void (*Maximize)();
 	void (*Show)();
+	void (*Hide)();
+	void (*Iconify)();
+	void (*Restore)();
 	void (*SetTitle)(const char* title);
 	void (*SetSize)(int width, int height);
+	void (*SetPos)(int x, int y);
 
 	// callbacks
 	GLFWframebuffersizefun (*SetKeyCallback)(GLFWframebuffersizefun)
@@ -97,8 +106,12 @@ struct GLFWwindow {
 #define glfwFocusWindow(win) ((GLFWwindow*)win)->Focus()
 #define glfwMaximizeWindow(win) ((GLFWwindow*)win)->Maximize()
 #define glfwShowWindow(win) ((GLFWwindow*)win)->Show()
+#define glfwHideWindow(win) ((GLFWwindow*)win)->Hide()
+#define glfwIconifyWindow(win) ((GLFWwindow*)win)->Iconify()
+#define glfwRestoreWindow(win) ((GLFWwindow*)win)->Restore()
 #define glfwSetWindowTitle(win, title) ((GLFWwindow*)win)->SetTitle(title)
 #define glfwSetWindowSize(win, w, h) ((GLFWwindow*)win)->SetSize(w, h)
+#define glfwSetWindowPos(win, x, y) ((GLFWwindow*)win)->SetPos(x, y)
 
 typedef struct GLFWmonitor GLFWmonitor;
 
