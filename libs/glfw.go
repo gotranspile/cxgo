@@ -15,6 +15,8 @@ func init() {
 		keyT := types.NamedTGo("Key", "glfw.Key", env.Go().Int())
 		mouseButtonT := types.NamedTGo("MouseButton", "glfw.MouseButton", env.Go().Int())
 		modKeyT := types.NamedTGo("ModifierKey", "glfw.ModifierKey", env.Go().Int())
+		inputModeT := types.NamedTGo("InputMode", "glfw.InputMode", env.Go().Int())
+		perEventT := types.NamedTGo("PeripheralEvent", "glfw.PeripheralEvent", env.Go().Int())
 		windowPtrT := env.PtrT(nil)
 		keyCbT := types.NamedTGo("GLFWkeyfun", "glfw.KeyCallback", env.FuncTT(nil, windowPtrT, keyT, env.Go().Int(), actionT, modKeyT))
 		charCbT := types.NamedTGo("GLFWcharfun", "glfw.CharCallback", env.FuncTT(nil, windowPtrT, env.Go().Rune()))
@@ -24,6 +26,8 @@ func init() {
 			"ShouldClose":        env.FuncTT(env.Go().Bool(), nil),
 			"SwapBuffers":        env.FuncTT(nil, nil),
 			"GetKey":             env.FuncTT(actionT, keyT),
+			"GetInputMode":       env.FuncTT(env.Go().Int(), env.Go().Int()),
+			"SetInputMode":       env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
 			"SetShouldClose":     env.FuncTT(nil, env.Go().Bool()),
 			"GetFramebufferSize": env.FuncTT(nil, env.Go().Int(), env.Go().Int()), //FIXME: incorrect signature
 			"Destroy":            env.FuncTT(nil, nil),
@@ -40,6 +44,8 @@ func init() {
 			"SetKeyCallback":             env.FuncTT(keyCbT, keyCbT),
 			"SetCharCallback":            env.FuncTT(charCbT, charCbT),
 			"SetFramebufferSizeCallback": env.FuncTT(frameBufCb, frameBufCb),
+			// no real implementation
+			"GetWindowUserPointer": env.FuncTT(env.PtrT(nil), nil),
 		}))
 		windowPtrT.SetElem(windowT)
 		monitorT := types.NamedTGo("GLFWmonitor", "glfw.Monitor", types.StructT(nil))
@@ -53,16 +59,14 @@ func init() {
 			Idents: map[string]*types.Ident{
 				// functions
 				"glfwWindowHint": types.NewIdentGo("glfwWindowHint", "glfw.WindowHint", env.FuncTT(nil, hintT, env.Go().Int())),
+				"glfwGetKeyName": types.NewIdentGo("glfwGetKeyName", "glfw.GetKeyName", env.FuncTT(env.Go().String(), keyT, env.Go().Int())),
 				// constants
-				"GLFW_CONTEXT_VERSION_MAJOR": types.NewIdentGo("GLFW_CONTEXT_VERSION_MAJOR", "glfw.ContextVersionMajor", hintT),
-				"GLFW_CONTEXT_VERSION_MINOR": types.NewIdentGo("GLFW_CONTEXT_VERSION_MINOR", "glfw.ContextVersionMinor", hintT),
-				"GLFW_OPENGL_PROFILE":        types.NewIdentGo("GLFW_OPENGL_PROFILE", "glfw.OpenGLProfile", hintT),
-				"GLFW_OPENGL_CORE_PROFILE":   types.NewIdentGo("GLFW_OPENGL_CORE_PROFILE", "glfw.OpenGLCoreProfile", env.Go().Int()),
-				"GLFW_OPENGL_FORWARD_COMPAT": types.NewIdentGo("GLFW_OPENGL_FORWARD_COMPAT", "glfw.OpenGLForwardCompatible", hintT),
-				"GLFW_TRUE":                  types.NewIdentGo("GLFW_TRUE", "glfw.True", env.Go().Int()),
-				"GLFW_PRESS":                 types.NewIdentGo("GLFW_PRESS", "glfw.Press", actionT),
-				"GLFW_RELEASE":               types.NewIdentGo("GLFW_RELEASE", "glfw.Release", actionT),
-				"GLFW_REPEAT":                types.NewIdentGo("GLFW_REPEAT", "glfw.Repeat", actionT),
+				"GLFW_OPENGL_CORE_PROFILE": types.NewIdentGo("GLFW_OPENGL_CORE_PROFILE", "glfw.OpenGLCoreProfile", env.Go().Int()),
+				"GLFW_TRUE":                types.NewIdentGo("GLFW_TRUE", "glfw.True", env.Go().Int()),
+				// key and button actions
+				"GLFW_PRESS":   types.NewIdentGo("GLFW_PRESS", "glfw.Press", actionT),
+				"GLFW_RELEASE": types.NewIdentGo("GLFW_RELEASE", "glfw.Release", actionT),
+				"GLFW_REPEAT":  types.NewIdentGo("GLFW_REPEAT", "glfw.Repeat", actionT),
 				/* The unknown key */
 				"GLFW_KEY_UNKNOWN": types.NewIdentGo("GLFW_KEY_UNKNOWN", "glfw.KeyUnknown", keyT),
 				/* Printable keys */
@@ -201,19 +205,131 @@ func init() {
 				"GLFW_MOUSE_BUTTON_LEFT":   types.NewIdentGo("GLFW_MOUSE_BUTTON_LEFT", "glfw.MouseButtonLeft", mouseButtonT),
 				"GLFW_MOUSE_BUTTON_RIGHT":  types.NewIdentGo("GLFW_MOUSE_BUTTON_RIGHT", "glfw.MouseButtonRight", mouseButtonT),
 				"GLFW_MOUSE_BUTTON_MIDDLE": types.NewIdentGo("GLFW_MOUSE_BUTTON_MIDDLE", "glfw.MouseButtonMiddle", mouseButtonT),
+				// modifier keys
+				"GLFW_MOD_SHIFT":     types.NewIdentGo("GLFW_MOD_SHIFT", "glfw.ModShift", modKeyT),
+				"GLFW_MOD_CONTROL":   types.NewIdentGo("GLFW_MOD_CONTROL", "glfw.ModControl", modKeyT),
+				"GLFW_MOD_ALT":       types.NewIdentGo("GLFW_MOD_ALT", "glfw.ModAlt", modKeyT),
+				"GLFW_MOD_SUPER":     types.NewIdentGo("GLFW_MOD_SUPER", "glfw.ModSuper", modKeyT),
+				"GLFW_MOD_CAPS_LOCK": types.NewIdentGo("GLFW_MOD_CAPS_LOCK", "glfw.ModCapsLock", modKeyT),
+				"GLFW_MOD_NUM_LOCK":  types.NewIdentGo("GLFW_MOD_NUM_LOCK", "glfw.ModNumLock", modKeyT),
+				// input mode
+				"GLFW_CURSOR":               types.NewIdentGo("GLFW_CURSOR", "glfw.Cursor", inputModeT),
+				"GLFW_STICKY_KEYS":          types.NewIdentGo("GLFW_STICKY_KEYS", "glfw.StickyKeys", inputModeT),
+				"GLFW_STICKY_MOUSE_BUTTONS": types.NewIdentGo("GLFW_STICKY_MOUSE_BUTTONS", "glfw.StickyMouseButtons", inputModeT),
+				"GLFW_LOCK_KEY_MODS":        types.NewIdentGo("GLFW_LOCK_KEY_MODS", "glfw.LockKeyMods", inputModeT),
+				"GLFW_RAW_MOUSE_MOTION":     types.NewIdentGo("GLFW_RAW_MOUSE_MOTION", "glfw.RawMouseMotion", inputModeT),
+				// peripheral events
+				"GLFW_CONNECTED":    types.NewIdentGo("GLFW_CONNECTED", "glfw.Connected", perEventT),
+				"GLFW_DISCONNECTED": types.NewIdentGo("GLFW_DISCONNECTED", "glfw.Disconnected", perEventT),
+				// hints
+				"GLFW_FOCUSED":                  types.NewIdentGo("GLFW_FOCUSED", "glfw.Focused", hintT),
+				"GLFW_ICONIFIED":                types.NewIdentGo("GLFW_ICONIFIED", "glfw.Iconified", hintT),
+				"GLFW_RESIZABLE":                types.NewIdentGo("GLFW_RESIZABLE", "glfw.Resizable", hintT),
+				"GLFW_VISIBLE":                  types.NewIdentGo("GLFW_VISIBLE", "glfw.Visible", hintT),
+				"GLFW_DECORATED":                types.NewIdentGo("GLFW_DECORATED", "glfw.Decorated", hintT),
+				"GLFW_AUTO_ICONIFY":             types.NewIdentGo("GLFW_AUTO_ICONIFY", "glfw.AutoIconify", hintT),
+				"GLFW_FLOATING":                 types.NewIdentGo("GLFW_FLOATING", "glfw.Floating", hintT),
+				"GLFW_MAXIMIZED":                types.NewIdentGo("GLFW_MAXIMIZED", "glfw.Maximized", hintT),
+				"GLFW_CENTER_CURSOR":            types.NewIdentGo("GLFW_CENTER_CURSOR", "glfw.CenterCursor", hintT),
+				"GLFW_TRANSPARENT_FRAMEBUFFER":  types.NewIdentGo("GLFW_TRANSPARENT_FRAMEBUFFER", "glfw.TransparentFramebuffer", hintT),
+				"GLFW_HOVERED":                  types.NewIdentGo("GLFW_HOVERED", "glfw.Hovered", hintT),
+				"GLFW_FOCUS_ON_SHOW":            types.NewIdentGo("GLFW_FOCUS_ON_SHOW", "glfw.FocusOnShow", hintT),
+				"GLFW_MOUSE_PASSTHROUGH":        types.NewIdentGo("GLFW_MOUSE_PASSTHROUGH", "glfw.MousePassthrough", hintT),
+				"GLFW_RED_BITS":                 types.NewIdentGo("GLFW_RED_BITS", "glfw.RedBits", hintT),
+				"GLFW_GREEN_BITS":               types.NewIdentGo("GLFW_GREEN_BITS", "glfw.GreenBits", hintT),
+				"GLFW_BLUE_BITS":                types.NewIdentGo("GLFW_BLUE_BITS", "glfw.BlueBits", hintT),
+				"GLFW_ALPHA_BITS":               types.NewIdentGo("GLFW_ALPHA_BITS", "glfw.AlphaBits", hintT),
+				"GLFW_DEPTH_BITS":               types.NewIdentGo("GLFW_DEPTH_BITS", "glfw.DepthBits", hintT),
+				"GLFW_STENCIL_BITS":             types.NewIdentGo("GLFW_STENCIL_BITS", "glfw.StencilBits", hintT),
+				"GLFW_ACCUM_RED_BITS":           types.NewIdentGo("GLFW_ACCUM_RED_BITS", "glfw.AccumRedBits", hintT),
+				"GLFW_ACCUM_GREEN_BITS":         types.NewIdentGo("GLFW_ACCUM_GREEN_BITS", "glfw.AccumGreenBits", hintT),
+				"GLFW_ACCUM_BLUE_BITS":          types.NewIdentGo("GLFW_ACCUM_BLUE_BITS", "glfw.AccumBlueBits", hintT),
+				"GLFW_ACCUM_ALPHA_BITS":         types.NewIdentGo("GLFW_ACCUM_ALPHA_BITS", "glfw.AccumAlphaBits", hintT),
+				"GLFW_AUX_BUFFERS":              types.NewIdentGo("GLFW_AUX_BUFFERS", "glfw.AuxBuffers", hintT),
+				"GLFW_STEREO":                   types.NewIdentGo("GLFW_STEREO", "glfw.Stereo", hintT),
+				"GLFW_SAMPLES":                  types.NewIdentGo("GLFW_SAMPLES", "glfw.Samples", hintT),
+				"GLFW_SRGB_CAPABLE":             types.NewIdentGo("GLFW_SRGB_CAPABLE", "glfw.SrgbCapable", hintT),
+				"GLFW_REFRESH_RATE":             types.NewIdentGo("GLFW_REFRESH_RATE", "glfw.RefreshRate", hintT),
+				"GLFW_DOUBLEBUFFER":             types.NewIdentGo("GLFW_DOUBLEBUFFER", "glfw.Doublebuffer", hintT),
+				"GLFW_CLIENT_API":               types.NewIdentGo("GLFW_CLIENT_API", "glfw.ClientApi", hintT),
+				"GLFW_CONTEXT_VERSION_MAJOR":    types.NewIdentGo("GLFW_CONTEXT_VERSION_MAJOR", "glfw.ContextVersionMajor", hintT),
+				"GLFW_CONTEXT_VERSION_MINOR":    types.NewIdentGo("GLFW_CONTEXT_VERSION_MINOR", "glfw.ContextVersionMinor", hintT),
+				"GLFW_CONTEXT_REVISION":         types.NewIdentGo("GLFW_CONTEXT_REVISION", "glfw.ContextRevision", hintT),
+				"GLFW_CONTEXT_ROBUSTNESS":       types.NewIdentGo("GLFW_CONTEXT_ROBUSTNESS", "glfw.ContextRobustness", hintT),
+				"GLFW_OPENGL_FORWARD_COMPAT":    types.NewIdentGo("GLFW_OPENGL_FORWARD_COMPAT", "glfw.OpenglForwardCompat", hintT),
+				"GLFW_CONTEXT_DEBUG":            types.NewIdentGo("GLFW_CONTEXT_DEBUG", "glfw.ContextDebug", hintT),
+				"GLFW_OPENGL_DEBUG_CONTEXT":     types.NewIdentGo("GLFW_OPENGL_DEBUG_CONTEXT", "glfw.OpenglDebugContext", hintT),
+				"GLFW_OPENGL_PROFILE":           types.NewIdentGo("GLFW_OPENGL_PROFILE", "glfw.OpenglProfile", hintT),
+				"GLFW_CONTEXT_RELEASE_BEHAVIOR": types.NewIdentGo("GLFW_CONTEXT_RELEASE_BEHAVIOR", "glfw.ContextReleaseBehavior", hintT),
+				"GLFW_CONTEXT_NO_ERROR":         types.NewIdentGo("GLFW_CONTEXT_NO_ERROR", "glfw.ContextNoError", hintT),
+				"GLFW_CONTEXT_CREATION_API":     types.NewIdentGo("GLFW_CONTEXT_CREATION_API", "glfw.ContextCreationApi", hintT),
+				"GLFW_SCALE_TO_MONITOR":         types.NewIdentGo("GLFW_SCALE_TO_MONITOR", "glfw.ScaleToMonitor", hintT),
+				"GLFW_COCOA_RETINA_FRAMEBUFFER": types.NewIdentGo("GLFW_COCOA_RETINA_FRAMEBUFFER", "glfw.CocoaRetinaFramebuffer", hintT),
+				"GLFW_COCOA_FRAME_NAME":         types.NewIdentGo("GLFW_COCOA_FRAME_NAME", "glfw.CocoaFrameName", hintT),
+				"GLFW_COCOA_GRAPHICS_SWITCHING": types.NewIdentGo("GLFW_COCOA_GRAPHICS_SWITCHING", "glfw.CocoaGraphicsSwitching", hintT),
+				"GLFW_X11_CLASS_NAME":           types.NewIdentGo("GLFW_X11_CLASS_NAME", "glfw.X11ClassName", hintT),
+				"GLFW_X11_INSTANCE_NAME":        types.NewIdentGo("GLFW_X11_INSTANCE_NAME", "glfw.X11InstanceName", hintT),
+				"GLFW_WIN32_KEYBOARD_MENU":      types.NewIdentGo("GLFW_WIN32_KEYBOARD_MENU", "glfw.Win32KeyboardMenu", hintT),
 			},
 			Header: `
 #include <` + BuiltinH + `>
-#define GLFW_CONTEXT_VERSION_MAJOR 0x00022002
-#define GLFW_CONTEXT_VERSION_MINOR 0x00022003
-#define GLFW_OPENGL_PROFILE 0x00022008
-#define GLFW_OPENGL_CORE_PROFILE 0x00032001
-#define GLFW_OPENGL_FORWARD_COMPAT 0x00022006
-#define GLFW_FALSE 0
-#define GLFW_TRUE 1
-#define GLFW_RELEASE 0
-#define GLFW_PRESS 1
-#define GLFW_REPEAT 2
+#define GLFW_TRUE                   1
+#define GLFW_FALSE                  0
+
+// key and button actions
+#define GLFW_RELEASE                0
+#define GLFW_PRESS                  1
+#define GLFW_REPEAT                 2
+
+// hints
+#define GLFW_FOCUSED                0x00020001
+#define GLFW_ICONIFIED              0x00020002
+#define GLFW_RESIZABLE              0x00020003
+#define GLFW_VISIBLE                0x00020004
+#define GLFW_DECORATED              0x00020005
+#define GLFW_AUTO_ICONIFY           0x00020006
+#define GLFW_FLOATING               0x00020007
+#define GLFW_MAXIMIZED              0x00020008
+#define GLFW_CENTER_CURSOR          0x00020009
+#define GLFW_TRANSPARENT_FRAMEBUFFER 0x0002000A
+#define GLFW_HOVERED                0x0002000B
+#define GLFW_FOCUS_ON_SHOW          0x0002000C
+#define GLFW_MOUSE_PASSTHROUGH      0x0002000D
+#define GLFW_RED_BITS               0x00021001
+#define GLFW_GREEN_BITS             0x00021002
+#define GLFW_BLUE_BITS              0x00021003
+#define GLFW_ALPHA_BITS             0x00021004
+#define GLFW_DEPTH_BITS             0x00021005
+#define GLFW_STENCIL_BITS           0x00021006
+#define GLFW_ACCUM_RED_BITS         0x00021007
+#define GLFW_ACCUM_GREEN_BITS       0x00021008
+#define GLFW_ACCUM_BLUE_BITS        0x00021009
+#define GLFW_ACCUM_ALPHA_BITS       0x0002100A
+#define GLFW_AUX_BUFFERS            0x0002100B
+#define GLFW_STEREO                 0x0002100C
+#define GLFW_SAMPLES                0x0002100D
+#define GLFW_SRGB_CAPABLE           0x0002100E
+#define GLFW_REFRESH_RATE           0x0002100F
+#define GLFW_DOUBLEBUFFER           0x00021010
+#define GLFW_CLIENT_API             0x00022001
+#define GLFW_CONTEXT_VERSION_MAJOR  0x00022002
+#define GLFW_CONTEXT_VERSION_MINOR  0x00022003
+#define GLFW_CONTEXT_REVISION       0x00022004
+#define GLFW_CONTEXT_ROBUSTNESS     0x00022005
+#define GLFW_OPENGL_FORWARD_COMPAT  0x00022006
+#define GLFW_CONTEXT_DEBUG          0x00022007
+#define GLFW_OPENGL_DEBUG_CONTEXT   GLFW_CONTEXT_DEBUG
+#define GLFW_OPENGL_PROFILE         0x00022008
+#define GLFW_CONTEXT_RELEASE_BEHAVIOR 0x00022009
+#define GLFW_CONTEXT_NO_ERROR       0x0002200A
+#define GLFW_CONTEXT_CREATION_API   0x0002200B
+#define GLFW_SCALE_TO_MONITOR       0x0002200C
+#define GLFW_COCOA_RETINA_FRAMEBUFFER 0x00023001
+#define GLFW_COCOA_FRAME_NAME         0x00023002
+#define GLFW_COCOA_GRAPHICS_SWITCHING 0x00023003
+#define GLFW_X11_CLASS_NAME         0x00024001
+#define GLFW_X11_INSTANCE_NAME      0x00024002
+#define GLFW_WIN32_KEYBOARD_MENU    0x00025001
 
 /* The unknown key */
 #define GLFW_KEY_UNKNOWN            -1
@@ -358,6 +474,25 @@ func init() {
 #define GLFW_MOUSE_BUTTON_RIGHT     GLFW_MOUSE_BUTTON_2
 #define GLFW_MOUSE_BUTTON_MIDDLE    GLFW_MOUSE_BUTTON_3
 
+// shift keys
+#define GLFW_MOD_SHIFT           0x0001
+#define GLFW_MOD_CONTROL         0x0002
+#define GLFW_MOD_ALT             0x0004
+#define GLFW_MOD_SUPER           0x0008
+#define GLFW_MOD_CAPS_LOCK       0x0010
+#define GLFW_MOD_NUM_LOCK        0x0020
+
+// input modes
+#define GLFW_CURSOR                 0x00033001
+#define GLFW_STICKY_KEYS            0x00033002
+#define GLFW_STICKY_MOUSE_BUTTONS   0x00033003
+#define GLFW_LOCK_KEY_MODS          0x00033004
+#define GLFW_RAW_MOUSE_MOTION       0x00033005
+
+// peripheral events
+#define GLFW_CONNECTED              0x00040001
+#define GLFW_DISCONNECTED           0x00040002
+
 typedef struct GLFWwindow GLFWwindow;
 typedef void (* GLFWerrorfun)(int,const char*);
 typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
@@ -371,16 +506,20 @@ struct GLFWwindow {
 	int (*GetKey)(int);
 	void (*SetShouldClose)(_Bool);
 	void (*GetFramebufferSize)(int* width, int* height);
-	void (*Destroy)();
-	void (*Focus)();
-	void (*Maximize)();
-	void (*Show)();
-	void (*Hide)();
-	void (*Iconify)();
-	void (*Restore)();
+	void (*Destroy)(void);
+	void (*Focus)(void);
+	void (*Maximize)(void);
+	void (*Show)(void);
+	void (*Hide)(void);
+	void (*Iconify)(void);
+	void (*Restore)(void);
 	void (*SetTitle)(const char* title);
 	void (*SetSize)(int width, int height);
 	void (*SetPos)(int x, int y);
+	int (*GetInputMode)(int);
+	void (*SetInputMode)(int, int);
+
+	void* (*GetWindowUserPointer)(void);
 
 	// callbacks
 	GLFWkeyfun (*SetKeyCallback)(GLFWkeyfun);
@@ -406,6 +545,9 @@ struct GLFWwindow {
 #define glfwSetWindowTitle(win, title) ((GLFWwindow*)win)->SetTitle(title)
 #define glfwSetWindowSize(win, w, h) ((GLFWwindow*)win)->SetSize(w, h)
 #define glfwSetWindowPos(win, x, y) ((GLFWwindow*)win)->SetPos(x, y)
+#define glfwGetWindowUserPointer(win) ((GLFWwindow*)win)->GetWindowUserPointer()
+#define glfwGetInputMode(win, mode) ((GLFWwindow*)win)->GetInputMode(mode)
+#define glfwSetInputMode(win, mode, v) ((GLFWwindow*)win)->SetInputMode(mode, v)
 
 typedef struct GLFWmonitor GLFWmonitor;
 typedef struct GLFWvidmode {
@@ -418,6 +560,7 @@ typedef struct GLFWvidmode {
 } GLFWvidmode;
 
 void glfwWindowHint(int, int);
+const char* glfwGetKeyName(int key, int scancode);
 GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback); // no go equivalent
 `,
 		}
