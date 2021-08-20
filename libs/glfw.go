@@ -12,6 +12,7 @@ func init() {
 	RegisterLibrary(glfw3H, func(env *Env) *Library {
 		hintT := types.NamedTGo("Hint", "glfw.Hint", env.Go().Int())
 		actionT := types.NamedTGo("Action", "glfw.Action", env.Go().Int())
+		joystickHatStateT := types.NamedTGo("JoystickHatState", "glfw.JoystickHatState", env.Go().Int())
 		keyT := types.NamedTGo("Key", "glfw.Key", env.Go().Int())
 		mouseButtonT := types.NamedTGo("MouseButton", "glfw.MouseButton", env.Go().Int())
 		modKeyT := types.NamedTGo("ModifierKey", "glfw.ModifierKey", env.Go().Int())
@@ -21,6 +22,29 @@ func init() {
 		keyCbT := types.NamedTGo("GLFWkeyfun", "glfw.KeyCallback", env.FuncTT(nil, windowPtrT, keyT, env.Go().Int(), actionT, modKeyT))
 		charCbT := types.NamedTGo("GLFWcharfun", "glfw.CharCallback", env.FuncTT(nil, windowPtrT, env.Go().Rune()))
 		frameBufCb := types.NamedTGo("GLFWframebuffersizefun", "glfw.FramebufferSizeCallback", env.FuncTT(nil, windowPtrT, env.Go().Rune()))
+		videoModeT := types.NamedTGo("GLFWvidmode", "glfw.VidMode", types.StructT([]*types.Field{
+			{Name: types.NewIdentGo("width", "Width", env.Go().Int())},
+			{Name: types.NewIdentGo("height", "Height", env.Go().Int())},
+			{Name: types.NewIdentGo("redBits", "RedBits", env.Go().Int())},
+			{Name: types.NewIdentGo("greenBits", "GreenBits", env.Go().Int())},
+			{Name: types.NewIdentGo("blueBits", "BlueBits", env.Go().Int())},
+			{Name: types.NewIdentGo("refreshRate", "RefreshRate", env.Go().Int())},
+		}))
+		monitorT := types.NamedTGo("GLFWmonitor", "glfw.Monitor", env.MethStructT(map[string]*types.FuncType{
+			"GetVideoMode":    env.FuncTT(env.PtrT(videoModeT), nil),
+			"GetPos":          env.FuncTT(nil, env.PtrT(env.Go().Int()), env.PtrT(env.Go().Int())), //TODO: fix sig
+			"GetPhysicalSize": env.FuncTT(nil, env.PtrT(env.Go().Int()), env.PtrT(env.Go().Int())), //TODO: fix sig
+			"GetName":         env.FuncTT(env.Go().String(), nil),
+		}))
+		joystickT := types.NamedTGo("_GLFWJoystick", "glfw.Joystick", env.MethStructT(map[string]*types.FuncType{
+			"GetAxes":        env.FuncTT(types.SliceT(types.FloatT(4)), env.PtrT(env.Go().Int())),   // TODO: fix sig
+			"GetButtons":     env.FuncTT(types.SliceT(actionT), env.PtrT(env.Go().Int())),           // TODO: fix sig
+			"GetHats":        env.FuncTT(types.SliceT(joystickHatStateT), env.PtrT(env.Go().Int())), // TODO: fix sig
+			"GetName":        env.FuncTT(env.Go().String(), nil),
+			"GetGamepadName": env.FuncTT(env.Go().String(), nil),
+			"IsGamepad":      env.FuncTT(env.Go().Bool(), nil),
+			"GetGUID":        env.FuncTT(env.Go().String(), nil),
+		}))
 		windowT := types.NamedTGo("GLFWwindow", "glfw.Window", env.MethStructT(map[string]*types.FuncType{
 			"MakeContextCurrent": env.FuncTT(nil, nil),
 			"ShouldClose":        env.FuncTT(env.Go().Bool(), nil),
@@ -48,13 +72,15 @@ func init() {
 			"GetWindowUserPointer": env.FuncTT(env.PtrT(nil), nil),
 		}))
 		windowPtrT.SetElem(windowT)
-		monitorT := types.NamedTGo("GLFWmonitor", "glfw.Monitor", types.StructT(nil))
 		l := &Library{
 			Imports: map[string]string{
 				"glfw": "github.com/go-gl/glfw/v3.3/glfw",
 			},
 			Types: map[string]types.Type{
-				"GLFWwindow": windowT,
+				"GLFWwindow":    windowT,
+				"GLFWmonitor":   monitorT,
+				"GLFWvidmode":   videoModeT,
+				"_GLFWjoystick": joystickT,
 			},
 			Idents: map[string]*types.Ident{
 				// functions
@@ -549,7 +575,6 @@ struct GLFWwindow {
 #define glfwGetInputMode(win, mode) ((GLFWwindow*)win)->GetInputMode(mode)
 #define glfwSetInputMode(win, mode, v) ((GLFWwindow*)win)->SetInputMode(mode, v)
 
-typedef struct GLFWmonitor GLFWmonitor;
 typedef struct GLFWvidmode {
     int width;
     int height;
@@ -558,6 +583,34 @@ typedef struct GLFWvidmode {
     int blueBits;
     int refreshRate;
 } GLFWvidmode;
+
+typedef struct GLFWmonitor {
+	GLFWvidmode* (*GetVideoMode)(void);
+	void (*GetPos)(int*, int*);
+	void (*GetPhysicalSize)(int*, int*);
+	char* (*GetName)(void);
+} GLFWmonitor;
+#define glfwGetVideoMode(mon) ((GLFWmonitor*)mon)->GetVideoMode()
+#define glfwGetMonitorPos(mon, x, y) ((GLFWmonitor*)mon)->GetPos(x, y)
+#define glfwGetMonitorPhysicalSize(mon, x, y) ((GLFWmonitor*)mon)->GetPhysicalSize(x, y)
+#define glfwGetMonitorName(mon) ((GLFWmonitor*)mon)->GetName()
+
+typedef struct _GLFWjoystick {
+	const float* (*GetAxes)(int* count);
+	const unsigned char* (*GetButtons)(int* count);
+	const unsigned char* (*GetHats)(int* count);
+	const char* (*GetName)(void);
+	_Bool (*IsGamepad)(void);
+	const char* (*GetGUID)(void);
+	const char* GetGamepadName(void);
+} _GLFWjoystick;
+#define glfwGetJoystickAxes(j, a) ((_GLFWjoystick*)j)->GetAxes(a)
+#define glfwGetJoystickButtons(j, a) ((_GLFWjoystick*)j)->GetButtons(a)
+#define glfwGetJoystickHats(j, a) ((_GLFWjoystick*)j)->GetHats(a)
+#define glfwGetJoystickName(j) ((_GLFWjoystick*)j)->GetName()
+#define glfwJoystickIsGamepad(j) ((_GLFWjoystick*)j)->IsGamepad()
+#define glfwGetJoystickGUID(j) ((_GLFWjoystick*)j)->GetGUID()
+#define glfwGetGamepadName(j) ((_GLFWjoystick*)j)->GetGamepadName()
 
 void glfwWindowHint(int, int);
 const char* glfwGetKeyName(int key, int scancode);
