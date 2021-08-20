@@ -36,6 +36,7 @@ func init() {
 			"GetPhysicalSize": env.FuncTT(nil, env.PtrT(env.Go().Int()), env.PtrT(env.Go().Int())), //TODO: fix sig
 			"GetName":         env.FuncTT(env.Go().String(), nil),
 		}))
+		monitorCb := types.NamedTGo("GLFWmonitorfun", "glfw.MonitorCallback", env.FuncTT(nil, env.PtrT(monitorT), perEventT))
 		joystickT := types.NamedTGo("_GLFWJoystick", "glfw.Joystick", env.MethStructT(map[string]*types.FuncType{
 			"GetAxes":        env.FuncTT(types.SliceT(types.FloatT(4)), env.PtrT(env.Go().Int())),   // TODO: fix sig
 			"GetButtons":     env.FuncTT(types.SliceT(actionT), env.PtrT(env.Go().Int())),           // TODO: fix sig
@@ -45,6 +46,7 @@ func init() {
 			"IsGamepad":      env.FuncTT(env.Go().Bool(), nil),
 			"GetGUID":        env.FuncTT(env.Go().String(), nil),
 		}))
+		joystickCb := types.NamedTGo("GLFWjoystickfun", "glfw.JoystickCallback", env.FuncTT(env.PtrT(joystickT), env.PtrT(joystickT)))
 		windowT := types.NamedTGo("GLFWwindow", "glfw.Window", env.MethStructT(map[string]*types.FuncType{
 			"MakeContextCurrent": env.FuncTT(nil, nil),
 			"ShouldClose":        env.FuncTT(env.Go().Bool(), nil),
@@ -64,12 +66,12 @@ func init() {
 			"SetTitle":           env.FuncTT(nil, env.C().String()),
 			"SetSize":            env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
 			"SetPos":             env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
+			"GetUserPointer":     env.FuncTT(env.PtrT(nil), nil),
+			"SetUserPointer":     env.FuncTT(nil, env.PtrT(nil)),
 			// callbacks
 			"SetKeyCallback":             env.FuncTT(keyCbT, keyCbT),
 			"SetCharCallback":            env.FuncTT(charCbT, charCbT),
 			"SetFramebufferSizeCallback": env.FuncTT(frameBufCb, frameBufCb),
-			// no real implementation
-			"GetWindowUserPointer": env.FuncTT(env.PtrT(nil), nil),
 		}))
 		windowPtrT.SetElem(windowT)
 		l := &Library{
@@ -524,6 +526,7 @@ typedef void (* GLFWerrorfun)(int,const char*);
 typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
 typedef void (* GLFWcharfun)(GLFWwindow*,unsigned int);
 typedef void (* GLFWframebuffersizefun)(GLFWwindow*,int,int);
+typedef void (* GLFWjoystickfun)(int,int);
 
 struct GLFWwindow {
 	void (*MakeContextCurrent)(void);
@@ -544,8 +547,8 @@ struct GLFWwindow {
 	void (*SetPos)(int x, int y);
 	int (*GetInputMode)(int);
 	void (*SetInputMode)(int, int);
-
-	void* (*GetWindowUserPointer)(void);
+	void* (*GetUserPointer)(void);
+	void (SetUserPointer)(void);
 
 	// callbacks
 	GLFWkeyfun (*SetKeyCallback)(GLFWkeyfun);
@@ -571,7 +574,8 @@ struct GLFWwindow {
 #define glfwSetWindowTitle(win, title) ((GLFWwindow*)win)->SetTitle(title)
 #define glfwSetWindowSize(win, w, h) ((GLFWwindow*)win)->SetSize(w, h)
 #define glfwSetWindowPos(win, x, y) ((GLFWwindow*)win)->SetPos(x, y)
-#define glfwGetWindowUserPointer(win) ((GLFWwindow*)win)->GetWindowUserPointer()
+#define glfwGetWindowUserPointer(win) ((GLFWwindow*)win)->GetUserPointer()
+#define glfwSetWindowUserPointer(win) ((GLFWwindow*)win)->SetUserPointer()
 #define glfwGetInputMode(win, mode) ((GLFWwindow*)win)->GetInputMode(mode)
 #define glfwSetInputMode(win, mode, v) ((GLFWwindow*)win)->SetInputMode(mode, v)
 
@@ -594,6 +598,8 @@ typedef struct GLFWmonitor {
 #define glfwGetMonitorPos(mon, x, y) ((GLFWmonitor*)mon)->GetPos(x, y)
 #define glfwGetMonitorPhysicalSize(mon, x, y) ((GLFWmonitor*)mon)->GetPhysicalSize(x, y)
 #define glfwGetMonitorName(mon) ((GLFWmonitor*)mon)->GetName()
+
+typedef void (* GLFWmonitorfun)(GLFWmonitor*,int);
 
 typedef struct _GLFWjoystick {
 	const float* (*GetAxes)(int* count);
@@ -630,6 +636,9 @@ GLFWerrorfun glfwSetErrorCallback(GLFWerrorfun callback); // no go equivalent
 			types.NewIdentGo("glfwGetCurrentContext", "glfw.GetCurrentContext", env.FuncTT(env.PtrT(windowT), nil)),
 			types.NewIdentGo("glfwSetClipboardString", "glfw.SetClipboardString", env.FuncTT(nil, env.Go().String())),
 			types.NewIdentGo("glfwWaitEvents", "glfw.WaitEvents", env.FuncTT(nil, nil)),
+			types.NewIdentGo("glfwSetMonitorCallback", "glfw.SetMonitorCallback", env.FuncTT(monitorCb, monitorCb)),
+			types.NewIdentGo("glfwSetJoystickCallback", "glfw.SetJoystickCallback", env.FuncTT(joystickCb, joystickCb)),
+			types.NewIdentGo("glfwGetPrimaryMonitor", "glfw.GetPrimaryMonitor", env.FuncTT(env.PtrT(monitorT), nil)),
 		)
 		return l
 	})
