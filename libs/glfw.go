@@ -52,8 +52,8 @@ func init() {
 			"ShouldClose":        env.FuncTT(env.Go().Bool(), nil),
 			"SwapBuffers":        env.FuncTT(nil, nil),
 			"GetKey":             env.FuncTT(actionT, keyT),
-			"GetInputMode":       env.FuncTT(env.Go().Int(), env.Go().Int()),
-			"SetInputMode":       env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
+			"GetInputMode":       env.FuncTT(env.Go().Int(), inputModeT),
+			"SetInputMode":       env.FuncTT(nil, inputModeT, env.Go().Int()),
 			"SetShouldClose":     env.FuncTT(nil, env.Go().Bool()),
 			"GetFramebufferSize": env.FuncTT(nil, env.Go().Int(), env.Go().Int()), //FIXME: incorrect signature
 			"Destroy":            env.FuncTT(nil, nil),
@@ -193,23 +193,23 @@ func init() {
 				"GLFW_KEY_F23":           types.NewIdentGo("GLFW_KEY_F23", "glfw.KeyF23", keyT),
 				"GLFW_KEY_F24":           types.NewIdentGo("GLFW_KEY_F24", "glfw.KeyF24", keyT),
 				"GLFW_KEY_F25":           types.NewIdentGo("GLFW_KEY_F25", "glfw.KeyF25", keyT),
-				"GLFW_KEY_KP_0":          types.NewIdentGo("GLFW_KEY_KP_0", "glfw.KeyKp0", keyT),
-				"GLFW_KEY_KP_1":          types.NewIdentGo("GLFW_KEY_KP_1", "glfw.KeyKp1", keyT),
-				"GLFW_KEY_KP_2":          types.NewIdentGo("GLFW_KEY_KP_2", "glfw.KeyKp2", keyT),
-				"GLFW_KEY_KP_3":          types.NewIdentGo("GLFW_KEY_KP_3", "glfw.KeyKp3", keyT),
-				"GLFW_KEY_KP_4":          types.NewIdentGo("GLFW_KEY_KP_4", "glfw.KeyKp4", keyT),
-				"GLFW_KEY_KP_5":          types.NewIdentGo("GLFW_KEY_KP_5", "glfw.KeyKp5", keyT),
-				"GLFW_KEY_KP_6":          types.NewIdentGo("GLFW_KEY_KP_6", "glfw.KeyKp6", keyT),
-				"GLFW_KEY_KP_7":          types.NewIdentGo("GLFW_KEY_KP_7", "glfw.KeyKp7", keyT),
-				"GLFW_KEY_KP_8":          types.NewIdentGo("GLFW_KEY_KP_8", "glfw.KeyKp8", keyT),
-				"GLFW_KEY_KP_9":          types.NewIdentGo("GLFW_KEY_KP_9", "glfw.KeyKp9", keyT),
-				"GLFW_KEY_KP_DECIMAL":    types.NewIdentGo("GLFW_KEY_KP_DECIMAL", "glfw.KeyKpDecimal", keyT),
-				"GLFW_KEY_KP_DIVIDE":     types.NewIdentGo("GLFW_KEY_KP_DIVIDE", "glfw.KeyKpDivide", keyT),
-				"GLFW_KEY_KP_MULTIPLY":   types.NewIdentGo("GLFW_KEY_KP_MULTIPLY", "glfw.KeyKpMultiply", keyT),
-				"GLFW_KEY_KP_SUBTRACT":   types.NewIdentGo("GLFW_KEY_KP_SUBTRACT", "glfw.KeyKpSubtract", keyT),
-				"GLFW_KEY_KP_ADD":        types.NewIdentGo("GLFW_KEY_KP_ADD", "glfw.KeyKpAdd", keyT),
-				"GLFW_KEY_KP_ENTER":      types.NewIdentGo("GLFW_KEY_KP_ENTER", "glfw.KeyKpEnter", keyT),
-				"GLFW_KEY_KP_EQUAL":      types.NewIdentGo("GLFW_KEY_KP_EQUAL", "glfw.KeyKpEqual", keyT),
+				"GLFW_KEY_KP_0":          types.NewIdentGo("GLFW_KEY_KP_0", "glfw.KeyKP0", keyT),
+				"GLFW_KEY_KP_1":          types.NewIdentGo("GLFW_KEY_KP_1", "glfw.KeyKP1", keyT),
+				"GLFW_KEY_KP_2":          types.NewIdentGo("GLFW_KEY_KP_2", "glfw.KeyKP2", keyT),
+				"GLFW_KEY_KP_3":          types.NewIdentGo("GLFW_KEY_KP_3", "glfw.KeyKP3", keyT),
+				"GLFW_KEY_KP_4":          types.NewIdentGo("GLFW_KEY_KP_4", "glfw.KeyKP4", keyT),
+				"GLFW_KEY_KP_5":          types.NewIdentGo("GLFW_KEY_KP_5", "glfw.KeyKP5", keyT),
+				"GLFW_KEY_KP_6":          types.NewIdentGo("GLFW_KEY_KP_6", "glfw.KeyKP6", keyT),
+				"GLFW_KEY_KP_7":          types.NewIdentGo("GLFW_KEY_KP_7", "glfw.KeyKP7", keyT),
+				"GLFW_KEY_KP_8":          types.NewIdentGo("GLFW_KEY_KP_8", "glfw.KeyKP8", keyT),
+				"GLFW_KEY_KP_9":          types.NewIdentGo("GLFW_KEY_KP_9", "glfw.KeyKP9", keyT),
+				"GLFW_KEY_KP_DECIMAL":    types.NewIdentGo("GLFW_KEY_KP_DECIMAL", "glfw.KeyKPDecimal", keyT),
+				"GLFW_KEY_KP_DIVIDE":     types.NewIdentGo("GLFW_KEY_KP_DIVIDE", "glfw.KeyKPDivide", keyT),
+				"GLFW_KEY_KP_MULTIPLY":   types.NewIdentGo("GLFW_KEY_KP_MULTIPLY", "glfw.KeyKPMultiply", keyT),
+				"GLFW_KEY_KP_SUBTRACT":   types.NewIdentGo("GLFW_KEY_KP_SUBTRACT", "glfw.KeyKPSubtract", keyT),
+				"GLFW_KEY_KP_ADD":        types.NewIdentGo("GLFW_KEY_KP_ADD", "glfw.KeyKPAdd", keyT),
+				"GLFW_KEY_KP_ENTER":      types.NewIdentGo("GLFW_KEY_KP_ENTER", "glfw.KeyKPEnter", keyT),
+				"GLFW_KEY_KP_EQUAL":      types.NewIdentGo("GLFW_KEY_KP_EQUAL", "glfw.KeyKPEqual", keyT),
 				"GLFW_KEY_LEFT_SHIFT":    types.NewIdentGo("GLFW_KEY_LEFT_SHIFT", "glfw.KeyLeftShift", keyT),
 				"GLFW_KEY_LEFT_CONTROL":  types.NewIdentGo("GLFW_KEY_LEFT_CONTROL", "glfw.KeyLeftControl", keyT),
 				"GLFW_KEY_LEFT_ALT":      types.NewIdentGo("GLFW_KEY_LEFT_ALT", "glfw.KeyLeftAlt", keyT),
@@ -610,13 +610,13 @@ typedef struct _GLFWjoystick {
 	const char* (*GetGUID)(void);
 	const char* GetGamepadName(void);
 } _GLFWjoystick;
-#define glfwGetJoystickAxes(j, a) ((_GLFWjoystick*)j)->GetAxes(a)
-#define glfwGetJoystickButtons(j, a) ((_GLFWjoystick*)j)->GetButtons(a)
-#define glfwGetJoystickHats(j, a) ((_GLFWjoystick*)j)->GetHats(a)
-#define glfwGetJoystickName(j) ((_GLFWjoystick*)j)->GetName()
-#define glfwJoystickIsGamepad(j) ((_GLFWjoystick*)j)->IsGamepad()
-#define glfwGetJoystickGUID(j) ((_GLFWjoystick*)j)->GetGUID()
-#define glfwGetGamepadName(j) ((_GLFWjoystick*)j)->GetGamepadName()
+#define glfwGetJoystickAxes(j, a) ((_GLFWjoystick)j).GetAxes(a)
+#define glfwGetJoystickButtons(j, a) ((_GLFWjoystick)j).GetButtons(a)
+#define glfwGetJoystickHats(j, a) ((_GLFWjoystick)j).GetHats(a)
+#define glfwGetJoystickName(j) ((_GLFWjoystick)j).GetName()
+#define glfwJoystickIsGamepad(j) ((_GLFWjoystick)j).IsGamepad()
+#define glfwGetJoystickGUID(j) ((_GLFWjoystick)j).GetGUID()
+#define glfwGetGamepadName(j) ((_GLFWjoystick)j).GetGamepadName()
 
 void glfwWindowHint(int, int);
 const char* glfwGetKeyName(int key, int scancode);
