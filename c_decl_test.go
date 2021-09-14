@@ -1,8 +1,9 @@
 package cxgo
 
 import (
-	"github.com/gotranspile/cxgo/types"
 	"testing"
+
+	"github.com/gotranspile/cxgo/types"
 )
 
 var casesTranslateDecls = []parseCase{
@@ -654,6 +655,15 @@ type Bar struct {
 		configFuncs: []configFunc{
 			withRename("foo", "Bar"),
 		},
+	},
+	{
+		name: "args partially named",
+		src: `
+void (*foo)(void *a, int, const char *);
+`,
+		exp: `
+var foo func(a unsafe.Pointer, a2 int32, a3 *byte)
+`,
 	},
 	{
 		name: "go ints",

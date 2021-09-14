@@ -5,9 +5,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/gotranspile/cxgo/types"
 	"modernc.org/cc/v3"
 	"modernc.org/token"
+
+	"github.com/gotranspile/cxgo/types"
 )
 
 func (g *translator) convertTypeOper(p cc.Operand, where token.Position) types.Type {
@@ -404,7 +405,10 @@ func (g *translator) convertFuncType(conf IdentConfig, d *cc.Declarator, t cc.Ty
 			iconf[f.Index] = f
 		}
 	}
-	var args []*types.Field
+	var (
+		args  []*types.Field
+		named int
+	)
 	for i, p := range t.Parameters() {
 		pt := p.Type()
 		if pt.Kind() == cc.Void {
@@ -420,14 +424,23 @@ func (g *translator) convertFuncType(conf IdentConfig, d *cc.Declarator, t cc.Ty
 		var name *types.Ident
 		if d != nil && p.Name() != 0 {
 			name = g.convertIdent(d.ParamScope(), p.Declarator().NameTok(), at).Ident
+			named++
 		} else if p.Name() != 0 {
 			name = g.convertIdentWith(p.Declarator().NameTok().String(), at, p.Declarator()).Ident
+			named++
 		} else {
 			name = types.NewUnnamed(at)
 		}
 		args = append(args, &types.Field{
 			Name: name,
 		})
+	}
+	if named != 0 && len(args) != named {
+		for i, a := range args {
+			if a.Name.Name == "" && a.Name.GoName == "" {
+				a.Name.GoName = fmt.Sprintf("a%d", i+1)
+			}
+		}
 	}
 	ret := g.convertTypeRootOpt(IdentConfig{}, t.Result(), where)
 	if t.IsVariadic() {

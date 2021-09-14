@@ -52,7 +52,10 @@ func (c *Env) ResolveImport(name string) string {
 	return path
 }
 
-func (c *Env) GetLib(name string) *Library {
+// LookupLibrary finds an already loaded Library. It is useful to prevent import loops.
+//
+// Typically, the GetLibrary function should be used instead, because it will load the library automatically, if needed.
+func (c *Env) LookupLibrary(name string) *Library {
 	l, ok := c.libs[name]
 	if !ok {
 		panic(errors.New("cannot find library: " + name))
