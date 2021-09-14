@@ -12,7 +12,7 @@ const (
 func init() {
 	RegisterLibrary(sysTimeH, func(c *Env) *Library {
 		intT := types.IntT(4)
-		timeLib := c.GetLib(timeH)
+		timeLib := c.LookupLibrary(timeH)
 		timevalT := timeLib.GetType("timeval")
 		timespecT := timeLib.GetType("timespec")
 		_ = timespecT

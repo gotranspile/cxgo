@@ -93,8 +93,6 @@ modernc.org/cc/v3 v3.33.8-0.20210719143216-bbc9a11ec465 h1:wWBm3ev2JPinK7q3mCDkz
 modernc.org/cc/v3 v3.33.8-0.20210719143216-bbc9a11ec465/go.mod h1:iPJg1pkwXqAV16SNgFBVYmggfMg6xhs+2oiO0vclK3g=
 modernc.org/cc/v3 v3.33.8 h1:0zElcFsN3qMCyCNVCaJ+54EFC27xqpikXKJhhz86ck4=
 modernc.org/cc/v3 v3.33.8/go.mod h1:iPJg1pkwXqAV16SNgFBVYmggfMg6xhs+2oiO0vclK3g=
-<<<<<<< Updated upstream
-=======
 modernc.org/cc/v3 v3.33.10-0.20210803134125-62ecad85ad9f h1:QFZfMdKCVqIJ96j2Vo6PShmtjzE8B8L17H0Vype01KI=
 modernc.org/cc/v3 v3.33.10-0.20210803134125-62ecad85ad9f/go.mod h1:iPJg1pkwXqAV16SNgFBVYmggfMg6xhs+2oiO0vclK3g=
 modernc.org/cc/v3 v3.34.1-0.20210914102530-cf6502699529 h1:XFtypetV2ZM14Ry+cyARJLkdddiW3SGjvpBluODDSxc=
@@ -106,7 +104,8 @@ modernc.org/internal v1.0.0/go.mod h1:VUD/+JAkhCpvkUitlEOnhpVxCgsBI90oTzSCRcqQVS
 modernc.org/ir v1.0.0 h1:5S08NkggW1cm/422E1oq9+DsywE5qxHzEC3QumMWuxw=
 modernc.org/ir v1.0.0/go.mod h1:wxK1nK3PS04CASoUY+HJr+FQywv4+D38y2sRrd71y7s=
 modernc.org/mathutil v1.0.0/go.mod h1:wU0vUrJsVWBZ4P6e7xtFJEhFSNsfRLJ8H458uRjg03k=
->>>>>>> Stashed changes
+modernc.org/cc/v3 v3.33.10-0.20210803134125-62ecad85ad9f h1:QFZfMdKCVqIJ96j2Vo6PShmtjzE8B8L17H0Vype01KI=
+modernc.org/cc/v3 v3.33.10-0.20210803134125-62ecad85ad9f/go.mod h1:iPJg1pkwXqAV16SNgFBVYmggfMg6xhs+2oiO0vclK3g=
 modernc.org/mathutil v1.2.2/go.mod h1:mZW8CKdRPY1v87qxC/wUdX5O1qDzXMP5TH3wjfpga6E=
 modernc.org/mathutil v1.4.0 h1:GCjoRaBew8ECCKINQA2nYjzvufFW9YiEuuB+rQ9bn2E=
 modernc.org/mathutil v1.4.0/go.mod h1:mZW8CKdRPY1v87qxC/wUdX5O1qDzXMP5TH3wjfpga6E=

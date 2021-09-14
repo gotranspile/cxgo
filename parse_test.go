@@ -6,11 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gotranspile/cxgo/libs"
-	"github.com/gotranspile/cxgo/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"modernc.org/cc/v3"
+
+	"github.com/gotranspile/cxgo/libs"
+	"github.com/gotranspile/cxgo/types"
 )
 
 const testPkg = "lib"
@@ -567,15 +568,19 @@ func foo() {
 	{
 		name: "void cast",
 		src: `
-void foo() {
-	int a;
+void foo(int a, int* b) {
+	int c;
 	(void)a;
+	(void)b;
+	(void)c;
 }
 `,
 		exp: `
-func foo() {
-	var a int32
-	a
+func foo(a int32, b *int32) {
+	var c int32
+	_ = a
+	_ = b
+	_ = c
 }
 `,
 	},

@@ -15,8 +15,7 @@ func init() {
 		intT := types.IntT(4)
 		argT := c.PtrT(nil)
 		retT := c.PtrT(nil)
-		timeLib := c.GetLib(timeH)
-		timespecT := timeLib.GetType("timespec")
+		timespecT := c.GetLibraryType(timeH, "timespec")
 		threadT := types.NamedTGo("pthread_t", "pthread.Thread", c.MethStructT(map[string]*types.FuncType{
 			"Join":        c.FuncTT(intT, c.PtrT(retT)),
 			"TimedJoinNP": c.FuncTT(intT, c.PtrT(retT), c.PtrT(timespecT)),

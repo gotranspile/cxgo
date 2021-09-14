@@ -61,6 +61,22 @@ func foo() {
 `,
 	},
 	{
+		name: "sys socket",
+		src: `
+#include <sys/socket.h>
+
+void foo() {
+	in_addr_t a = inet_addr("1.2.3.4");
+}
+`,
+		exp: `
+func foo() {
+	var a cnet.Addr = cnet.ParseAddr("1.2.3.4")
+	_ = a
+}
+`,
+	},
+	{
 		name: "math",
 		src: `
 #include <math.h>

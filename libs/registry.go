@@ -129,6 +129,7 @@ var defPathReplacer = strings.NewReplacer(
 	".", "_",
 )
 
+// GetLibrary finds or initializes the library, given a C include filename.
 func (c *Env) GetLibrary(name string) (*Library, bool) {
 	if l, ok := c.libs[name]; ok {
 		return l, true
@@ -177,6 +178,7 @@ func (c *Env) GetLibrary(name string) (*Library, bool) {
 	return l, true
 }
 
+// GetLibraryType is a helper for GetLibrary followed by GetType.
 func (c *Env) GetLibraryType(lib, typ string) types.Type {
 	l, ok := c.GetLibrary(lib)
 	if !ok {
