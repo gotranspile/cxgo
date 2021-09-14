@@ -10,6 +10,10 @@ require (
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2
 	maze.io/x/math32 v0.0.0-20181106113604-c78ed91899f1
+<<<<<<< Updated upstream
 	modernc.org/cc/v3 v3.33.8
+=======
+	modernc.org/cc/v3 v3.34.1-0.20210914102530-cf6502699529
+>>>>>>> Stashed changes
 	modernc.org/token v1.0.0
 )
