@@ -489,8 +489,18 @@ func foo(a *int32) int32 {
 `,
 	},
 	{
-		name: "sizeof",
-		inc:  `typedef int size_t;`,
+		name:     "sizeof only",
+		builtins: true,
+		src: `
+int a = sizeof(int);
+`,
+		exp: `
+var a int32 = int32(unsafe.Sizeof(int32(0)))
+`,
+	},
+	{
+		name:     "sizeof",
+		builtins: true,
 		src: `
 void foo() {
 	size_t a;
@@ -784,7 +794,11 @@ func runTestTranslateCase(t *testing.T, c parseCase) {
 		Predefines: c.builtins,
 		Sources:    srcs,
 	})
-	require.NoError(t, err)
+	if c.skip {
+		t.SkipNow()
+	} else {
+		require.NoError(t, err)
+	}
 
 	tconf := Config{ForwardDecl: true}
 	for _, f := range c.configFuncs {

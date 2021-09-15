@@ -400,20 +400,20 @@ func foo(a uint32) {
 	},
 	{
 		name: "named int arithm",
-		inc:  `typedef int size_t;`,
+		inc:  `typedef int my_size_t;`,
 		src: `
 void foo() {
-	size_t a;
-	size_t b;
+	my_size_t a;
+	my_size_t b;
 	a = 1 + b;
 	a = b + 1;
 }
 `,
 		exp: `
 func foo() {
-	var a size_t
+	var a my_size_t
 	_ = a
-	var b size_t
+	var b my_size_t
 	a = b + 1
 	a = b + 1
 }
