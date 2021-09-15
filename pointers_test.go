@@ -690,14 +690,14 @@ func foo() *int32 {
 	},
 	{
 		name: "return zero ptr named",
-		inc:  `typedef int size_t;`,
+		inc:  `typedef int my_size_t;`,
 		src: `
-size_t* foo() {
+my_size_t* foo() {
 	return 0;
 }
 `,
 		exp: `
-func foo() *size_t {
+func foo() *my_size_t {
 	return nil
 }
 `,

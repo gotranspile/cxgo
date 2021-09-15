@@ -90,6 +90,7 @@ void foo(float x, double y) {
 	x = roundf(x);    y = round(y);
 	x = fabsf(x);     y = fabs(y);
 	x = powf(x, x);   y = pow(y, y);
+	y = fmod(y, y);
 }
 `,
 		exp: `
@@ -110,6 +111,7 @@ func foo(x float32, y float64) {
 	y = math.Abs(y)
 	x = math32.Pow(x, x)
 	y = math.Pow(y, y)
+	y = math.Mod(y, y)
 }
 `,
 	},
