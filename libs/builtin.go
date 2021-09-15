@@ -3,6 +3,7 @@ package libs
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"sync/atomic"
 
 	"github.com/gotranspile/cxgo/runtime/libc"
@@ -73,6 +74,14 @@ func init() {
 #define _ILP32_ 1
 `
 		}
+		var post strings.Builder
+		maxIntTypeDefs(&post, "ptr", c.PtrSize()*8)
+		post.WriteString(`
+#define NULL 0
+typedef intptr_t ptrdiff_t;
+typedef uintptr_t size_t;
+`)
+
 		l := &Library{
 			Header: pre + `
 #define __ORDER_BIG_ENDIAN__ 4321
@@ -145,7 +154,7 @@ _cxgo_go_iface_slice _rest;
 
 void* malloc(_cxgo_go_int);
 
-` + includeHacks,
+` + post.String() + includeHacks,
 			Idents: map[string]*types.Ident{
 				"malloc": c.C().MallocFunc(),
 			},
@@ -156,6 +165,8 @@ void* malloc(_cxgo_go_int);
 			},
 			Types: map[string]types.Type{
 				"__builtin_va_list": valistT,
+				"intptr_t":          c.IntPtrT(),
+				"uintptr_t":         c.UintPtrT(),
 			},
 			ForceMacros: map[string]bool{
 				"NULL": true,
