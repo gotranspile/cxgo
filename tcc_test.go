@@ -1,7 +1,6 @@
 package cxgo
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -9,10 +8,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/gotranspile/cxgo/internal/git"
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/types"
-	"github.com/stretchr/testify/require"
 )
 
 func downloadTCC(t testing.TB, dst string) {
@@ -118,13 +118,8 @@ func TestTCCExecute(t *testing.T) {
 	err = os.MkdirAll(out, 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(filepath.Join(out, "go.mod"), []byte(fmt.Sprintf(`module main
-go 1.13
-require (
-	github.com/gotranspile/cxgo v0.0.0
-)
-replace github.com/gotranspile/cxgo => %s`, wd)), 0644)
-	require.NoError(t, err)
+	goProject(t, out, wd)
+	goProjectMod(t, out)
 
 	for _, path := range files {
 		path := path
