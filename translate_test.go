@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -333,10 +334,15 @@ func testTranspileOut(t testing.TB, csrc string) {
 	err = ioutil.WriteFile(cfile, []byte(csrc), 0644)
 	require.NoError(t, err)
 
+	// this is required for test to wait other goroutines in case it fails earlier on the main one
+	var wg sync.WaitGroup
+	wg.Add(1)
 	cch := make(chan progOut, 1)
 	go func() {
+		defer wg.Done()
 		cch <- gccCompileAndExec(t, cdir, cfile)
 	}()
+	defer wg.Wait()
 
 	godir := filepath.Join(dir, "golang")
 	err = os.MkdirAll(godir, 0755)
