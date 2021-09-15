@@ -1,6 +1,6 @@
 module github.com/gotranspile/cxgo
 
-go 1.13
+go 1.16
 
 require (
 	git.maze.io/go/math32 v0.0.0-20181106113604-c78ed91899f1 // indirect
