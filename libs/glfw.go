@@ -48,6 +48,10 @@ func init() {
 			"GetGUID":        env.FuncTT(env.Go().String(), nil),
 		}))
 		joystickCb := types.NamedTGo("GLFWjoystickfun", "glfw.JoystickCallback", env.FuncTT(nil, joystickT, perEventT))
+		posCb := types.NamedTGo("GLFWwindowposfun", "glfw.PosCallback", env.FuncTT(nil, windowPtrT, env.Go().Int(), env.Go().Int()))
+		sizeCb := types.NamedTGo("GLFWwindowsizefun", "glfw.SizeCallback", env.FuncTT(nil, windowPtrT, env.Go().Int(), env.Go().Int()))
+		scaleCb := types.NamedTGo("GLFWwindowcontentscalefun", "glfw.ContentScaleCallback", env.FuncTT(nil, windowPtrT, env.C().Float(), env.C().Float()))
+		closeCb := types.NamedTGo("GLFWwindowclosefun", "glfw.CloseCallback", env.FuncTT(nil, windowPtrT))
 		windowT := types.NamedTGo("GLFWwindow", "glfw.Window", env.MethStructT(map[string]*types.FuncType{
 			"MakeContextCurrent": env.FuncTT(nil, nil),
 			"ShouldClose":        env.FuncTT(env.Go().Bool(), nil),
@@ -73,6 +77,10 @@ func init() {
 			"SetKeyCallback":             env.FuncTT(keyCbT, keyCbT),
 			"SetCharCallback":            env.FuncTT(charCbT, charCbT),
 			"SetFramebufferSizeCallback": env.FuncTT(frameBufCb, frameBufCb),
+			"SetPosCallback":             env.FuncTT(posCb, posCb),
+			"SetSizeCallback":            env.FuncTT(sizeCb, sizeCb),
+			"SetContentScaleCallback":    env.FuncTT(scaleCb, scaleCb),
+			"SetCloseCallback":           env.FuncTT(closeCb, closeCb),
 		}))
 		windowPtrT.SetElem(windowT)
 		l := &Library{
@@ -528,6 +536,10 @@ typedef void (* GLFWerrorfun)(int,const char*);
 typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
 typedef void (* GLFWcharfun)(GLFWwindow*,unsigned int);
 typedef void (* GLFWframebuffersizefun)(GLFWwindow*,int,int);
+typedef void (* GLFWwindowposfun)(GLFWwindow* window, int xpos, int ypos);
+typedef void (* GLFWwindowsizefun)(GLFWwindow* window, int width, int height);
+typedef void (* GLFWwindowcontentscalefun)(GLFWwindow* window, float xscale, float yscale);
+typedef void (* GLFWwindowclosefun)(GLFWwindow* window);
 typedef void (* GLFWjoystickfun)(int,int);
 
 struct GLFWwindow {
@@ -556,6 +568,10 @@ struct GLFWwindow {
 	GLFWkeyfun (*SetKeyCallback)(GLFWkeyfun);
 	GLFWcharfun (*SetCharCallback)(GLFWcharfun);
 	GLFWframebuffersizefun (*SetFramebufferSizeCallback)(GLFWframebuffersizefun);
+	GLFWwindowposfun (*SetPosCallback)(GLFWwindowposfun);
+	GLFWwindowsizefun (*SetSizeCallback)(GLFWwindowsizefun);
+	GLFWwindowcontentscalefun (*SetContentScaleCallback)(GLFWwindowcontentscalefun);
+	GLFWwindowclosefun (*SetCloseCallback)(GLFWwindowclosefun);
 };
 #define glfwMakeContextCurrent(win) ((GLFWwindow*)win)->MakeContextCurrent()
 #define glfwWindowShouldClose(win) ((GLFWwindow*)win)->ShouldClose()
@@ -565,6 +581,10 @@ struct GLFWwindow {
 #define glfwSetKeyCallback(win, cb) ((GLFWwindow*)win)->SetKeyCallback(cb)
 #define glfwSetCharCallback(win, cb) ((GLFWwindow*)win)->SetCharCallback(cb)
 #define glfwSetFramebufferSizeCallback(win, cb) ((GLFWwindow*)win)->SetFramebufferSizeCallback(cb)
+#define glfwSetWindowPosCallback(win, cb) ((GLFWwindow*)win)->SetPosCallback(cb)
+#define glfwSetWindowSizeCallback(win, cb) ((GLFWwindow*)win)->SetSizeCallback(cb)
+#define glfwSetWindowContentScaleCallback(win, cb) ((GLFWwindow*)win)->SetContentScaleCallback(cb)
+#define glfwSetWindowCloseCallback(win, cb) ((GLFWwindow*)win)->SetCloseCallback(cb)
 #define glfwGetFramebufferSize(win, w, h) ((GLFWwindow*)win)->GetFramebufferSize(w, h)
 #define glfwDestroyWindow(win) ((GLFWwindow*)win)->Destroy()
 #define glfwFocusWindow(win) ((GLFWwindow*)win)->Focus()
