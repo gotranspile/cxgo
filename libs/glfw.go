@@ -70,9 +70,15 @@ func init() {
 			"Restore":            env.FuncTT(nil, nil),
 			"SetTitle":           env.FuncTT(nil, env.C().String()),
 			"SetSize":            env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
+			"GetSize":            env.FuncTT(nil, env.PtrT(env.Go().Int()), env.PtrT(env.Go().Int())),
 			"SetPos":             env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
+			"GetPos":             env.FuncTT(nil, env.PtrT(env.Go().Int()), env.PtrT(env.Go().Int())),
 			"GetUserPointer":     env.FuncTT(env.PtrT(nil), nil),
 			"SetUserPointer":     env.FuncTT(nil, env.PtrT(nil)),
+			"GetAttrib":          env.FuncTT(env.Go().Int(), env.Go().Int()),
+			"SetAttrib":          env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
+			"GetMonitor":         env.FuncTT(env.PtrT(monitorT)),
+			"SetMonitor":         env.FuncTT(nil, windowPtrT, env.PtrT(monitorT), env.Go().Int(), env.Go().Int(), env.Go().Int(), env.Go().Int(), env.Go().Int()),
 			// callbacks
 			"SetKeyCallback":             env.FuncTT(keyCbT, keyCbT),
 			"SetCharCallback":            env.FuncTT(charCbT, charCbT),
@@ -537,6 +543,28 @@ func init() {
 #define GLFW_CONNECTED              0x00040001
 #define GLFW_DISCONNECTED           0x00040002
 
+typedef struct GLFWvidmode {
+    int width;
+    int height;
+    int redBits;
+    int greenBits;
+    int blueBits;
+    int refreshRate;
+} GLFWvidmode;
+
+typedef struct GLFWmonitor {
+	GLFWvidmode* (*GetVideoMode)(void);
+	void (*GetPos)(int*, int*);
+	void (*GetPhysicalSize)(int*, int*);
+	char* (*GetName)(void);
+} GLFWmonitor;
+#define glfwGetVideoMode(mon) ((GLFWmonitor*)mon)->GetVideoMode()
+#define glfwGetMonitorPos(mon, x, y) ((GLFWmonitor*)mon)->GetPos(x, y)
+#define glfwGetMonitorPhysicalSize(mon, x, y) ((GLFWmonitor*)mon)->GetPhysicalSize(x, y)
+#define glfwGetMonitorName(mon) ((GLFWmonitor*)mon)->GetName()
+
+typedef void (* GLFWmonitorfun)(GLFWmonitor*,int);
+
 typedef struct GLFWwindow GLFWwindow;
 typedef void (* GLFWerrorfun)(int,const char*);
 typedef void (* GLFWkeyfun)(GLFWwindow*,int,int,int,int);
@@ -564,11 +592,17 @@ struct GLFWwindow {
 	void (*Restore)(void);
 	void (*SetTitle)(const char* title);
 	void (*SetSize)(int width, int height);
+	void (*GetSize)(int* width, int* height);
 	void (*SetPos)(int x, int y);
+	void (*GetPos)(int* x, int* y);
 	int (*GetInputMode)(int);
 	void (*SetInputMode)(int, int);
 	void* (*GetUserPointer)(void);
-	void (SetUserPointer)(void*);
+	void (*SetUserPointer)(void*);
+	void (*SetAttrib)(int, int);
+	int (*GetAttrib)(int);
+	GLFWmonitor* (*GetMonitor)(void);
+	void (*SetMonitor)(GLFWmonitor*, int, int, int, int, int);
 
 	// callbacks
 	GLFWkeyfun (*SetKeyCallback)(GLFWkeyfun);
@@ -579,6 +613,10 @@ struct GLFWwindow {
 	GLFWwindowcontentscalefun (*SetContentScaleCallback)(GLFWwindowcontentscalefun);
 	GLFWwindowclosefun (*SetCloseCallback)(GLFWwindowclosefun);
 };
+#define glfwGetWindowMonitor(win) ((GLFWwindow*)win)->GetMonitor()
+#define glfwSetWindowMonitor(win, mon, x, y, w, h, r) ((GLFWwindow*)win)->SetMonitor(mon, x, y, w, h, r)
+#define glfwGetWindowAttrib(win, x, y) ((GLFWwindow*)win)->GetAttrib(x)
+#define glfwSetWindowAttrib(win, x, y) ((GLFWwindow*)win)->SetAttrib(x, y)
 #define glfwMakeContextCurrent(win) ((GLFWwindow*)win)->MakeContextCurrent()
 #define glfwWindowShouldClose(win) ((GLFWwindow*)win)->ShouldClose()
 #define glfwSwapBuffers(win) ((GLFWwindow*)win)->SwapBuffers()
@@ -601,33 +639,13 @@ struct GLFWwindow {
 #define glfwRestoreWindow(win) ((GLFWwindow*)win)->Restore()
 #define glfwSetWindowTitle(win, title) ((GLFWwindow*)win)->SetTitle(title)
 #define glfwSetWindowSize(win, w, h) ((GLFWwindow*)win)->SetSize(w, h)
+#define glfwGetWindowSize(win, w, h) ((GLFWwindow*)win)->GetSize(w, h)
 #define glfwSetWindowPos(win, x, y) ((GLFWwindow*)win)->SetPos(x, y)
+#define glfwGetWindowPos(win, x, y) ((GLFWwindow*)win)->GetPos(x, y)
 #define glfwGetWindowUserPointer(win) ((GLFWwindow*)win)->GetUserPointer()
 #define glfwSetWindowUserPointer(win, ptr) ((GLFWwindow*)win)->SetUserPointer(ptr)
 #define glfwGetInputMode(win, mode) ((GLFWwindow*)win)->GetInputMode(mode)
 #define glfwSetInputMode(win, mode, v) ((GLFWwindow*)win)->SetInputMode(mode, v)
-
-typedef struct GLFWvidmode {
-    int width;
-    int height;
-    int redBits;
-    int greenBits;
-    int blueBits;
-    int refreshRate;
-} GLFWvidmode;
-
-typedef struct GLFWmonitor {
-	GLFWvidmode* (*GetVideoMode)(void);
-	void (*GetPos)(int*, int*);
-	void (*GetPhysicalSize)(int*, int*);
-	char* (*GetName)(void);
-} GLFWmonitor;
-#define glfwGetVideoMode(mon) ((GLFWmonitor*)mon)->GetVideoMode()
-#define glfwGetMonitorPos(mon, x, y) ((GLFWmonitor*)mon)->GetPos(x, y)
-#define glfwGetMonitorPhysicalSize(mon, x, y) ((GLFWmonitor*)mon)->GetPhysicalSize(x, y)
-#define glfwGetMonitorName(mon) ((GLFWmonitor*)mon)->GetName()
-
-typedef void (* GLFWmonitorfun)(GLFWmonitor*,int);
 
 typedef struct _GLFWjoystick {
 	const float* (*GetAxes)(int* count);
@@ -666,6 +684,7 @@ const char* glfwGetKeyName(int key, int scancode);
 			types.NewIdentGo("glfwWaitEvents", "glfw.WaitEvents", env.FuncTT(nil, nil)),
 			types.NewIdentGo("glfwSetMonitorCallback", "glfw.SetMonitorCallback", env.FuncTT(monitorCb, monitorCb)),
 			types.NewIdentGo("glfwGetPrimaryMonitor", "glfw.GetPrimaryMonitor", env.FuncTT(env.PtrT(monitorT), nil)),
+			types.NewIdentGo("glfwGetMonitors", "glfw.GetMonitors", env.FuncTT(types.SliceT(env.PtrT(monitorT)))),
 		)
 		return l
 	})
