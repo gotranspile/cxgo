@@ -99,8 +99,11 @@ func init() {
 				"glfwWindowHint": types.NewIdentGo("glfwWindowHint", "glfw.WindowHint", env.FuncTT(nil, hintT, env.Go().Int())),
 				"glfwGetKeyName": types.NewIdentGo("glfwGetKeyName", "glfw.GetKeyName", env.FuncTT(env.Go().String(), keyT, env.Go().Int())),
 				// constants
-				"GLFW_OPENGL_CORE_PROFILE": types.NewIdentGo("GLFW_OPENGL_CORE_PROFILE", "glfw.OpenGLCoreProfile", env.Go().Int()),
-				"GLFW_TRUE":                types.NewIdentGo("GLFW_TRUE", "glfw.True", env.Go().Int()),
+				"GLFW_OPENGL_CORE_PROFILE":   types.NewIdentGo("GLFW_OPENGL_CORE_PROFILE", "glfw.OpenGLCoreProfile", env.Go().Int()),
+				"GLFW_OPENGL_ANY_PROFILE":    types.NewIdentGo("GLFW_OPENGL_ANY_PROFILE", "glfw.OpenGLAnyProfile", env.Go().Int()),
+				"GLFW_OPENGL_COMPAT_PROFILE": types.NewIdentGo("GLFW_OPENGL_COMPAT_PROFILE", "glfw.OpenGLCompatProfile", env.Go().Int()),
+				"GLFW_TRUE":                  types.NewIdentGo("GLFW_TRUE", "glfw.True", env.Go().Int()),
+				"GLFW_FALSE":                 types.NewIdentGo("GLFW_FALSE", "glfw.False", env.Go().Int()),
 				// key and button actions
 				"GLFW_PRESS":   types.NewIdentGo("GLFW_PRESS", "glfw.Press", actionT),
 				"GLFW_RELEASE": types.NewIdentGo("GLFW_RELEASE", "glfw.Release", actionT),
@@ -358,6 +361,9 @@ func init() {
 #define GLFW_CONTEXT_DEBUG          0x00022007
 #define GLFW_OPENGL_DEBUG_CONTEXT   GLFW_CONTEXT_DEBUG
 #define GLFW_OPENGL_PROFILE         0x00022008
+#define GLFW_OPENGL_ANY_PROFILE              0
+#define GLFW_OPENGL_CORE_PROFILE    0x00032001
+#define GLFW_OPENGL_COMPAT_PROFILE  0x00032002
 #define GLFW_CONTEXT_RELEASE_BEHAVIOR 0x00022009
 #define GLFW_CONTEXT_NO_ERROR       0x0002200A
 #define GLFW_CONTEXT_CREATION_API   0x0002200B
