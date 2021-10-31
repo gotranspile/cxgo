@@ -13,7 +13,7 @@ func init() {
 		hintT := types.NamedTGo("Hint", "glfw.Hint", env.Go().Int())
 		actionT := types.NamedTGo("Action", "glfw.Action", env.Go().Int())
 		joystickHatStateT := types.NamedTGo("JoystickHatState", "glfw.JoystickHatState", env.Go().Int())
-		keyT := types.NamedTGo("Key", "glfw.Key", env.Go().Int())
+		keyT := types.NamedTGo("_GLFWKey", "glfw.Key", env.Go().Byte())
 		mouseButtonT := types.NamedTGo("MouseButton", "glfw.MouseButton", env.Go().Int())
 		modKeyT := types.NamedTGo("ModifierKey", "glfw.ModifierKey", env.Go().Int())
 		inputModeT := types.NamedTGo("InputMode", "glfw.InputMode", env.Go().Int())
@@ -52,6 +52,8 @@ func init() {
 		sizeCb := types.NamedTGo("GLFWwindowsizefun", "glfw.SizeCallback", env.FuncTT(nil, windowPtrT, env.Go().Int(), env.Go().Int()))
 		scaleCb := types.NamedTGo("GLFWwindowcontentscalefun", "glfw.ContentScaleCallback", env.FuncTT(nil, windowPtrT, env.C().Float(), env.C().Float()))
 		closeCb := types.NamedTGo("GLFWwindowclosefun", "glfw.CloseCallback", env.FuncTT(nil, windowPtrT))
+		refreshCb := types.NamedTGo("GLFWwindowrefreshfun", "glfw.RefreshCallback", env.FuncTT(nil, windowPtrT))
+		focusCb := types.NamedTGo("GLFWwindowfocusfun", "glfw.FocusCallback", env.FuncTT(nil, windowPtrT, env.Go().Bool()))
 		windowT := types.NamedTGo("GLFWwindow", "glfw.Window", env.MethStructT(map[string]*types.FuncType{
 			"MakeContextCurrent": env.FuncTT(nil, nil),
 			"ShouldClose":        env.FuncTT(env.Go().Bool(), nil),
@@ -87,6 +89,8 @@ func init() {
 			"SetSizeCallback":            env.FuncTT(sizeCb, sizeCb),
 			"SetContentScaleCallback":    env.FuncTT(scaleCb, scaleCb),
 			"SetCloseCallback":           env.FuncTT(closeCb, closeCb),
+			"SetRefreshCallback":         env.FuncTT(refreshCb, refreshCb),
+			"SetFocusCallback":           env.FuncTT(focusCb, focusCb),
 		}))
 		windowPtrT.SetElem(windowT)
 		l := &Library{
@@ -94,6 +98,7 @@ func init() {
 				"glfw": "github.com/gotranspile/glfw",
 			},
 			Types: map[string]types.Type{
+				"_GLFWkey":      keyT,
 				"GLFWwindow":    windowT,
 				"GLFWmonitor":   monitorT,
 				"GLFWvidmode":   videoModeT,
@@ -575,6 +580,8 @@ typedef void (* GLFWwindowsizefun)(GLFWwindow* window, int width, int height);
 typedef void (* GLFWwindowcontentscalefun)(GLFWwindow* window, float xscale, float yscale);
 typedef void (* GLFWwindowclosefun)(GLFWwindow* window);
 typedef void (* GLFWjoystickfun)(int,int);
+typedef void (* GLFWwindowrefreshfun)(GLFWwindow* window);
+typedef void (* GLFWwindowfocusfun)(GLFWwindow* window, int focused);
 
 struct GLFWwindow {
 	void (*MakeContextCurrent)(void);
@@ -612,6 +619,8 @@ struct GLFWwindow {
 	GLFWwindowsizefun (*SetSizeCallback)(GLFWwindowsizefun);
 	GLFWwindowcontentscalefun (*SetContentScaleCallback)(GLFWwindowcontentscalefun);
 	GLFWwindowclosefun (*SetCloseCallback)(GLFWwindowclosefun);
+	GLFWwindowrefreshfun (*SetRefreshCallback)(GLFWwindowrefreshfun);
+	GLFWwindowfocusfun (*SetFocusCallback)(GLFWwindowfocusfun);
 };
 #define glfwGetWindowMonitor(win) ((GLFWwindow*)win)->GetMonitor()
 #define glfwSetWindowMonitor(win, mon, x, y, w, h, r) ((GLFWwindow*)win)->SetMonitor(mon, x, y, w, h, r)
@@ -646,6 +655,8 @@ struct GLFWwindow {
 #define glfwSetWindowUserPointer(win, ptr) ((GLFWwindow*)win)->SetUserPointer(ptr)
 #define glfwGetInputMode(win, mode) ((GLFWwindow*)win)->GetInputMode(mode)
 #define glfwSetInputMode(win, mode, v) ((GLFWwindow*)win)->SetInputMode(mode, v)
+#define glfwSetWindowRefreshCallback(win, cb) ((GLFWwindow*)win)->SetRefreshCallback(cb)
+#define glfwSetWindowFocusCallback(win, cb) ((GLFWwindow*)win)->SetRefreshCallback(cb)
 
 typedef struct _GLFWjoystick {
 	const float* (*GetAxes)(int* count);
@@ -684,7 +695,7 @@ const char* glfwGetKeyName(int key, int scancode);
 			types.NewIdentGo("glfwWaitEvents", "glfw.WaitEvents", env.FuncTT(nil, nil)),
 			types.NewIdentGo("glfwSetMonitorCallback", "glfw.SetMonitorCallback", env.FuncTT(monitorCb, monitorCb)),
 			types.NewIdentGo("glfwGetPrimaryMonitor", "glfw.GetPrimaryMonitor", env.FuncTT(env.PtrT(monitorT), nil)),
-			types.NewIdentGo("glfwGetMonitors", "glfw.GetMonitors", env.FuncTT(types.SliceT(env.PtrT(monitorT)))),
+			types.NewIdentGo("glfwGetMonitors", "glfw.GetMonitors", env.FuncTT(env.PtrT(env.PtrT(monitorT)), env.PtrT(env.Go().Int()))),
 		)
 		return l
 	})
