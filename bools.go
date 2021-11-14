@@ -326,8 +326,13 @@ func (op ComparisonOp) GoToken() token.Token {
 // Compare two expression values.
 func (g *translator) Compare(x Expr, op ComparisonOp, y Expr) BoolExpr {
 	// compare pointers and functions separately
-	if x.CType(nil).Kind().IsFunc() || y.CType(nil).Kind().IsFunc() {
-		return CompareFuncs(g.ToFunc(x, nil), op, g.ToFunc(y, nil))
+	if xt := x.CType(nil); xt.Kind().IsFunc() {
+		fx := g.ToFunc(x, nil)
+		return CompareFuncs(fx, op, g.ToFunc(y, fx.FuncType(nil)))
+	}
+	if yt := y.CType(nil); yt.Kind().IsFunc() {
+		fy := g.ToFunc(y, nil)
+		return CompareFuncs(g.ToFunc(x, fy.FuncType(nil)), op, fy)
 	}
 	if x.CType(nil).Kind().IsPtr() || y.CType(nil).Kind().IsPtr() {
 		return ComparePtrs(g.ToPointer(x), op, g.ToPointer(y))
