@@ -106,7 +106,7 @@ func goProject(t testing.TB, out, cxgo string) {
 	require.NoError(t, err)
 
 	gomod := fmt.Sprintf(`module main
-go 1.16
+go 1.17
 require (
 	github.com/gotranspile/cxgo v0.0.0-local
 )
