@@ -60,9 +60,13 @@ maze.io/x/math32 v0.0.0-20181106113604-c78ed91899f1 h1:SgIJGhlYkU+wmyP0xBEOdLVRI
 maze.io/x/math32 v0.0.0-20181106113604-c78ed91899f1/go.mod h1:OL5aVu+KUQ0mSadkiIseNiKIX6dJ2Ul1RlNWSMCP5y8=
 modernc.org/cc/v3 v3.34.1-0.20210914102530-cf6502699529 h1:XFtypetV2ZM14Ry+cyARJLkdddiW3SGjvpBluODDSxc=
 modernc.org/cc/v3 v3.34.1-0.20210914102530-cf6502699529/go.mod h1:iPJg1pkwXqAV16SNgFBVYmggfMg6xhs+2oiO0vclK3g=
+modernc.org/cc/v3 v3.35.17 h1:sWWFJxgj2whIJ5P/rzgHalMgpcIhkVSRgiLV0XA7p6Y=
+modernc.org/cc/v3 v3.35.17/go.mod h1:iPJg1pkwXqAV16SNgFBVYmggfMg6xhs+2oiO0vclK3g=
 modernc.org/mathutil v1.2.2/go.mod h1:mZW8CKdRPY1v87qxC/wUdX5O1qDzXMP5TH3wjfpga6E=
 modernc.org/mathutil v1.4.0 h1:GCjoRaBew8ECCKINQA2nYjzvufFW9YiEuuB+rQ9bn2E=
 modernc.org/mathutil v1.4.0/go.mod h1:mZW8CKdRPY1v87qxC/wUdX5O1qDzXMP5TH3wjfpga6E=
+modernc.org/mathutil v1.4.1 h1:ij3fYGe8zBF4Vu+g0oT7mB06r8sqGWKuJu1yXeR4by8=
+modernc.org/mathutil v1.4.1/go.mod h1:mZW8CKdRPY1v87qxC/wUdX5O1qDzXMP5TH3wjfpga6E=
 modernc.org/strutil v1.1.1 h1:xv+J1BXY3Opl2ALrBwyfEikFAj8pmqcpnfmuwUwcozs=
 modernc.org/strutil v1.1.1/go.mod h1:DE+MQQ/hjKBZS2zNInV5hhcipt5rLPWkmpbGeW5mmdw=
 modernc.org/token v1.0.0 h1:a0jaWiNMDhDUtqOj09wvjWWAqd3q7WpBulmL9H2egsk=
