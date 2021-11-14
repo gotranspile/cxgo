@@ -1,7 +1,6 @@
 package libc
 
 import (
-	"reflect"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -11,33 +10,25 @@ import (
 const WCharSize = int(unsafe.Sizeof(WChar(0)))
 
 // IndexWCharPtr unsafely moves a wide char pointer by i elements. An offset may be negative.
+//
+// Deprecated: use unsafe.Add
 func IndexWCharPtr(p *WChar, i int) *WChar {
-	if i == 0 {
-		return p
-	}
-	return (*WChar)(IndexUnsafePtr(unsafe.Pointer(p), i*WCharSize))
+	return (*WChar)(unsafe.Add(unsafe.Pointer(p), i*WCharSize))
 }
 
 // UnsafeWCharN makes a slice of a given size starting at ptr.
+//
+// Deprecated: use unsafe.Slice
 func UnsafeWCharN(ptr unsafe.Pointer, sz uint64) []WChar {
-	if ptr == nil {
-		if sz == 0 {
-			return nil
-		}
-		panic("nil pointer")
-	}
-	var b []WChar
-	h := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	h.Data = uintptr(ptr)
-	h.Len = int(sz)
-	h.Cap = int(sz)
-	return b
+	return unsafe.Slice((*WChar)(ptr), sz)
 }
 
 // WCharN makes a slice of a given size starting at ptr.
 // It accepts a *WChar instead of unsafe pointer as UnsafeWCharN does, which allows to avoid unsafe import.
+//
+// Deprecated: use unsafe.Slice
 func WCharN(p *WChar, sz uint64) []WChar {
-	return UnsafeWCharN(unsafe.Pointer(p), sz)
+	return unsafe.Slice(p, sz)
 }
 
 // CWString makes a new zero-terminated wide char array containing a given string.
@@ -45,7 +36,7 @@ func CWString(s string) *WChar {
 	sz := utf8.RuneCountInString(s)
 	p := makePad((sz+2)*int(unsafe.Sizeof(WChar(0))), 0)
 
-	w := UnsafeWCharN(unsafe.Pointer(&p[0]), uint64(sz))
+	w := unsafe.Slice((*WChar)(unsafe.Pointer(&p[0])), uint64(sz))
 	w = w[:0]
 	for _, r := range s {
 		w = append(w, WChar(r))
@@ -65,7 +56,7 @@ func GoWSlice(ptr *WChar) []WChar {
 	if n == 0 {
 		return nil
 	}
-	return WCharN(ptr, n)
+	return unsafe.Slice(ptr, n)
 }
 
 func GoWString(s *WChar) string {
@@ -74,14 +65,14 @@ func GoWString(s *WChar) string {
 
 func WStrCpy(dst, src *WChar) *WChar {
 	s := GoWSlice(src)
-	d := WCharN(dst, uint64(len(s)+1))
+	d := unsafe.Slice(dst, len(s)+1)
 	n := copy(d, s)
 	d[n] = 0
 	return dst
 }
 
 func WStrNCpy(dst, src *WChar, sz uint32) *WChar {
-	d := WCharN(dst, uint64(sz))
+	d := unsafe.Slice(dst, sz)
 	s := GoWSlice(src)
 	pad := 0
 	if len(s) > int(sz) {
@@ -116,7 +107,7 @@ func WStrCat(dst, src *WChar) *WChar {
 	s := GoWSlice(src)
 	i := WStrLen(dst)
 	n := int(i) + len(s)
-	d := WCharN(dst, uint64(n+1))
+	d := unsafe.Slice(dst, n+1)
 	copy(d[i:], s)
 	d[n] = 0
 	return &d[0]

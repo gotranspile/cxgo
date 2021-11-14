@@ -27,7 +27,7 @@ func GoBytes(ptr *byte) []byte {
 	if n == 0 {
 		return nil
 	}
-	return BytesN(ptr, int(n))
+	return unsafe.Slice(ptr, n)
 }
 
 // GoString makes a Go string from a pointer to a zero-terminated byte array.
@@ -70,7 +70,7 @@ func CStringSlice(arr []string) **byte {
 // The behavior is undefined if access occurs beyond the end of either object pointed to by lhs and rhs. The behavior is
 // undefined if either lhs or rhs is a null pointer.
 func MemCmp(lhs, rhs unsafe.Pointer, sz int) int {
-	b1, b2 := UnsafeBytesN(lhs, sz), UnsafeBytesN(rhs, sz)
+	b1, b2 := unsafe.Slice((*byte)(lhs), sz), unsafe.Slice((*byte)(rhs), sz)
 	return bytes.Compare(b1, b2)
 }
 
@@ -80,7 +80,7 @@ func MemCmp(lhs, rhs unsafe.Pointer, sz int) int {
 // The behavior is undefined if access occurs beyond the end of the dest array. The behavior is undefined if dest is a
 // null pointer.
 func MemSet(p unsafe.Pointer, ch byte, sz int) unsafe.Pointer {
-	b := UnsafeBytesN(p, sz)
+	b := unsafe.Slice((*byte)(p), sz)
 	if ch == 0 {
 		copy(b, make([]byte, len(b)))
 	} else {
@@ -115,8 +115,8 @@ func MemCpy(dst, src unsafe.Pointer, sz int) unsafe.Pointer {
 	if sz == 0 || src == nil {
 		return dst
 	}
-	bdst := UnsafeBytesN(dst, sz)
-	bsrc := UnsafeBytesN(src, sz)
+	bdst := unsafe.Slice((*byte)(dst), sz)
+	bsrc := unsafe.Slice((*byte)(src), sz)
 	copy(bdst, bsrc)
 	return dst
 }
@@ -130,7 +130,7 @@ func MemChr(ptr *byte, ch byte, sz int) *byte {
 	if ptr == nil || sz == 0 {
 		return nil
 	}
-	b := BytesN(ptr, sz)
+	b := unsafe.Slice(ptr, sz)
 	i := bytes.IndexByte(b, ch)
 	if i < 0 {
 		return nil
@@ -262,13 +262,13 @@ func StrNCaseCmp(a, b *byte, sz int) int {
 
 // StrCpyGo copies a Go slice into a C string pointed by dst. It won't add the null terminator.
 func StrCpyGo(dst *byte, src []byte) {
-	d := BytesN(dst, len(src))
+	d := unsafe.Slice(dst, len(src))
 	copy(d, src)
 }
 
 // StrCpyGoZero is the same as StrCpyGo, but adds a null terminator.
 func StrCpyGoZero(dst *byte, src []byte) {
-	d := BytesN(dst, len(src)+1)
+	d := unsafe.Slice(dst, len(src)+1)
 	n := copy(d, src)
 	d[n] = 0
 }
@@ -293,7 +293,7 @@ func StrCpy(dst, src *byte) *byte {
 //
 // Destination and source shall not overlap (see MemMove for a safer alternative when overlapping).
 func StrNCpy(dst, src *byte, sz int) *byte {
-	d := BytesN(dst, sz)
+	d := unsafe.Slice(dst, sz)
 	if len(d) == 0 {
 		return dst
 	}
@@ -320,7 +320,7 @@ func StrCat(dst, src *byte) *byte {
 	s := GoBytes(src)
 	i := StrLen(dst)
 	n := i + len(s)
-	d := BytesN(dst, n+1)
+	d := unsafe.Slice(dst, n+1)
 	copy(d[i:], s)
 	d[n] = 0
 	return &d[0]
@@ -335,7 +335,7 @@ func StrNCat(dst, src *byte, sz int) *byte {
 		s = s[:sz]
 	}
 	n := StrLen(dst)
-	d := BytesN(dst, n+len(s)+1)[n:]
+	d := unsafe.Slice(dst, n+len(s)+1)[n:]
 	n = copy(d, s)
 	d[n] = 0
 	return dst

@@ -2,6 +2,7 @@ package libc
 
 import (
 	"testing"
+	"unsafe"
 
 	"github.com/stretchr/testify/require"
 )
@@ -152,6 +153,6 @@ func TestStrDup(t *testing.T) {
 	a := []byte("123abc\x00")
 	p := StrDup(&a[0])
 	require.True(t, &a[0] != p)
-	b := BytesN(p, len(a))
+	b := unsafe.Slice(p, len(a))
 	require.Equal(t, string(a), string(b))
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"unsafe"
 
 	"github.com/gotranspile/cxgo/runtime/libc"
 )
@@ -142,7 +143,7 @@ func Dprintf(format string, args ...interface{}) int {
 func Sprintf(buf *byte, format string, args ...interface{}) int {
 	var b bytes.Buffer
 	n, _ := FprintfGo(&b, format, args...)
-	dst := libc.BytesN(buf, b.Len()+1)
+	dst := unsafe.Slice(buf, b.Len()+1)
 	copy(dst, b.Bytes())
 	dst[b.Len()] = 0
 	return n
@@ -155,7 +156,7 @@ func Vsprintf(buf *byte, format string, args libc.ArgList) int {
 func Snprintf(buf *byte, sz int, format string, args ...interface{}) int {
 	var b bytes.Buffer
 	_, _ = FprintfGo(&b, format, args...)
-	dst := libc.BytesN(buf, sz)
+	dst := unsafe.Slice(buf, sz)
 	n := copy(dst, b.Bytes())
 	if b.Len() < len(dst) {
 		dst[b.Len()] = 0

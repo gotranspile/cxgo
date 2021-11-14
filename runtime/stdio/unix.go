@@ -4,6 +4,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"unsafe"
 
 	"github.com/gotranspile/cxgo/runtime/csys"
 	"github.com/gotranspile/cxgo/runtime/libc"
@@ -97,7 +98,7 @@ func GetCwd(p *byte, sz int) *byte {
 		libc.SetErr(err)
 		return nil
 	}
-	dst := libc.BytesN(p, sz)
+	dst := unsafe.Slice(p, sz)
 	copy(dst, dir)
 	return p
 }

@@ -25,7 +25,7 @@ func (p *ptrSort) elem(i int) unsafe.Pointer {
 }
 
 func (p *ptrSort) elems(i int) []byte {
-	return BytesN((*byte)(p.elem(i)), p.size)
+	return unsafe.Slice((*byte)(p.elem(i)), p.size)
 }
 
 func (p *ptrSort) Less(i, j int) bool {

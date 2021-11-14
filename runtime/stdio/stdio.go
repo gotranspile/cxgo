@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"unsafe"
 
 	"github.com/gotranspile/cxgo/runtime/libc"
 )
@@ -198,7 +199,7 @@ func (f *File) Write(p *byte, sz int) int32 {
 	if f == nil {
 		return -1
 	}
-	n, err := f.file.Write(libc.BytesN(p, sz))
+	n, err := f.file.Write(unsafe.Slice(p, sz))
 	if err != nil {
 		f.err = err
 	}
@@ -219,7 +220,7 @@ func (f *File) Read(p *byte, sz int) int32 {
 	} else if sz == 0 {
 		return 0
 	}
-	n, err := f.file.Read(libc.BytesN(p, sz))
+	n, err := f.file.Read(unsafe.Slice(p, sz))
 	if err != nil {
 		f.err = err
 	}
@@ -251,7 +252,7 @@ func (f *File) UnGetC(c int) int {
 }
 
 func (f *File) GetS(buf *byte, sz int32) *byte {
-	dst := libc.BytesN(buf, int(sz))
+	dst := unsafe.Slice(buf, int(sz))
 	var b [1]byte
 	for len(dst) > 1 {
 		_, err := f.file.Read(b[:])
