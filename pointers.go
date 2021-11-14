@@ -705,19 +705,19 @@ func (e *PtrOffset) parts() (GoExpr, BinaryOp, GoExpr) {
 	if e.X.PtrType(nil).Elem() != nil {
 		x = call(unsafePtr(), x)
 	}
-	x = call(ident("uintptr"), x)
 	return x, op, y
 }
 
 func (e *PtrOffset) AsExpr() GoExpr {
 	x, tok, y := e.parts()
-	//if !VirtualPtrs {
-	x = &ast.BinaryExpr{
-		X: x, Op: tok.GoToken(), Y: y,
+	if tok != BinOpAdd {
+		y = &ast.UnaryExpr{Op: token.SUB, X: y}
 	}
+	x = call(ident("unsafe.Add"), x, y)
+	//if !VirtualPtrs {
 	to := e.toType()
-	if to.Elem() != nil {
-		x = call(unsafePtr(), x)
+	if to.Elem() == nil {
+		return x
 	}
 	return call(to.GoType(), x)
 	//}
@@ -801,13 +801,12 @@ func (e *PtrElemOffset) AsExpr() GoExpr {
 			Y:  call(ident("uintptr"), y),
 		}
 	}
-	x = &ast.BinaryExpr{
-		X:  call(ident("uintptr"), x),
-		Op: op.GoToken(),
-		Y:  y,
+	if op == BinOpSub {
+		y = &ast.UnaryExpr{Op: token.SUB, X: y}
 	}
-	if to.Elem() != nil {
-		x = call(unsafePtr(), x)
+	x = call(ident("unsafe.Add"), x, y)
+	if to.Elem() == nil {
+		return x
 	}
 	return call(to.GoType(), x)
 	//}
@@ -875,22 +874,22 @@ func (e *PtrVarOffset) AsExpr() GoExpr {
 	if e.X.PtrType(nil).Elem() != nil {
 		x = call(unsafePtr(), x)
 	}
+	if !e.Ind.CType(nil).Kind().IsInt() {
+		y = call(ident("uintptr"), y)
+	}
 	if mul != 1 {
 		y = &ast.BinaryExpr{
 			X:  intLit(mul),
 			Op: token.MUL,
-			Y:  call(ident("uintptr"), y),
+			Y:  y,
 		}
-	} else {
-		y = call(ident("uintptr"), y)
 	}
-	x = &ast.BinaryExpr{
-		X:  call(ident("uintptr"), x),
-		Op: op.GoToken(),
-		Y:  y,
+	if op == BinOpSub {
+		y = &ast.UnaryExpr{Op: token.SUB, X: y}
 	}
-	if to.Elem() != nil {
-		x = call(unsafePtr(), x)
+	x = call(ident("unsafe.Add"), x, y)
+	if to.Elem() == nil {
+		return x
 	}
 	return call(to.GoType(), x)
 	//}

@@ -169,8 +169,8 @@ void foo() {
 		exp: `
 func foo() {
 	var a *byte
-	a = (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(a)) + 1))
-	a = (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(a)) - 1))
+	a = (*byte)(unsafe.Add(unsafe.Pointer(a), 1))
+	a = (*byte)(unsafe.Add(unsafe.Pointer(a), -1))
 }
 `,
 	},
@@ -192,10 +192,10 @@ func foo() {
 		a  int32 = 2
 		pa unsafe.Pointer
 	)
-	pa = unsafe.Pointer(uintptr(pa) + uintptr(a))
-	pa = unsafe.Pointer(uintptr(pa) + 3)
-	pa = unsafe.Pointer(uintptr(pa) + uintptr(a))
-	pa = unsafe.Pointer(uintptr(pa) + 5)
+	pa = unsafe.Add(pa, a)
+	pa = unsafe.Add(pa, 3)
+	pa = unsafe.Add(pa, a)
+	pa = unsafe.Add(pa, 5)
 }
 `,
 	},
@@ -329,10 +329,10 @@ func foo() {
 		a  int32 = 2
 		pa *int32
 	)
-	pa = (*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(pa)) + unsafe.Sizeof(int32(0))*uintptr(a)))
-	pa = (*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(pa)) + unsafe.Sizeof(int32(0))*3))
-	pa = (*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(pa)) + unsafe.Sizeof(int32(0))*uintptr(a)))
-	pa = (*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(pa)) + unsafe.Sizeof(int32(0))*5))
+	pa = (*int32)(unsafe.Add(unsafe.Pointer(pa), unsafe.Sizeof(int32(0))*uintptr(a)))
+	pa = (*int32)(unsafe.Add(unsafe.Pointer(pa), unsafe.Sizeof(int32(0))*3))
+	pa = (*int32)(unsafe.Add(unsafe.Pointer(pa), unsafe.Sizeof(int32(0))*uintptr(a)))
+	pa = (*int32)(unsafe.Add(unsafe.Pointer(pa), unsafe.Sizeof(int32(0))*5))
 }
 `,
 	},
@@ -621,7 +621,7 @@ func foo() {
 	*func() *int32 {
 		p := &a
 		x := *p
-		*p = (*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(*p)) + unsafe.Sizeof(int32(0))*1))
+		*p = (*int32)(unsafe.Add(unsafe.Pointer(*p), unsafe.Sizeof(int32(0))*1))
 		return x
 	}() = b
 }
@@ -1117,7 +1117,7 @@ type A struct {
 
 func foo() {
 	var ptr *int32
-	ptr = (*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(ptr)) + unsafe.Sizeof(int32(0))*(20*(unsafe.Sizeof(A{})/2))))
+	ptr = (*int32)(unsafe.Add(unsafe.Pointer(ptr), unsafe.Sizeof(int32(0))*(20*(unsafe.Sizeof(A{})/2))))
 }
 `,
 	},
