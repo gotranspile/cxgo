@@ -802,6 +802,7 @@ func (e *PtrElemOffset) AsExpr() GoExpr {
 		}
 	}
 	if op == BinOpSub {
+		y = call(ident("int"), y)
 		y = &ast.UnaryExpr{Op: token.SUB, X: y}
 	}
 	x = call(ident("unsafe.Add"), x, y)
@@ -885,6 +886,9 @@ func (e *PtrVarOffset) AsExpr() GoExpr {
 		}
 	}
 	if op == BinOpSub {
+		if e.Ind.CType(nil).Kind().IsUnsigned() {
+			y = call(ident("int"), y)
+		}
 		y = &ast.UnaryExpr{Op: token.SUB, X: y}
 	}
 	x = call(ident("unsafe.Add"), x, y)

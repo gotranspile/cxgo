@@ -628,6 +628,21 @@ func foo() {
 `,
 	},
 	{
+		name: "ptr decr size",
+		src: `
+void foo() {
+  int *ptr = 0;
+  ptr -= 3;
+}
+`,
+		exp: `
+func foo() {
+	var ptr *int32 = nil
+	ptr = (*int32)(unsafe.Add(unsafe.Pointer(ptr), -int(unsafe.Sizeof(int32(0))*3)))
+}
+`,
+	},
+	{
 		name: "negative ptr",
 		src: `
 void foo() {

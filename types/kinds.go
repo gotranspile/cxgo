@@ -54,6 +54,14 @@ func (k Kind) IsInt() bool {
 	return k.Is(Int)
 }
 
+func (k Kind) IsSigned() bool {
+	return k.Is(Signed)
+}
+
+func (k Kind) IsUnsigned() bool {
+	return k.Is(Unsigned)
+}
+
 func (k Kind) IsFloat() bool {
 	return k.Is(Float)
 }
