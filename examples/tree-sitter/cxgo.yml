@@ -6,6 +6,155 @@ package: gositter
 int_size: 8
 ptr_size: 8
 use_go_int: true
+define:
+  - name: ts_malloc_default
+    value: malloc
+  - name: ts_malloc
+    value: malloc
+  - name: ts_calloc_default
+    value: calloc
+  - name: ts_calloc
+    value: calloc
+  - name: ts_realloc_default
+    value: realloc
+  - name: ts_realloc
+    value: realloc
+  - name: ts_free_default
+    value: free
+  - name: ts_free
+    value: free
+  - name: TREE_SITTER_ARRAY_H_ # we replace it with our own array operations
+idents:
+  - name: TSLanguage
+    fields:
+      - name: symbol_names
+        type: slice
+      - name: symbol_metadata
+        type: slice
+      - name: parse_table
+        type: slice
+      - name: parse_actions
+        type: slice
+      - name: lex_modes
+        type: slice
+      - name: alias_sequences
+        type: slice
+      - name: external_scanner
+        fields:
+          - name: states
+            type: slice
+          - name: symbol_map
+            type: slice
+      - name: field_map_slices
+        type: slice
+      - name: field_map_entries
+        type: slice
+      - name: field_names
+        type: slice
+      - name: small_parse_table
+        type: slice
+      - name: small_parse_table_map
+        type: slice
+      - name: public_symbol_map
+        type: slice
+      - name: alias_map
+        type: slice
+  - name: TSTree
+    fields:
+      - name: included_ranges
+        type: slice
+  - name: ts_tree_new
+    fields:
+      - name: root
+      - name: language
+      - name: included_ranges
+        type: slice
+      - name: included_range_count
+  - name: ts_range_array_get_changed_ranges
+    fields:
+      - name: old_ranges
+        type: slice
+      - name: old_range_count
+      - name: new_ranges
+        type: slice
+      - name: new_range_count
+      - name: differences
+  - name: TSRangeArray
+    fields:
+      - name: contents
+        type: slice
+  - name: SubtreeArray
+    fields:
+      - name: contents
+        type: slice
+  - name: MutableSubtreeArray
+    fields:
+      - name: contents
+        type: slice
+  - name: TreeCursor
+    fields:
+      - name: stack
+        fields:
+          - name: contents
+            type: slice
+  - name: CursorChildIterator
+    fields:
+      - name: alias_sequence
+        type: slice
+  - name: TableEntry
+    fields:
+      - name: actions
+        type: slice
+  - name: LookaheadIterator
+    fields:
+      - name: data
+        type: slice
+      - name: actions
+        type: slice
+replace:
+  - old: 'len_('
+    new: 'len('
+predef: |
+  #include <string.h>
+  #include <stdlib.h>
+  #include <stdint.h>
+  #include <assert.h>
+  #include <stdbool.h>
+  #define Array(T) struct { T *contents; int size; int capacity; }
+  void array_init(void* a);
+  #define array_new() {0}
+  #define array_get(a, i) (&(a)->contents[i])
+  int len(void* a);
+  void array_clear(void* a);
+  void array_reserve(void* a, int n);
+  void array_delete(void* a);
+  void array_push(void* a, void* el);
+  void array_grow_by(void* a, int n);
+  void array_push_all(void* a, void* b);
+  void array_extend(void* a, int n, void* b);
+  void array_splice(void* a, int i, int oldN, int newN, void* b);
+  void array_insert(void* a, int i, void* b);
+  void array_erase(void* a, int i);
+  #define array_pop(a) ((a)->contents[--(a)->size])
+  void array_assign(void* a, void* b);
+  void array_swap(void* a, void* b);
+  void array__search_sorted_go(void* s, int s, void* cmp, void* f, void* b, int* i, bool* exists);
+  #define array_front(self) (&(self)->contents[0])
+  #define array_back(self) (&(self)->contents[len(self) - 1])
+  int _compare_int(int* a, int b) { return ((int)*(a) - (int)(b)); }
+  void array_insert_sorted_with(void* a, void* cmp, void* val);
+  #define array__search_sorted(self, start, compare, suffix, needle, index, exists) \
+    array__search_sorted_go(self, start, compare, &((self)->contents[0] suffix), needle, index, exists)
+  #define array_search_sorted_by(self, field, needle, index, exists) \
+          array__search_sorted(self, 0, _compare_int, field, needle, index, exists)
+  #define array_insert_sorted_by(self, field, value) \
+    do { \
+      unsigned index, exists; \
+      array_search_sorted_by(self, field, (value) field, &index, &exists); \
+      if (!exists) array_insert(self, index, value); \
+    } while (0)
+  #define array_search_sorted_with(self, compare, needle, index, exists) \
+    array__search_sorted(self, 0, compare, , needle, index, exists)
 files:
   - name: ./src/language.c
   - name: ./src/lexer.c
@@ -17,3 +166,15 @@ files:
   - name: ./src/tree_cursor.c
   - name: ./src/tree.c
   - name: ./src/get_changed_ranges.c
+  - name: ./src/length.h
+  - name: ./src/point.h
+  - name: ./include/tree_sitter/api.h
+    skip:
+      - TSParser
+      - TSTree
+      - TSQuery
+      - TSQueryCursor
+      - TSLanguage
+      - TSSymbol
+      - TSFieldId
+  - name: ./include/tree_sitter/parser.h
