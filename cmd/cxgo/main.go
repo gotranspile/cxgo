@@ -95,6 +95,7 @@ type File struct {
 	Disabled    bool               `yaml:"disabled"`
 	Name        string             `yaml:"name"`
 	Content     string             `yaml:"content"`
+	Predef      string             `yaml:"predef"`
 	GoFile      string             `yaml:"go"`
 	FlattenAll  *bool              `yaml:"flatten_all"`
 	ForwardDecl *bool              `yaml:"forward_decl"`
@@ -114,6 +115,7 @@ type Config struct {
 	SysInclude []string      `yaml:"sys_include"`
 	Hooks      bool          `yaml:"hooks"`
 	Define     []cxgo.Define `yaml:"define"`
+	Predef     string        `yaml:"predef"`
 
 	IntSize   int  `yaml:"int_size"`
 	PtrSize   int  `yaml:"ptr_size"`
@@ -240,6 +242,7 @@ func run(cmd *cobra.Command, args []string) error {
 			MaxDecls:           -1,
 			Hooks:              c.Hooks,
 			Define:             c.Define,
+			Predef:             f.Predef,
 			Idents:             ilist,
 			Include:            c.Include,
 			SysInclude:         c.SysInclude,
@@ -248,6 +251,9 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 		if f.MaxDecls > 0 {
 			fc.MaxDecls = f.MaxDecls
+		}
+		if fc.Predef == "" {
+			fc.Predef = c.Predef
 		}
 		for _, r := range f.Replace {
 			rp, err := r.Build()
