@@ -1062,6 +1062,35 @@ func foo(arg *B) {
 `,
 	},
 	{
+		name: "implicit array access",
+		src: `
+struct s {
+    int i;
+};
+
+struct s ss[] = {
+    {0},
+};
+
+
+void foo() {
+    int i = ss->i;
+}
+`,
+		exp: `
+type s struct {
+	I int32
+}
+
+var ss [1]s = [1]s{}
+
+func foo() {
+	var i int32 = ss[0].I
+	_ = i
+}
+`,
+	},
+	{
 		name: "named ptr call",
 		src: `
 typedef int H;
