@@ -76,6 +76,8 @@ loop:
 		switch s := t.(type) {
 		case types.PtrType:
 			t = s.Elem()
+		case types.ArrayType:
+			t = s.Elem()
 		case types.Named:
 			t = s.Underlying()
 		default:
@@ -1009,7 +1011,21 @@ func (g *translator) convertPostfixExpr(d *cc.PostfixExpression) Expr {
 			args = append(args, g.convertAssignExpr(it.AssignmentExpression))
 		}
 		return g.NewCCallExpr(g.ToFunc(fnc, ToFuncExpr(fnc.CType(nil))), args)
-	case cc.PostfixExpressionSelect, cc.PostfixExpressionPSelect: // x.y, x->y
+	case cc.PostfixExpressionPSelect: // x->y
+		exp := g.convertPostfixExpr(d.PostfixExpression)
+		if _, ok := exp.CType(nil).(types.ArrayType); ok { // pointer accesses might be an array
+			return NewCSelectExpr(
+				g.NewCIndexExpr(
+					exp,
+					cUintLit(0), // index the first element
+					g.convertTypeOper(d.Operand, d.Position()),
+				), g.convertIdentOn(exp.CType(nil), d.Token2),
+			)
+		}
+		return NewCSelectExpr(
+			exp, g.convertIdentOn(exp.CType(nil), d.Token2),
+		)
+	case cc.PostfixExpressionSelect: // x.y
 		exp := g.convertPostfixExpr(d.PostfixExpression)
 		return NewCSelectExpr(
 			exp, g.convertIdentOn(exp.CType(nil), d.Token2),
