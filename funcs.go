@@ -8,6 +8,9 @@ import (
 )
 
 func ToFuncExpr(exp types.Type) *types.FuncType {
+	if t, ok := exp.(types.PtrType); ok {
+		exp = t.Elem()
+	}
 	if t, ok := types.Unwrap(exp).(*types.FuncType); ok {
 		return t
 	}

@@ -38,6 +38,30 @@ func foo() {
 }
 `,
 	},
+	{
+		name: "call func from array",
+		src: `
+void foo(void) {}
+
+static void (*functions[1])(void) = {
+    foo,
+};
+
+void foo2() {
+    functions[0]();
+}
+`,
+		exp: `
+func foo() {
+}
+
+var functions [1]*func() = [1]*func(){(*func())(unsafe.Pointer(libc.FuncAddr(foo)))}
+
+func foo2() {
+	libc.AsFunc(functions[0], (*func())(nil)).(func())()
+}
+`,
+	},
 }
 
 func TestFunctions(t *testing.T) {
