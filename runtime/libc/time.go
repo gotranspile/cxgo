@@ -5,7 +5,8 @@ import (
 	"unsafe"
 )
 
-const CLOCK_REALTIME = 1
+const CLOCK_REALTIME = 0
+const CLOCK_MONOTONIC = 1
 
 const CLOCKS_PER_SEC = 1000000 // us
 
@@ -101,5 +102,11 @@ func ClockSetTime(c Clock, ts *TimeSpec) int32 {
 }
 
 func ClockGetTime(c Clock, ts *TimeSpec) int32 {
+	switch c {
+	case CLOCK_MONOTONIC:
+		d := time.Since(clockStart)
+		*ts = TimeSpec{Sec: Time(d / time.Second), NSec: int64(d % time.Second)}
+		return 0
+	}
 	panic("TODO")
 }

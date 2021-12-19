@@ -54,23 +54,25 @@ func init() {
 				"timespec":  tsT,
 			},
 			Idents: map[string]*types.Ident{
-				"time":           c.NewIdent("time", "libc.GetTime", libc.GetTime, c.FuncTT(timeT, c.PtrT(timeT))),
-				"mktime":         c.NewIdent("mktime", "libc.MakeTime", libc.MakeTime, c.FuncTT(timeT, c.PtrT(tmT))),
-				"localtime":      c.NewIdent("localtime", "libc.LocalTime", libc.LocalTime, c.FuncTT(c.PtrT(tmT), c.PtrT(timeT))),
-				"clock":          c.NewIdent("clock", "libc.ClockTicks", libc.ClockTicks, c.FuncTT(clockT)),
-				"clock_getres":   c.NewIdent("clock_getres", "libc.ClockGetRes", libc.ClockGetRes, c.FuncTT(intT, clockT, c.PtrT(tsT))),
-				"clock_settime":  c.NewIdent("clock_settime", "libc.ClockSetTime", libc.ClockSetTime, c.FuncTT(intT, clockT, c.PtrT(tsT))),
-				"clock_gettime":  c.NewIdent("clock_gettime", "libc.ClockGetTime", libc.ClockGetTime, c.FuncTT(intT, clockT, c.PtrT(tsT))),
-				"asctime":        c.NewIdent("asctime", "libc.AscTime", libc.AscTime, c.FuncTT(strT, c.PtrT(tmT))),
-				"CLOCK_REALTIME": c.NewIdent("CLOCK_REALTIME", "libc.CLOCK_REALTIME", libc.CLOCK_REALTIME, gintT),
-				"CLOCKS_PER_SEC": c.NewIdent("CLOCKS_PER_SEC", "libc.CLOCKS_PER_SEC", libc.CLOCKS_PER_SEC, gintT),
+				"time":            c.NewIdent("time", "libc.GetTime", libc.GetTime, c.FuncTT(timeT, c.PtrT(timeT))),
+				"mktime":          c.NewIdent("mktime", "libc.MakeTime", libc.MakeTime, c.FuncTT(timeT, c.PtrT(tmT))),
+				"localtime":       c.NewIdent("localtime", "libc.LocalTime", libc.LocalTime, c.FuncTT(c.PtrT(tmT), c.PtrT(timeT))),
+				"clock":           c.NewIdent("clock", "libc.ClockTicks", libc.ClockTicks, c.FuncTT(clockT)),
+				"clock_getres":    c.NewIdent("clock_getres", "libc.ClockGetRes", libc.ClockGetRes, c.FuncTT(intT, clockT, c.PtrT(tsT))),
+				"clock_settime":   c.NewIdent("clock_settime", "libc.ClockSetTime", libc.ClockSetTime, c.FuncTT(intT, clockT, c.PtrT(tsT))),
+				"clock_gettime":   c.NewIdent("clock_gettime", "libc.ClockGetTime", libc.ClockGetTime, c.FuncTT(intT, clockT, c.PtrT(tsT))),
+				"asctime":         c.NewIdent("asctime", "libc.AscTime", libc.AscTime, c.FuncTT(strT, c.PtrT(tmT))),
+				"CLOCK_REALTIME":  c.NewIdent("CLOCK_REALTIME", "libc.CLOCK_REALTIME", libc.CLOCK_REALTIME, gintT),
+				"CLOCK_MONOTONIC": c.NewIdent("CLOCK_MONOTONIC", "libc.CLOCK_MONOTONIC", libc.CLOCK_MONOTONIC, gintT),
+				"CLOCKS_PER_SEC":  c.NewIdent("CLOCKS_PER_SEC", "libc.CLOCKS_PER_SEC", libc.CLOCKS_PER_SEC, gintT),
 			},
 			// TODO
 			Header: `
 #include <` + BuiltinH + `>
 #include <` + sysTypesH + `>
 
-const _cxgo_go_int CLOCK_REALTIME = 1;
+const _cxgo_go_int CLOCK_REALTIME = 0;
+const _cxgo_go_int CLOCK_MONOTONIC = 1;
 const _cxgo_go_int CLOCKS_PER_SEC = 1000000;
 
 typedef _cxgo_int32 time_t;
