@@ -489,6 +489,73 @@ func foo(a *int32) int32 {
 `,
 	},
 	{
+		name: "blocks with vars",
+		src: `
+#define set(s) \
+{ int t = s;\
+}
+
+void main() {
+  int s;
+  if (0) {
+    set(s)
+    set(s)
+    set(s)
+  }
+}
+`,
+		exp: `
+func main() {
+	var s int32
+	if false {
+		{
+			var t int32 = s
+			_ = t
+		}
+		{
+			var t int32 = s
+			_ = t
+		}
+		{
+			var t int32 = s
+			_ = t
+		}
+	}
+}
+`,
+	},
+	{
+		name: "blocks no vars",
+		src: `
+#define set(s) \
+{ t = s;\
+}
+
+void main() {
+  int s, t;
+  if (0) {
+    set(s)
+    set(s)
+    set(s)
+  }
+}
+`,
+		exp: `
+func main() {
+	var (
+		s int32
+		t int32
+	)
+	_ = t
+	if false {
+		t = s
+		t = s
+		t = s
+	}
+}
+`,
+	},
+	{
 		name:     "sizeof only",
 		builtins: true,
 		src: `
