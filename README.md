@@ -33,7 +33,9 @@ Although it was successfully tested on multiple projects, it might _change the b
 - GCC: 783/1236 (63%)
 
 **Transpiled projects:**
-- [Potrace](./examples/potrace)
+- [Potrace](./examples/potrace) (image vectorization library)
+- [PortableGL](https://github.com/TotallyGamerJet/pgl) (OpenGL 3.x implementation)
+- [Physac](https://github.com/koteyur/physac-go) (2D physics engine)
 
 ## Installation
 
