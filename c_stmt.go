@@ -710,11 +710,21 @@ func (g *translator) cBlockCast(s CStmt) *BlockStmt {
 	return g.newBlockStmt(s)
 }
 
+func stmtHasDecl(stmts ...CStmt) bool {
+	for _, st := range stmts {
+		switch st.(type) {
+		case *CDeclStmt:
+			return true
+		}
+	}
+	return false
+}
+
 func flattenBlocks(stmts []CStmt) ([]CStmt, bool) {
 	mod := false
 	for i := 0; i < len(stmts); i++ {
 		s, ok := stmts[i].(*BlockStmt)
-		if !ok {
+		if !ok || stmtHasDecl(s.Stmts...) {
 			continue
 		}
 		arr := append([]CStmt{}, stmts[:i]...)
