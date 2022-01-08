@@ -21,7 +21,7 @@ func goName(name string) string {
 		"type", "chan", "range",
 		"copy", "close", "make",
 		"string", "byte", "rune",
-		"interface":
+		"interface", "map":
 		name += "_"
 	}
 	name = strings.ReplaceAll(name, "$", "_")
