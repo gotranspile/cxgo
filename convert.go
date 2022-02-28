@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gotranspile/cxgo/types"
 	"modernc.org/cc/v3"
 	"modernc.org/token"
+
+	"github.com/gotranspile/cxgo/types"
 )
 
 func (g *translator) newIdent(name string, t types.Type) *types.Ident {
@@ -518,7 +519,7 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 						decls = append(decls, &CTypeDef{nt})
 					}
 					if vt == nil {
-						panic("TODO: typedef of void?")
+						panic("TODO: typedef of void? " + id.Position().String())
 					}
 					nt = g.newOrFindNamedTypedef(dd.Name().String(), func() types.Type {
 						return vt
