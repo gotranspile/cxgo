@@ -130,6 +130,7 @@ type Config struct {
 	Idents           []cxgo.IdentConfig `yaml:"idents"`
 	ImplicitReturns  bool               `yaml:"implicit_returns"`
 	IgnoreIncludeDir bool               `yaml:"ignore_include_dir"`
+	UnexportedFields bool               `yaml:"unexported_fields"`
 
 	Files []*File `yaml:"files"`
 
@@ -248,6 +249,7 @@ func run(cmd *cobra.Command, args []string) error {
 			SysInclude:         c.SysInclude,
 			FixImplicitReturns: c.ImplicitReturns,
 			IgnoreIncludeDir:   c.IgnoreIncludeDir,
+			UnexportedFields:   c.UnexportedFields,
 		}
 		if f.MaxDecls > 0 {
 			fc.MaxDecls = f.MaxDecls

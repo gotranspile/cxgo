@@ -361,7 +361,7 @@ func (g *translator) convertStructType(conf IdentConfig, t cc.Type, where token.
 			fname := g.newIdent(f.Name().String(), ft)
 			if fc.Rename != "" {
 				fname.GoName = fc.Rename
-			} else {
+			} else if !g.conf.UnexportedFields {
 				fname.GoName = asExportedName(fname.Name)
 			}
 			fields = append(fields, &types.Field{

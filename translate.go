@@ -10,9 +10,10 @@ import (
 	"regexp"
 	"strings"
 
+	"modernc.org/cc/v3"
+
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/types"
-	"modernc.org/cc/v3"
 )
 
 type Config struct {
@@ -32,6 +33,7 @@ type Config struct {
 	Hooks              bool
 	FixImplicitReturns bool
 	IgnoreIncludeDir   bool
+	UnexportedFields   bool // do not export struct fields for Go
 }
 
 type TypeHint string
