@@ -128,6 +128,12 @@ func (c *Env) checkType(t1 reflect.Type, t2 types.Type) error {
 			}
 		}
 		return nil
+	case reflect.Struct:
+		_, ok := types.Unwrap(t2).(*types.StructType)
+		if !ok {
+			return fmt.Errorf("expected struct, got: %T", t2)
+		}
+		return nil
 	default:
 		return fmt.Errorf("unsupported type: %v (%v)", t1, t1.Kind())
 	}

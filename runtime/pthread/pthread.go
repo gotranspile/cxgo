@@ -49,24 +49,24 @@ func (m *MutexAttr) Destroy() int32 {
 }
 
 type Mutex struct {
-	mu *sync.Mutex
+	*sync.Mutex
 }
 
 func (m *Mutex) Init(attr *MutexAttr) int32 {
 	if attr.typ == MUTEX_RECURSIVE {
 		// FIXME
 	}
-	m.mu = new(sync.Mutex)
+	m.Mutex = new(sync.Mutex)
 	return 0
 }
 
 func (m *Mutex) Destroy() int32 {
-	m.mu = nil
+	m.Mutex = nil
 	return 0
 }
 
-func (m *Mutex) Lock() int32 {
-	m.mu.Lock()
+func (m *Mutex) CLock() int32 {
+	m.Mutex.Lock()
 	return 0
 }
 
@@ -78,7 +78,23 @@ func (m *Mutex) TimedLock(t *libc.TimeSpec) int32 {
 	panic("TODO")
 }
 
-func (m *Mutex) Unlock() int32 {
-	m.mu.Unlock()
+func (m *Mutex) CUnlock() int32 {
+	m.Mutex.Unlock()
+	return 0
+}
+
+type CondAttr struct {
+	// FIXME
+}
+
+func CondInit(c *sync.Cond, attr *CondAttr) int32 {
+	if attr != nil {
+		panic("TODO")
+	}
+	*c = *sync.NewCond(nil)
+	return 0
+}
+
+func CondFree(c *sync.Cond) int32 {
 	return 0
 }
