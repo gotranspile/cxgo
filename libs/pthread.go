@@ -16,6 +16,9 @@ func init() {
 		argT := c.PtrT(nil)
 		retT := c.PtrT(nil)
 		timespecT := c.GetLibraryType(timeH, "timespec")
+		onceT := types.NamedTGo("pthread_once_t", "sync.Once", c.MethStructT(map[string]*types.FuncType{
+			"Do": c.FuncTT(nil, c.FuncTT(nil)),
+		}))
 		threadT := types.NamedTGo("pthread_t", "pthread.Thread", c.MethStructT(map[string]*types.FuncType{
 			"Join":        c.FuncTT(intT, c.PtrT(retT)),
 			"TimedJoinNP": c.FuncTT(intT, c.PtrT(retT), c.PtrT(timespecT)),
@@ -36,11 +39,13 @@ func init() {
 		}))
 		return &Library{
 			Imports: map[string]string{
+				"sync":    "sync",
 				"pthread": RuntimePrefix + "pthread",
 			},
 			Types: map[string]types.Type{
 				"pthread_t_":          threadT,
 				"pthread_t":           c.PtrT(threadT),
+				"pthread_once_t":      onceT,
 				"pthread_attr_t":      threadAttrT,
 				"pthread_mutex_t":     mutexT,
 				"pthread_mutexattr_t": mutexAttrT,
@@ -57,6 +62,11 @@ func init() {
 const _cxgo_go_int PTHREAD_MUTEX_RECURSIVE = 1;
 
 typedef struct pthread_attr_t {} pthread_attr_t;
+typedef struct {
+	void (*Do)(void (*fnc)(void));
+} pthread_once_t;
+#define PTHREAD_ONCE_INIT {0}
+#define pthread_once(o,f) (o)->Do(f)
 
 typedef struct{
 	_cxgo_sint32 (*Join)(void **retval);
