@@ -62,11 +62,24 @@ func init() {
 const _cxgo_go_int PTHREAD_MUTEX_RECURSIVE = 1;
 
 typedef struct pthread_attr_t {} pthread_attr_t;
+
 typedef struct {
 	void (*Do)(void (*fnc)(void));
 } pthread_once_t;
 #define PTHREAD_ONCE_INIT {0}
 #define pthread_once(o,f) (o)->Do(f)
+
+typedef struct {} pthread_cond_t;
+typedef struct {} pthread_condattr_t;
+int pthread_cond_destroy(pthread_cond_t *cond);
+int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t * attr);
+int pthread_cond_broadcast(pthread_cond_t *cond);
+int pthread_cond_signal(pthread_cond_t *cond);
+#define PTHREAD_COND_INITIALIZER {0}
+
+typedef struct {} pthread_mutex_t;
+int pthread_cond_timedwait(pthread_cond_t * cond, pthread_mutex_t * mutex, const struct timespec * abstime);
+int pthread_cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex);
 
 typedef struct{
 	_cxgo_sint32 (*Join)(void **retval);
