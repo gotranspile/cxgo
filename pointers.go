@@ -208,6 +208,14 @@ func (g *translator) cAddr(x Expr) PtrExpr {
 		return g.ToPointer(x)
 	}
 	if xt.Kind().Is(types.Array) {
+		if m, ok := x.(*MakeExpr); ok && m.Size.IsConst() {
+			if sz, ok := m.Size.(Number); ok && sz.IsOne() {
+				return &NewExpr{
+					e:    g.env.Env,
+					Elem: m.Elem,
+				}
+			}
+		}
 		return g.cAddr(g.NewCIndexExpr(x, cUintLit(0), nil))
 	}
 	return &TakeAddr{g: g, X: x}
