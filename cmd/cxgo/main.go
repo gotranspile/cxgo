@@ -116,6 +116,7 @@ type Config struct {
 	Hooks      bool          `yaml:"hooks"`
 	Define     []cxgo.Define `yaml:"define"`
 	Predef     string        `yaml:"predef"`
+	SubPackage bool          `yaml:"subpackage"`
 
 	IntSize   int  `yaml:"int_size"`
 	PtrSize   int  `yaml:"ptr_size"`
@@ -312,9 +313,10 @@ func run(cmd *cobra.Command, args []string) error {
 			}
 		}
 	}
-	if _, err := os.Stat(filepath.Join(c.Out, "go.mod")); os.IsNotExist(err) {
-		var buf bytes.Buffer
-		fmt.Fprintf(&buf, `module %s
+	if !c.SubPackage {
+		if _, err := os.Stat(filepath.Join(c.Out, "go.mod")); os.IsNotExist(err) {
+			var buf bytes.Buffer
+			fmt.Fprintf(&buf, `module %s
 
 go 1.17
 
@@ -322,8 +324,9 @@ require (
 	%s %s
 )
 `, c.Package, libs.RuntimePackage, libs.RuntimePackageVers)
-		if err := ioutil.WriteFile(filepath.Join(c.Out, "go.mod"), buf.Bytes(), 0644); err != nil {
-			return err
+			if err := ioutil.WriteFile(filepath.Join(c.Out, "go.mod"), buf.Bytes(), 0644); err != nil {
+				return err
+			}
 		}
 	}
 	if err := runCmd(c.Out, c.ExecAfter); err != nil {
