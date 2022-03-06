@@ -678,8 +678,11 @@ func (e *CIndexExpr) Uses() []types.Usage {
 
 func NewCSelectExpr(x Expr, f *types.Ident) Expr {
 	x2 := cUnwrap(x)
-	if _, ok := x2.(Ident); ok {
+	switch x2 := x2.(type) {
+	case Ident:
 		x = x2
+	case *TakeAddr:
+		x = x2.X
 	}
 	return &CSelectExpr{
 		Expr: x, Sel: f,
