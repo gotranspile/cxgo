@@ -20,6 +20,7 @@ type Config struct {
 	Root               string
 	Package            string
 	GoFile             string
+	GoFilePref         string
 	Include            []string
 	SysInclude         []string
 	MaxDecls           int
@@ -88,6 +89,10 @@ func Translate(root, fname, out string, env *libs.Env, conf Config) error {
 		gofile, err = filepath.Rel(root, fname)
 		if err != nil {
 			return err
+		}
+		if conf.GoFilePref != "" {
+			dir, base := filepath.Split(gofile)
+			gofile = dir + conf.GoFilePref + base
 		}
 		// flatten C source file path to make a single large Go package
 		// TODO: auto-generate Go packages based on dir structure

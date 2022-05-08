@@ -133,7 +133,8 @@ type Config struct {
 	IgnoreIncludeDir bool               `yaml:"ignore_include_dir"`
 	UnexportedFields bool               `yaml:"unexported_fields"`
 
-	Files []*File `yaml:"files"`
+	FilePref string  `yaml:"file_pref"`
+	Files    []*File `yaml:"files"`
 
 	ExecBefore []string `yaml:"exec_before"`
 	ExecAfter  []string `yaml:"exec_after"`
@@ -239,6 +240,7 @@ func run(cmd *cobra.Command, args []string) error {
 			Root:               c.Root,
 			Package:            c.Package,
 			GoFile:             f.GoFile,
+			GoFilePref:         c.FilePref,
 			FlattenAll:         mergeBool(f.FlattenAll, c.FlattenAll),
 			ForwardDecl:        mergeBool(f.ForwardDecl, c.ForwardDecl),
 			MaxDecls:           -1,
