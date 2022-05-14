@@ -2,18 +2,16 @@ package cxgo
 
 import (
 	"io"
-	"io/ioutil"
-	"os"
+	"io/fs"
 	"strings"
 	"time"
 
 	"github.com/gotranspile/cxgo/libs"
-	"modernc.org/cc/v3"
 )
 
 var timeRun = time.Now()
 
-func newIncludeFS(c *libs.Env) cc.Filesystem {
+func newIncludeFS(c *libs.Env) fs.StatFS {
 	return includeFS{c: c}
 }
 
@@ -21,58 +19,68 @@ type includeFS struct {
 	c *libs.Env
 }
 
-func (fs includeFS) content(path string, sys bool) (string, error) {
-	if !sys {
-		return "", os.ErrNotExist
-	}
-	l, ok := fs.c.NewLibrary(path)
+func (ifs includeFS) content(path string) (string, error) {
+	l, ok := ifs.c.NewLibrary(path)
 	if !ok {
-		return "", os.ErrNotExist
+		return "", fs.ErrNotExist
 	}
 	return l.Header, nil
 }
 
-func (fs includeFS) Stat(path string, sys bool) (os.FileInfo, error) {
-	data, err := fs.content(path, sys)
+func (ifs includeFS) Stat(path string) (fs.FileInfo, error) {
+	data, err := ifs.content(path)
 	if err != nil {
 		return nil, err
 	}
-	return includeFI{name: path, data: data}, nil
+	return includeFile{name: path, size: len(data)}, nil
 }
 
-func (fs includeFS) Open(path string, sys bool) (io.ReadCloser, error) {
-	data, err := fs.content(path, sys)
+func (ifs includeFS) Open(path string) (fs.File, error) {
+	data, err := ifs.content(path)
 	if err != nil {
 		return nil, err
 	}
-	return ioutil.NopCloser(strings.NewReader(data)), nil
+	return includeFile{name: path, size: len(data), r: strings.NewReader(data)}, nil
 }
 
-type includeFI struct {
+type includeFile struct {
 	name string
-	data string
+	size int
+	r    io.Reader
 }
 
-func (fi includeFI) Name() string {
+func (fi includeFile) Name() string {
 	return fi.name
 }
 
-func (fi includeFI) Size() int64 {
-	return int64(len(fi.data))
+func (fi includeFile) Size() int64 {
+	return int64(fi.size)
 }
 
-func (fi includeFI) Mode() os.FileMode {
+func (fi includeFile) Mode() fs.FileMode {
 	return 0
 }
 
-func (fi includeFI) ModTime() time.Time {
+func (fi includeFile) ModTime() time.Time {
 	return timeRun
 }
 
-func (fi includeFI) IsDir() bool {
+func (fi includeFile) IsDir() bool {
 	return false
 }
 
-func (fi includeFI) Sys() interface{} {
+func (fi includeFile) Sys() interface{} {
 	return fi
+}
+
+func (fi includeFile) Stat() (fs.FileInfo, error) {
+	return fi, nil
+}
+
+func (fi includeFile) Read(p []byte) (int, error) {
+	return fi.r.Read(p)
+}
+
+func (fi includeFile) Close() error {
+	return nil
 }

@@ -2,14 +2,16 @@ package cxgo
 
 import (
 	"bytes"
-	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github.com/laher/mergefs"
+	"modernc.org/cc/v4"
+
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/libs/libcc"
-	"modernc.org/cc/v3"
 )
 
 type SourceConfig struct {
@@ -66,9 +68,9 @@ func addIncludeOverridePath(inc []string) []string {
 	return append(inc[:len(inc):len(inc)], libs.IncludePath)
 }
 
-var (
-	tokLBrace = cc.String("(")
-	tokRBrace = cc.String(")")
+const (
+	tokLBrace = "("
+	tokRBrace = ")"
 )
 
 type Define struct {
@@ -98,52 +100,63 @@ func ParseSource(env *libs.Env, c ParseConfig) (*cc.AST, error) {
 			}
 			buf.WriteByte('\n')
 		}
-		srcs = append(srcs, cc.Source{Name: "cxgo_config_defines.h", Value: buf.String()})
+		srcs = append(srcs, cc.Source{Name: "<config-defines>", Value: buf.String()})
 	}
+	srcs = append(srcs, cc.Source{
+		Name: "<cc-builtin>", Value: `
+#define __UINT16_TYPE__ unsigned short
+#define __UINT32_TYPE__ unsigned int
+#define __UINT64_TYPE__ unsigned long long
+#define __SIZE_TYPE__ unsigned long long
+` + cc.Builtin,
+	})
 	if c.Predefines {
-		srcs = append(srcs, cc.Source{Name: "cxgo_predef.h", Value: fmt.Sprintf(gccPredefine, "int")})
+		srcs = append(srcs, cc.Source{Name: "<cxgo-builtin>", Value: "#include <" + libs.BuiltinH + ">\n"})
+		//srcs = append(srcs, cc.Source{Name: "<cxgo-predef>", Value: fmt.Sprintf(gccPredefine, "int")})
 	}
 	srcs = append(srcs, c.Sources...)
 	includes := addIncludeOverridePath(c.Includes)
 	sysIncludes := addIncludeOverridePath(c.SysIncludes)
 	return cc.Translate(&cc.Config{
-		Config3: cc.Config3{
-			WorkingDir: c.WorkDir,
-			Filesystem: cc.Overlay(cc.LocalFS(), newIncludeFS(env)),
-		},
-		ABI: libcc.NewABI(env.Env),
-		PragmaHandler: func(p cc.Pragma, toks []cc.Token) {
+		FS:              mergefs.Merge(newIncludeFS(env), os.DirFS("/")),
+		ABI:             libcc.NewABI(env.Env),
+		IncludePaths:    includes,
+		SysIncludePaths: sysIncludes,
+		PragmaHandler: func(toks []cc.Token) error {
 			if len(toks) == 0 {
-				return
+				return nil
 			}
-			name := toks[0].Value.String()
+			name := toks[0].SrcStr()
 			toks = toks[1:]
 			switch name {
 			case "push_macro":
 				if len(toks) != 3 {
-					return
-				} else if toks[0].Value != tokLBrace || toks[2].Value != tokRBrace {
-					return
+					return nil
+				} else if toks[0].SrcStr() != tokLBrace || toks[2].SrcStr() != tokRBrace {
+					return nil
 				}
-				def := toks[1].Value.String()
+				def := toks[1].SrcStr()
 				def, err := strconv.Unquote(def)
 				if err != nil {
-					return
+					return nil
 				}
-				p.PushMacro(def)
+				// FIXME: push macro
+				//p.PushMacro(def)
 			case "pop_macro":
 				if len(toks) != 3 {
-					return
-				} else if toks[0].Value != tokLBrace || toks[2].Value != tokRBrace {
-					return
+					return nil
+				} else if toks[0].SrcStr() != tokLBrace || toks[2].SrcStr() != tokRBrace {
+					return nil
 				}
-				def := toks[1].Value.String()
+				def := toks[1].SrcStr()
 				def, err := strconv.Unquote(def)
 				if err != nil {
-					return
+					return nil
 				}
-				p.PopMacro(def)
+				// FIXME: pop macro
+				//p.PopMacro(def)
 			}
+			return nil
 		},
-	}, includes, sysIncludes, srcs)
+	}, srcs)
 }

@@ -3,7 +3,7 @@ package cxgo
 import (
 	"log"
 
-	"modernc.org/cc/v3"
+	"modernc.org/cc/v4"
 )
 
 func (g *translator) runASTPluginsC(cur string, _ *cc.AST, decl []CDecl) []CDecl {

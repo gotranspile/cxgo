@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"modernc.org/cc/v3"
+	"modernc.org/cc/v4"
 
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/types"

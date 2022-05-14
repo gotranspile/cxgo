@@ -5,21 +5,18 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"modernc.org/cc/v3"
+	"modernc.org/cc/v4"
 	"modernc.org/token"
 
 	"github.com/gotranspile/cxgo/types"
 )
 
-func (g *translator) convertTypeOper(p cc.Operand, where token.Position) types.Type {
-	if d := p.Declarator(); d != nil {
-		where = d.Position()
-	}
+func (g *translator) convertTypeOper(p cc.Type, where token.Position) types.Type {
 	var conf IdentConfig
-	if d := p.Declarator(); d != nil {
-		conf = g.idents[d.Name().String()]
+	if p != nil {
+		conf = g.idents[ccTypeName(p)]
 	}
-	return g.convertTypeRoot(conf, p.Type(), where)
+	return g.convertTypeRoot(conf, p, where)
 }
 
 // convertType is similar to newTypeCC but it will first consult the type cache.
@@ -50,7 +47,7 @@ func (g *translator) convertType(conf IdentConfig, t cc.Type, where token.Positi
 	// allow invalid types, they might still be useful
 	// since one may define them in a separate Go file
 	// and make the code valid
-	if t.Kind() == cc.Invalid {
+	if t.Kind() == cc.InvalidKind {
 		return types.UnkT(g.env.PtrSize())
 	}
 	if ct, ok := g.ctypes[t]; ok {
@@ -73,7 +70,7 @@ func (g *translator) convertTypeRoot(conf IdentConfig, t cc.Type, where token.Po
 
 // convertTypeOpt is similar to convertType, but it also allows void type by returning nil.
 func (g *translator) convertTypeOpt(conf IdentConfig, t cc.Type, where token.Position) types.Type {
-	if t == nil || t.Kind() == cc.Void || t.Kind() == cc.Invalid {
+	if t == nil || t.Kind() == cc.Void || t.Kind() == cc.InvalidKind {
 		return nil
 	}
 	return g.convertType(conf, t, where)
@@ -81,7 +78,7 @@ func (g *translator) convertTypeOpt(conf IdentConfig, t cc.Type, where token.Pos
 
 // convertTypeRootOpt is similar to convertTypeRoot, but it also allows void type by returning nil.
 func (g *translator) convertTypeRootOpt(conf IdentConfig, t cc.Type, where token.Position) types.Type {
-	if t == nil || t.Kind() == cc.Void || t.Kind() == cc.Invalid {
+	if t == nil || t.Kind() == cc.Void || t.Kind() == cc.InvalidKind {
 		return nil
 	}
 	return g.convertTypeRoot(conf, t, where)
@@ -203,51 +200,101 @@ func asExportedName(s string) string {
 	return string(unicode.ToUpper(r)) + s[n:]
 }
 
+func ccTypeName(t cc.Type) string {
+	if t == nil {
+		return ""
+	}
+	return t.Typedef().Name()
+}
+
 // newTypeCC creates a new type based on a specified C type. This function will not consult the cache for a given type.
 // It will recursively convert all the underlying and sub-types using convertType.
 func (g *translator) newTypeCC(conf IdentConfig, t cc.Type, where token.Position) types.Type {
-	sname := t.Name().String()
+	sname := ccTypeName(t)
 	if nt, ok := g.replaceType(sname); ok {
 		g.ctypes[t] = nt
 		return nt
 	}
+	if t.IsIncomplete() {
+		if nt, ok := g.named[sname]; ok {
+			return nt
+		}
+		return g.newOrFindNamedType(sname, func() types.Type {
+			return types.StructT(nil)
+		})
+	}
 	// it's handled separately because it's the only type that is allowed to be incomplete
-	if t != t.Alias() {
-		if t.IsIncomplete() {
-			if nt, ok := g.named[sname]; ok {
-				return nt
-			}
-			return g.newOrFindNamedType(sname, func() types.Type {
-				return types.StructT(nil)
-			})
-		}
-		if t, ok := g.aliases[sname]; ok {
-			return t
-		}
-		conf := g.idents[sname]
-		u := t.Alias()
-		sub := g.convertType(conf, u, where)
-		if sub, ok := sub.(types.Named); ok {
-			if name := t.Name(); name == u.Name() {
-				g.named[name.String()] = sub
-				g.ctypes[t] = sub
-				return sub
-			}
-		}
-		return g.newNamedTypeAt(sname, t, u, where)
-	}
-	switch t.Kind() {
-	case cc.Struct, cc.Union:
+	//if t != t {
+	//	if t.IsIncomplete() {
+	//		if nt, ok := g.named[sname]; ok {
+	//			return nt
+	//		}
+	//		return g.newOrFindNamedType(sname, func() types.Type {
+	//			return types.StructT(nil)
+	//		})
+	//	}
+	//	if t, ok := g.aliases[sname]; ok {
+	//		return t
+	//	}
+	//	conf := g.idents[sname]
+	//	u := t.Alias()
+	//	sub := g.convertType(conf, u, where)
+	//	if sub, ok := sub.(types.Named); ok {
+	//		if name := t.Name(); name == u.Name() {
+	//			g.named[name.String()] = sub
+	//			g.ctypes[t] = sub
+	//			return sub
+	//		}
+	//	}
+	//	return g.newNamedTypeAt(sname, t, u, where)
+	//}
+
+	switch t := t.(type) {
+	case *cc.StructType:
 		return g.convertStructType(conf, t, where)
+	case *cc.UnionType:
+		return g.convertStructType(conf, t, where)
+	case *cc.PointerType:
+		if t.Elem().Kind() == cc.Char {
+			return g.env.C().String()
+		}
+		var ptr types.PtrType
+		if name := ccTypeName(t.Elem()); name != "" {
+			if pt, ok := g.namedPtrs[name]; ok {
+				return pt
+			}
+			ptr = g.env.PtrT(nil) // incomplete
+			g.namedPtrs[name] = ptr
+		}
+		// use Opt because of the void*
+		elem := g.convertTypeOpt(IdentConfig{}, t.Elem(), where)
+		if ptr != nil {
+			ptr.SetElem(elem)
+			return ptr
+		}
+		return g.env.PtrT(elem)
+	case *cc.ArrayType:
+		if t.Elem().Kind() == cc.Char {
+			return types.ArrayT(g.env.Go().Byte(), int(t.Len()))
+		}
+		elem := g.convertType(IdentConfig{}, t.Elem(), where)
+		return types.ArrayT(
+			elem,
+			int(t.Len()),
+		)
+	case *cc.FunctionType:
+		return g.convertFuncType(conf, nil, t, where)
+	case *cc.EnumType:
+		return g.newTypeCC(IdentConfig{}, t, where)
 	}
-	if u := t.Alias(); t != u {
-		panic(fmt.Errorf("unhandled alias type: %T", t))
-	}
+	//if u := t.Alias(); t != u {
+	//	panic(fmt.Errorf("unhandled alias type: %T", t))
+	//}
 	switch kind := t.Kind(); kind {
-	case cc.UInt64, cc.UInt32, cc.UInt16, cc.UInt8:
-		return types.UintT(int(t.Size()))
-	case cc.Int64, cc.Int32, cc.Int16, cc.Int8:
-		return types.IntT(int(t.Size()))
+	//case cc.UInt64, cc.UInt32, cc.UInt16, cc.UInt8:
+	//	return types.UintT(int(t.Size()))
+	//case cc.Int64, cc.Int32, cc.Int16, cc.Int8:
+	//	return types.IntT(int(t.Size()))
 	case cc.SChar:
 		return g.env.C().SignedChar()
 	case cc.UChar:
@@ -278,68 +325,41 @@ func (g *translator) newTypeCC(conf IdentConfig, t cc.Type, where token.Position
 		return g.env.C().Char()
 	case cc.Bool:
 		return g.env.C().Bool()
-	case cc.Function:
-		return g.convertFuncType(conf, nil, t, where)
-	case cc.Ptr:
-		if t.Elem().Kind() == cc.Char {
-			return g.env.C().String()
-		}
-		var ptr types.PtrType
-		if name := t.Elem().Name(); name != 0 {
-			if pt, ok := g.namedPtrs[name.String()]; ok {
-				return pt
-			}
-			ptr = g.env.PtrT(nil) // incomplete
-			g.namedPtrs[name.String()] = ptr
-		}
-		// use Opt because of the void*
-		elem := g.convertTypeOpt(IdentConfig{}, t.Elem(), where)
-		if ptr != nil {
-			ptr.SetElem(elem)
-			return ptr
-		}
-		return g.env.PtrT(elem)
-	case cc.Array:
-		if t.Elem().Kind() == cc.Char {
-			return types.ArrayT(g.env.Go().Byte(), int(t.Len()))
-		}
-		elem := g.convertType(IdentConfig{}, t.Elem(), where)
-		return types.ArrayT(
-			elem,
-			int(t.Len()),
-		)
-	case cc.Union:
-		if name := t.Name(); name != 0 {
-			u := t.Alias()
-			if name == u.Name() {
-				u = u.Alias()
-			}
-			return g.newNamedTypeAt(name.String(), t, u, where)
-		}
-		fconf := make(map[string]IdentConfig)
-		for _, f := range conf.Fields {
-			fconf[f.Name] = f
-		}
-		var fields []*types.Field
-		for i := 0; i < t.NumField(); i++ {
-			f := t.FieldByIndex([]int{i})
-			name := f.Name().String()
-			fc := fconf[name]
-			ft := g.convertTypeRoot(fc, f.Type(), where)
-			fields = append(fields, &types.Field{
-				Name: g.newIdent(name, ft),
-			})
-		}
-		return types.UnionT(fields)
-	case cc.Enum:
-		return g.newTypeCC(IdentConfig{}, t.EnumType(), where)
+	//case cc.Union:
+	//	if name := t.Name(); name != "" {
+	//		u := t.Alias()
+	//		if name == u.Name() {
+	//			u = u.Alias()
+	//		}
+	//		return g.newNamedTypeAt(name.String(), t, u, where)
+	//	}
+	//	fconf := make(map[string]IdentConfig)
+	//	for _, f := range conf.Fields {
+	//		fconf[f.Name] = f
+	//	}
+	//	var fields []*types.Field
+	//	for i := 0; i < t.NumField(); i++ {
+	//		f := t.FieldByIndex([]int{i})
+	//		name := f.Name().String()
+	//		fc := fconf[name]
+	//		ft := g.convertTypeRoot(fc, f.Type(), where)
+	//		fields = append(fields, &types.Field{
+	//			Name: g.newIdent(name, ft),
+	//		})
+	//	}
+	//	return types.UnionT(fields)
 	default:
 		panic(fmt.Errorf("%T, %s (%s)", t, kind, t.String()))
 	}
 }
 
-func (g *translator) convertStructType(conf IdentConfig, t cc.Type, where token.Position) types.Type {
-	sname := t.Name().String()
+type ccStructOrUnion interface {
+	cc.Type
+	FieldByIndex(i int) *cc.Field
+}
+
+func (g *translator) convertStructType(conf IdentConfig, t ccStructOrUnion, where token.Position) types.Type {
+	sname := ccTypeName(t)
 	if c, ok := g.idents[sname]; ok {
 		conf = c
 	}
@@ -349,16 +369,19 @@ func (g *translator) convertStructType(conf IdentConfig, t cc.Type, where token.
 	}
 	buildType := func() types.Type {
 		var fields []*types.Field
-		for i := 0; i < t.NumField(); i++ {
-			f := t.FieldByIndex([]int{i})
-			fc := fconf[f.Name().String()]
+		for i := 0; ; i++ {
+			f := t.FieldByIndex(i)
+			if f == nil {
+				break
+			}
+			fc := fconf[f.Name()]
 			ft := g.convertTypeRoot(fc, f.Type(), where)
-			if f.Name() == 0 {
+			if f.Name() == "" {
 				st := types.Unwrap(ft).(*types.StructType)
 				fields = append(fields, st.Fields()...)
 				continue
 			}
-			fname := g.newIdent(f.Name().String(), ft)
+			fname := g.newIdent(f.Name(), ft)
 			if fc.Rename != "" {
 				fname.GoName = fc.Rename
 			} else if !g.conf.UnexportedFields {
@@ -378,18 +401,18 @@ func (g *translator) convertStructType(conf IdentConfig, t cc.Type, where token.
 			s = types.StructT(fields)
 		}
 		s.Where = where.String()
-		if t.Name() == 0 {
+		if ccTypeName(t) == "" {
 			return s
 		}
 		return s
 	}
-	if t.Name() == 0 {
+	if ccTypeName(t) == "" {
 		return buildType()
 	}
 	return g.newOrFindNamedType(sname, buildType)
 }
 
-func (g *translator) convertFuncType(conf IdentConfig, d *cc.Declarator, t cc.Type, where token.Position) *types.FuncType {
+func (g *translator) convertFuncType(conf IdentConfig, d *cc.Declarator, t *cc.FunctionType, where token.Position) *types.FuncType {
 	if kind := t.Kind(); kind != cc.Function {
 		panic(kind)
 	}
@@ -415,18 +438,19 @@ func (g *translator) convertFuncType(conf IdentConfig, d *cc.Declarator, t cc.Ty
 			continue
 		}
 		var fc IdentConfig
-		if ac, ok := aconf[p.Name().String()]; ok {
+		if ac, ok := aconf[p.Name()]; ok {
 			fc = ac
 		} else if ac, ok = iconf[i]; ok {
 			fc = ac
 		}
 		at := g.convertTypeRoot(fc, pt, where)
 		var name *types.Ident
-		if d != nil && p.Name() != 0 {
-			name = g.convertIdent(d.ParamScope(), p.Declarator().NameTok(), at).Ident
+		if d != nil && p.Name() != "" {
+			// TODO: use param scope?
+			name = g.convertIdent(p.Declarator.Name(), at, p.Position(), p.Declarator).Ident
 			named++
-		} else if p.Name() != 0 {
-			name = g.convertIdentWith(p.Declarator().NameTok().String(), at, p.Declarator()).Ident
+		} else if p.Name() != "" {
+			name = g.convertIdentWith(p.Declarator.Name(), at, p.Declarator).Ident
 			named++
 		} else {
 			name = types.NewUnnamed(at)

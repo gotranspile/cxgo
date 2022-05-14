@@ -1,10 +1,6 @@
 package cxgo
 
-import "github.com/gotranspile/cxgo/libs"
-
 const gccPredefine = `
-#include <` + libs.BuiltinH + `>
-
 #define __asm asm
 #define __attribute(x)
 #define __attribute__(x)

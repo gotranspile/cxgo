@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"modernc.org/cc/v3"
+	"modernc.org/cc/v4"
 	"modernc.org/token"
 
 	"github.com/gotranspile/cxgo/types"
@@ -19,7 +19,8 @@ func (g *translator) newIdent(name string, t types.Type) *types.Ident {
 	return types.NewIdent(name, t)
 }
 
-func (g *translator) convMacro(name string, fnc func() Expr) Expr {
+func (g *translator) convMacro(m *cc.Macro, fnc func() Expr) Expr {
+	name := m.Name.SrcStr()
 	if g.env.ForceMacro(name) {
 		return fnc()
 	}
@@ -34,19 +35,11 @@ func (g *translator) convMacro(name string, fnc func() Expr) Expr {
 	return IdentExpr{id}
 }
 
-func (g *translator) convertIdent(scope cc.Scope, tok cc.Token, t types.Type) IdentExpr {
-	var decl []cc.Node
-	for len(scope) != 0 {
-		if nodes, ok := scope[tok.Value]; ok {
-			decl = nodes
-			break
-		}
-		scope = scope.Parent()
-	}
+func (g *translator) convertIdent(tok string, t types.Type, where token.Position, decl ...cc.Node) IdentExpr {
 	if len(decl) == 0 {
-		panic(fmt.Errorf("unresolved identifier: %s (%s)", tok, tok.Position()))
+		panic(fmt.Errorf("unresolved identifier: %s (%s)", tok, where))
 	}
-	return g.convertIdentWith(tok.String(), t, decl...)
+	return g.convertIdentWith(tok, t, decl...)
 }
 
 func (g *translator) convertIdentWith(name string, t types.Type, decls ...cc.Node) IdentExpr {
@@ -87,7 +80,7 @@ loop:
 	}
 	switch t := t.(type) {
 	case *types.StructType:
-		name := tok.Value.String()
+		name := tok.SrcStr()
 		for _, f := range t.Fields() {
 			if name == f.Name.Name {
 				return f.Name, true
@@ -107,16 +100,16 @@ func (g *translator) convertIdentOn(t types.Type, tok cc.Token) *types.Ident {
 	if ok {
 		return id
 	}
-	panic(fmt.Errorf("%#v.%q (%s)", t, tok.Value.String(), tok.Position()))
+	panic(fmt.Errorf("%#v.%q (%s)", t, tok.SrcStr(), tok.Position()))
 }
 
 func (g *translator) convertFuncDef(d *cc.FunctionDefinition) []CDecl {
 	decl := d.Declarator
 	switch dd := decl.DirectDeclarator; dd.Case {
 	case cc.DirectDeclaratorFuncParam, cc.DirectDeclaratorFuncIdent:
-		sname := decl.Name().String()
+		sname := decl.Name()
 		conf := g.idents[sname]
-		ft := g.convertFuncType(conf, decl, decl.Type(), decl.Position())
+		ft := g.convertFuncType(conf, decl, decl.Type().(*cc.FunctionType), decl.Position())
 		if !g.inCurFile(d) {
 			return nil
 		}
@@ -195,7 +188,7 @@ func (g *translator) convertInitList(typ types.Type, list *cc.InitializerList) E
 func (g *translator) convertInitExpr(d *cc.Initializer) Expr {
 	switch d.Case {
 	case cc.InitializerExpr:
-		return g.convertAssignExpr(d.AssignmentExpression)
+		return g.convertExpr(d.AssignmentExpression)
 	case cc.InitializerInitList:
 		return g.convertInitList(
 			g.convertTypeRoot(IdentConfig{}, d.Type(), d.Position()),
@@ -225,7 +218,7 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 	for it := d.EnumeratorList; it != nil; it = it.EnumeratorList {
 		e := it.Enumerator
 		if e.Case == cc.EnumeratorExpr {
-			init := g.convertConstExpr(e.ConstantExpression)
+			init := g.convertExpr(e.ConstantExpression)
 			vd.Inits = append(vd.Inits, init)
 			values++
 			continue
@@ -276,7 +269,7 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 				next = l.Uint() + 1
 			}
 		}
-		vd.Names = append(vd.Names, g.newIdent(e.Token.Value.String(), typ))
+		vd.Names = append(vd.Names, g.newIdent(e.Token.SrcStr(), typ))
 	}
 	if len(vd.Names) == 0 {
 		return nil
@@ -326,7 +319,7 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 		switch id.Case {
 		case cc.InitDeclaratorDecl, cc.InitDeclaratorInit:
 			dd := id.Declarator
-			if name := dd.Name().String(); name != "" {
+			if name := dd.Name(); name != "" {
 				names = append(names, name)
 			}
 		}
@@ -430,15 +423,15 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 		if isTypedef {
 			name, dd := g.convertTypedefName(d)
 			und := g.convertType(IdentConfig{}, dd.Type(), name.Position())
-			nt := g.newOrFindNamedType(name.Value.String(), func() types.Type {
+			nt := g.newOrFindNamedType(name.SrcStr(), func() types.Type {
 				return und
 			})
 			typ = nt
 			decls = append(decls, &CTypeDef{nt})
 		} else if d.InitDeclaratorList != nil {
 			hasOtherDecls = true
-		} else if name := enumSpec.Token2; name.Value != 0 {
-			nt := g.newOrFindNamedType(name.Value.String(), func() types.Type {
+		} else if name := enumSpec.Token2; len(name.Src()) != 0 {
+			nt := g.newOrFindNamedType(name.SrcStr(), func() types.Type {
 				return g.env.DefIntT()
 			})
 			typ = nt
@@ -493,7 +486,7 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 		switch id.Case {
 		case cc.InitDeclaratorDecl, cc.InitDeclaratorInit:
 			dd := id.Declarator
-			dname := dd.Name().String()
+			dname := dd.Name()
 			conf := g.idents[dname]
 			vt := g.convertTypeRootOpt(conf, dd.Type(), id.Position())
 			var init Expr
@@ -512,7 +505,7 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 				}
 				nt, ok := vt.(types.Named)
 				// TODO: this case is "too smart", we already handle those kind of double typedefs on a lower level
-				if !ok || nt.Name().Name != dd.Name().String() {
+				if !ok || nt.Name().Name != dd.Name() {
 					// we don't call a *From version of the method here because dd.Type() is an underlying type,
 					// not a typedef type
 					if ok && !strings.HasPrefix(nt.Name().Name, "_cxgo_") {
@@ -521,7 +514,7 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 					if vt == nil {
 						panic("TODO: typedef of void? " + id.Position().String())
 					}
-					nt = g.newOrFindNamedTypedef(dd.Name().String(), func() types.Type {
+					nt = g.newOrFindNamedTypedef(dd.Name(), func() types.Type {
 						return vt
 					})
 					if nt == nil {
@@ -533,7 +526,7 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 				decls = append(decls, &CTypeDef{nt})
 				continue
 			}
-			name := g.convertIdentWith(dd.NameTok().String(), vt, dd)
+			name := g.convertIdentWith(dd.Name(), vt, dd)
 			isDecl := false
 			for di := dd.DirectDeclarator; di != nil; di = di.DirectDeclarator {
 				if di.Case == cc.DirectDeclaratorDecl {
@@ -634,22 +627,58 @@ func (g *translator) convertCompBlockStmt(d *cc.CompoundStatement) *BlockStmt {
 	return g.newBlockStmt(stmts...)
 }
 
-func (g *translator) convertExpr(d *cc.Expression) Expr {
-	if d.Expression == nil {
-		return g.convertAssignExpr(d.AssignmentExpression)
+func (g *translator) convertExpr(e cc.ExpressionNode) Expr {
+	switch e := e.(type) {
+	case *cc.ExpressionList:
+		var exprs []cc.ExpressionNode
+		for it := e; it != nil; it = it.ExpressionList {
+			exprs = append(exprs, e.AssignmentExpression)
+		}
+		var m []Expr
+		for i := len(exprs) - 1; i >= 0; i-- {
+			m = append(m, g.convertExpr(exprs[i]))
+		}
+		return g.NewCMultiExpr(m...)
+	case *cc.AdditiveExpression:
+		return g.convertAddExpr(e)
+	case *cc.AndExpression:
+		return g.convertAndExpr(e)
+	case *cc.AssignmentExpression:
+		return g.convertAssignExpr(e)
+	case *cc.CastExpression:
+		return g.convertCastExpr(e)
+	case *cc.ConditionalExpression:
+		return g.convertCondExpr(e)
+	case *cc.ConstantExpression:
+		return g.convertConstExpr(e)
+	case *cc.EqualityExpression:
+		return g.convertEqExpr(e)
+	case *cc.ExclusiveOrExpression:
+		return g.convertLOrExcExpr(e)
+	case *cc.InclusiveOrExpression:
+		return g.convertLOrIncExpr(e)
+	case *cc.LogicalAndExpression:
+		return g.convertLAndExpr(e)
+	case *cc.LogicalOrExpression:
+		return g.convertLOrExpr(e)
+	case *cc.MultiplicativeExpression:
+		return g.convertMulExpr(e)
+	case *cc.PostfixExpression:
+		return g.convertPostfixExpr(e)
+	case *cc.PrimaryExpression:
+		return g.convertPriExpr(e)
+	case *cc.RelationalExpression:
+		return g.convertRelExpr(e)
+	case *cc.ShiftExpression:
+		return g.convertShiftExpr(e)
+	case *cc.UnaryExpression:
+		return g.convertUnaryExpr(e)
+	default:
+		panic(fmt.Errorf("unsupported expression type: %T", e))
 	}
-	var exprs []*cc.AssignmentExpression
-	for ; d != nil; d = d.Expression {
-		exprs = append(exprs, d.AssignmentExpression)
-	}
-	var m []Expr
-	for i := len(exprs) - 1; i >= 0; i-- {
-		m = append(m, g.convertAssignExpr(exprs[i]))
-	}
-	return g.NewCMultiExpr(m...)
 }
 
-func (g *translator) convertExprOpt(d *cc.Expression) Expr {
+func (g *translator) convertExprOpt(d cc.ExpressionNode) Expr {
 	if d == nil {
 		return nil
 	}
@@ -659,10 +688,10 @@ func (g *translator) convertExprOpt(d *cc.Expression) Expr {
 func (g *translator) convertMulExpr(d *cc.MultiplicativeExpression) Expr {
 	switch d.Case {
 	case cc.MultiplicativeExpressionCast:
-		return g.convertCastExpr(d.CastExpression)
+		return g.convertExpr(d.CastExpression)
 	}
-	x := g.convertMulExpr(d.MultiplicativeExpression)
-	y := g.convertCastExpr(d.CastExpression)
+	x := g.convertExpr(d.MultiplicativeExpression)
+	y := g.convertExpr(d.CastExpression)
 	var op BinaryOp
 	switch d.Case {
 	case cc.MultiplicativeExpressionMul:
@@ -676,17 +705,17 @@ func (g *translator) convertMulExpr(d *cc.MultiplicativeExpression) Expr {
 	}
 	return g.NewCBinaryExprT(
 		x, op, y,
-		g.convertTypeOper(d.Operand, d.Position()),
+		g.convertTypeOper(d.Type(), d.Position()),
 	)
 }
 
 func (g *translator) convertAddExpr(d *cc.AdditiveExpression) Expr {
 	switch d.Case {
 	case cc.AdditiveExpressionMul:
-		return g.convertMulExpr(d.MultiplicativeExpression)
+		return g.convertExpr(d.MultiplicativeExpression)
 	}
-	x := g.convertAddExpr(d.AdditiveExpression)
-	y := g.convertMulExpr(d.MultiplicativeExpression)
+	x := g.convertExpr(d.AdditiveExpression)
+	y := g.convertExpr(d.MultiplicativeExpression)
 	var op BinaryOp
 	switch d.Case {
 	case cc.AdditiveExpressionAdd:
@@ -698,17 +727,17 @@ func (g *translator) convertAddExpr(d *cc.AdditiveExpression) Expr {
 	}
 	return g.NewCBinaryExprT(
 		x, op, y,
-		g.convertTypeOper(d.Operand, d.Position()),
+		g.convertTypeOper(d.Type(), d.Position()),
 	)
 }
 
 func (g *translator) convertShiftExpr(d *cc.ShiftExpression) Expr {
 	switch d.Case {
 	case cc.ShiftExpressionAdd:
-		return g.convertAddExpr(d.AdditiveExpression)
+		return g.convertExpr(d.AdditiveExpression)
 	}
-	x := g.convertShiftExpr(d.ShiftExpression)
-	y := g.convertAddExpr(d.AdditiveExpression)
+	x := g.convertExpr(d.ShiftExpression)
+	y := g.convertExpr(d.AdditiveExpression)
 	var op BinaryOp
 	switch d.Case {
 	case cc.ShiftExpressionLsh:
@@ -720,17 +749,17 @@ func (g *translator) convertShiftExpr(d *cc.ShiftExpression) Expr {
 	}
 	return g.NewCBinaryExprT(
 		x, op, y,
-		g.convertTypeOper(d.Operand, d.Position()),
+		g.convertTypeOper(d.Type(), d.Position()),
 	)
 }
 
 func (g *translator) convertRelExpr(d *cc.RelationalExpression) Expr {
 	switch d.Case {
 	case cc.RelationalExpressionShift:
-		return g.convertShiftExpr(d.ShiftExpression)
+		return g.convertExpr(d.ShiftExpression)
 	}
-	x := g.convertRelExpr(d.RelationalExpression)
-	y := g.convertShiftExpr(d.ShiftExpression)
+	x := g.convertExpr(d.RelationalExpression)
+	y := g.convertExpr(d.ShiftExpression)
 	var op ComparisonOp
 	switch d.Case {
 	case cc.RelationalExpressionLt:
@@ -750,10 +779,10 @@ func (g *translator) convertRelExpr(d *cc.RelationalExpression) Expr {
 func (g *translator) convertEqExpr(d *cc.EqualityExpression) Expr {
 	switch d.Case {
 	case cc.EqualityExpressionRel:
-		return g.convertRelExpr(d.RelationalExpression)
+		return g.convertExpr(d.RelationalExpression)
 	}
-	x := g.convertEqExpr(d.EqualityExpression)
-	y := g.convertRelExpr(d.RelationalExpression)
+	x := g.convertExpr(d.EqualityExpression)
+	y := g.convertExpr(d.RelationalExpression)
 	var op ComparisonOp
 	switch d.Case {
 	case cc.EqualityExpressionEq:
@@ -769,13 +798,13 @@ func (g *translator) convertEqExpr(d *cc.EqualityExpression) Expr {
 func (g *translator) convertAndExpr(d *cc.AndExpression) Expr {
 	switch d.Case {
 	case cc.AndExpressionEq:
-		return g.convertEqExpr(d.EqualityExpression)
+		return g.convertExpr(d.EqualityExpression)
 	case cc.AndExpressionAnd:
-		x := g.convertAndExpr(d.AndExpression)
-		y := g.convertEqExpr(d.EqualityExpression)
+		x := g.convertExpr(d.AndExpression)
+		y := g.convertExpr(d.EqualityExpression)
 		return g.NewCBinaryExprT(
 			x, BinOpBitAnd, y,
-			g.convertTypeOper(d.Operand, d.Position()),
+			g.convertTypeOper(d.Type(), d.Position()),
 		)
 	default:
 		panic(d.Case.String())
@@ -785,13 +814,13 @@ func (g *translator) convertAndExpr(d *cc.AndExpression) Expr {
 func (g *translator) convertLOrExcExpr(d *cc.ExclusiveOrExpression) Expr {
 	switch d.Case {
 	case cc.ExclusiveOrExpressionAnd:
-		return g.convertAndExpr(d.AndExpression)
+		return g.convertExpr(d.AndExpression)
 	case cc.ExclusiveOrExpressionXor:
-		x := g.convertLOrExcExpr(d.ExclusiveOrExpression)
-		y := g.convertAndExpr(d.AndExpression)
+		x := g.convertExpr(d.ExclusiveOrExpression)
+		y := g.convertExpr(d.AndExpression)
 		return g.NewCBinaryExprT(
 			x, BinOpBitXor, y,
-			g.convertTypeOper(d.Operand, d.Position()),
+			g.convertTypeOper(d.Type(), d.Position()),
 		)
 	default:
 		panic(d.Case.String())
@@ -801,13 +830,13 @@ func (g *translator) convertLOrExcExpr(d *cc.ExclusiveOrExpression) Expr {
 func (g *translator) convertLOrIncExpr(d *cc.InclusiveOrExpression) Expr {
 	switch d.Case {
 	case cc.InclusiveOrExpressionXor:
-		return g.convertLOrExcExpr(d.ExclusiveOrExpression)
+		return g.convertExpr(d.ExclusiveOrExpression)
 	case cc.InclusiveOrExpressionOr:
-		x := g.convertLOrIncExpr(d.InclusiveOrExpression)
-		y := g.convertLOrExcExpr(d.ExclusiveOrExpression)
+		x := g.convertExpr(d.InclusiveOrExpression)
+		y := g.convertExpr(d.ExclusiveOrExpression)
 		return g.NewCBinaryExprT(
 			x, BinOpBitOr, y,
-			g.convertTypeOper(d.Operand, d.Position()),
+			g.convertTypeOper(d.Type(), d.Position()),
 		)
 	default:
 		panic(d.Case.String())
@@ -817,10 +846,10 @@ func (g *translator) convertLOrIncExpr(d *cc.InclusiveOrExpression) Expr {
 func (g *translator) convertLAndExpr(d *cc.LogicalAndExpression) Expr {
 	switch d.Case {
 	case cc.LogicalAndExpressionOr:
-		return g.convertLOrIncExpr(d.InclusiveOrExpression)
+		return g.convertExpr(d.InclusiveOrExpression)
 	case cc.LogicalAndExpressionLAnd:
-		x := g.convertLAndExpr(d.LogicalAndExpression)
-		y := g.convertLOrIncExpr(d.InclusiveOrExpression)
+		x := g.convertExpr(d.LogicalAndExpression)
+		y := g.convertExpr(d.InclusiveOrExpression)
 		return And(g.ToBool(x), g.ToBool(y))
 	default:
 		panic(d.Case.String())
@@ -830,10 +859,10 @@ func (g *translator) convertLAndExpr(d *cc.LogicalAndExpression) Expr {
 func (g *translator) convertLOrExpr(d *cc.LogicalOrExpression) Expr {
 	switch d.Case {
 	case cc.LogicalOrExpressionLAnd:
-		return g.convertLAndExpr(d.LogicalAndExpression)
+		return g.convertExpr(d.LogicalAndExpression)
 	case cc.LogicalOrExpressionLOr:
-		x := g.convertLOrExpr(d.LogicalOrExpression)
-		y := g.convertLAndExpr(d.LogicalAndExpression)
+		x := g.convertExpr(d.LogicalOrExpression)
+		y := g.convertExpr(d.LogicalAndExpression)
 		return Or(g.ToBool(x), g.ToBool(y))
 	default:
 		panic(d.Case.String())
@@ -843,13 +872,13 @@ func (g *translator) convertLOrExpr(d *cc.LogicalOrExpression) Expr {
 func (g *translator) convertCondExpr(d *cc.ConditionalExpression) Expr {
 	switch d.Case {
 	case cc.ConditionalExpressionLOr:
-		return g.convertLOrExpr(d.LogicalOrExpression)
+		return g.convertExpr(d.LogicalOrExpression)
 	case cc.ConditionalExpressionCond:
-		cond := g.convertLOrExpr(d.LogicalOrExpression)
+		cond := g.convertExpr(d.LogicalOrExpression)
 		return g.NewCTernaryExpr(
 			g.ToBool(cond),
-			g.convertExpr(d.Expression),
-			g.convertCondExpr(d.ConditionalExpression),
+			g.convertExpr(d.ExpressionList),
+			g.convertExpr(d.ConditionalExpression),
 		)
 	default:
 		panic(d.Case.String())
@@ -859,90 +888,88 @@ func (g *translator) convertCondExpr(d *cc.ConditionalExpression) Expr {
 func (g *translator) convertPriExpr(d *cc.PrimaryExpression) Expr {
 	switch d.Case {
 	case cc.PrimaryExpressionIdent: // x
-		if d.Token.String() == "asm" {
+		if d.Token.SrcStr() == "asm" {
 			return &CAsmExpr{e: g.env.Env}
 		}
-		return g.convertIdent(d.ResolvedIn(), d.Token, g.convertTypeOper(d.Operand, d.Position()))
-	case cc.PrimaryExpressionEnum: // X
-		return g.convertIdent(d.ResolvedIn(), d.Token, g.convertTypeOper(d.Operand, d.Position()))
+		return g.convertIdent(d.Token.SrcStr(), g.convertTypeOper(d.Type(), d.Position()), d.Position(), d.ResolvedTo())
 	case cc.PrimaryExpressionInt: // 1
 		fnc := func() Expr {
-			v, err := parseCIntLit(d.Token.String())
+			v, err := parseCIntLit(d.Token.SrcStr())
 			if err != nil {
 				panic(err)
 			}
 			return v
 		}
-		if m := d.Token.Macro(); m != 0 {
-			return g.convMacro(m.String(), fnc)
+		if m := d.Macro(); m != nil {
+			return g.convMacro(m, fnc)
 		}
 		return fnc()
 	case cc.PrimaryExpressionFloat: // 0.0
 		fnc := func() Expr {
-			v, err := parseCFloatLit(d.Token.String())
+			v, err := parseCFloatLit(d.Token.SrcStr())
 			if err != nil {
 				panic(err)
 			}
-			if d.Operand == nil {
+			if d.Value() == nil {
 				return v
 			}
 			return g.cCast(
-				g.convertTypeOper(d.Operand, d.Position()),
+				g.convertTypeOper(d.Type(), d.Position()),
 				v,
 			)
 		}
-		if m := d.Token.Macro(); m != 0 {
-			return g.convMacro(m.String(), fnc)
-		}
+		//if m := d.Token.Macro(); m != 0 {
+		//	return g.convMacro(m.String(), fnc)
+		//}
 		return fnc()
 	case cc.PrimaryExpressionChar: // 'x'
 		fnc := func() Expr {
 			return cLitT(
-				d.Token.String(), CLitChar,
-				g.convertTypeOper(d.Operand, d.Position()),
+				d.Token.SrcStr(), CLitChar,
+				g.convertTypeOper(d.Type(), d.Position()),
 			)
 		}
-		if m := d.Token.Macro(); m != 0 {
-			return g.convMacro(m.String(), fnc)
-		}
+		//if m := d.Token.Macro(); m != 0 {
+		//	return g.convMacro(m.String(), fnc)
+		//}
 		return fnc()
 	case cc.PrimaryExpressionLChar: // 'x'
 		fnc := func() Expr {
 			return cLitT(
-				d.Token.String(), CLitWChar,
-				g.convertTypeOper(d.Operand, d.Position()),
+				d.Token.SrcStr(), CLitWChar,
+				g.convertTypeOper(d.Type(), d.Position()),
 			)
 		}
-		if m := d.Token.Macro(); m != 0 {
-			return g.convMacro(m.String(), fnc)
-		}
+		//if m := d.Token.Macro(); m != 0 {
+		//	return g.convMacro(m.String(), fnc)
+		//}
 		return fnc()
 	case cc.PrimaryExpressionString: // "x"
 		fnc := func() Expr {
-			v, err := g.parseCStringLit(d.Token.String())
+			v, err := g.parseCStringLit(d.Token.SrcStr())
 			if err != nil {
 				panic(err)
 			}
 			return v
 		}
-		if m := d.Token.Macro(); m != 0 {
-			return g.convMacro(m.String(), fnc)
-		}
+		//if m := d.Token.Macro(); m != 0 {
+		//	return g.convMacro(m.String(), fnc)
+		//}
 		return fnc()
 	case cc.PrimaryExpressionLString: // L"x"
 		fnc := func() Expr {
-			v, err := g.parseCWStringLit(d.Token.String())
+			v, err := g.parseCWStringLit(d.Token.SrcStr())
 			if err != nil {
 				panic(err)
 			}
 			return v
 		}
-		if m := d.Token.Macro(); m != 0 {
-			return g.convMacro(m.String(), fnc)
-		}
+		//if m := d.Token.Macro(); m != 0 {
+		//	return g.convMacro(m.String(), fnc)
+		//}
 		return fnc()
 	case cc.PrimaryExpressionExpr: // "(x)"
-		e := g.convertExpr(d.Expression)
+		e := g.convertExpr(d.ExpressionList)
 		return cParen(e)
 	case cc.PrimaryExpressionStmt: // "({...; x})"
 		stmt := g.convertCompStmt(d.CompoundStatement)
@@ -975,7 +1002,7 @@ func (g *translator) convertOneDesignator(typ types.Type, list *cc.DesignatorLis
 	)
 	switch d.Case {
 	case cc.DesignatorIndex:
-		f = &CompLitField{Index: g.convertConstExpr(d.ConstantExpression)}
+		f = &CompLitField{Index: g.convertExpr(d.ConstantExpression)}
 		sub = typ.(types.ArrayType).Elem()
 	case cc.DesignatorField:
 		f = &CompLitField{Field: g.convertIdentOn(typ, d.Token2)}
@@ -998,28 +1025,28 @@ func (g *translator) convertOneDesignator(typ types.Type, list *cc.DesignatorLis
 func (g *translator) convertPostfixExpr(d *cc.PostfixExpression) Expr {
 	switch d.Case {
 	case cc.PostfixExpressionPrimary:
-		return g.convertPriExpr(d.PrimaryExpression)
+		return g.convertExpr(d.PrimaryExpression)
 	case cc.PostfixExpressionIndex: // "x[y]"
 		return g.NewCIndexExpr(
-			g.convertPostfixExpr(d.PostfixExpression),
-			g.convertExpr(d.Expression),
-			g.convertTypeOper(d.Operand, d.Position()),
+			g.convertExpr(d.PostfixExpression),
+			g.convertExpr(d.ExpressionList),
+			g.convertTypeOper(d.Type(), d.Position()),
 		)
 	case cc.PostfixExpressionCall: // x([args])
-		fnc := g.convertPostfixExpr(d.PostfixExpression)
+		fnc := g.convertExpr(d.PostfixExpression)
 		var args []Expr
 		for it := d.ArgumentExpressionList; it != nil; it = it.ArgumentExpressionList {
-			args = append(args, g.convertAssignExpr(it.AssignmentExpression))
+			args = append(args, g.convertExpr(it.AssignmentExpression))
 		}
 		return g.NewCCallExpr(g.ToFunc(fnc, ToFuncExpr(fnc.CType(nil))), args)
 	case cc.PostfixExpressionPSelect: // x->y
-		exp := g.convertPostfixExpr(d.PostfixExpression)
+		exp := g.convertExpr(d.PostfixExpression)
 		if _, ok := exp.CType(nil).(types.ArrayType); ok { // pointer accesses might be an array
 			return NewCSelectExpr(
 				g.NewCIndexExpr(
 					exp,
 					cUintLit(0), // index the first element
-					g.convertTypeOper(d.Operand, d.Position()),
+					g.convertTypeOper(d.Type(), d.Position()),
 				), g.convertIdentOn(exp.CType(nil), d.Token2),
 			)
 		}
@@ -1027,15 +1054,15 @@ func (g *translator) convertPostfixExpr(d *cc.PostfixExpression) Expr {
 			exp, g.convertIdentOn(exp.CType(nil), d.Token2),
 		)
 	case cc.PostfixExpressionSelect: // x.y
-		exp := g.convertPostfixExpr(d.PostfixExpression)
+		exp := g.convertExpr(d.PostfixExpression)
 		return NewCSelectExpr(
 			exp, g.convertIdentOn(exp.CType(nil), d.Token2),
 		)
 	case cc.PostfixExpressionInc: // x++
-		x := g.convertPostfixExpr(d.PostfixExpression)
+		x := g.convertExpr(d.PostfixExpression)
 		return g.NewCPostfixExpr(x, false)
 	case cc.PostfixExpressionDec: // x--
-		x := g.convertPostfixExpr(d.PostfixExpression)
+		x := g.convertExpr(d.PostfixExpression)
 		return g.NewCPostfixExpr(x, true)
 	case cc.PostfixExpressionComplit:
 		return g.convertInitList(
@@ -1050,14 +1077,14 @@ func (g *translator) convertPostfixExpr(d *cc.PostfixExpression) Expr {
 func (g *translator) convertCastExpr(d *cc.CastExpression) Expr {
 	switch d.Case {
 	case cc.CastExpressionUnary:
-		return g.convertUnaryExpr(d.UnaryExpression)
+		return g.convertExpr(d.UnaryExpression)
 	case cc.CastExpressionCast:
-		x := g.convertCastExpr(d.CastExpression)
-		if k := d.Operand.Type().Kind(); k == cc.Invalid || k == cc.Void {
+		x := g.convertExpr(d.CastExpression)
+		if k := d.Type().Kind(); k == cc.InvalidKind || k == cc.Void {
 			return x
 		}
 		return g.cCast(
-			g.convertTypeOper(d.Operand, d.Position()),
+			g.convertTypeOper(d.Type(), d.Position()),
 			x,
 		)
 	default:
@@ -1068,18 +1095,18 @@ func (g *translator) convertCastExpr(d *cc.CastExpression) Expr {
 func (g *translator) convertUnaryExpr(d *cc.UnaryExpression) Expr {
 	switch d.Case {
 	case cc.UnaryExpressionPostfix:
-		return g.convertPostfixExpr(d.PostfixExpression)
+		return g.convertExpr(d.PostfixExpression)
 	case cc.UnaryExpressionInc: // ++x
-		x := g.convertUnaryExpr(d.UnaryExpression)
+		x := g.convertExpr(d.UnaryExpression)
 		return g.NewCPrefixExpr(x, false)
 	case cc.UnaryExpressionDec: // --x
-		x := g.convertUnaryExpr(d.UnaryExpression)
+		x := g.convertExpr(d.UnaryExpression)
 		return g.NewCPrefixExpr(x, true)
 	case cc.UnaryExpressionSizeofExpr: // sizeof x
 		return g.NewCUnaryExprT(
 			UnarySizeof,
-			g.convertUnaryExpr(d.UnaryExpression),
-			g.convertTypeOper(d.Operand, d.Position()),
+			g.convertExpr(d.UnaryExpression),
+			g.convertTypeOper(d.Type(), d.Position()),
 		)
 	case cc.UnaryExpressionSizeofType: // sizeof tp
 		return g.SizeofT(
@@ -1095,11 +1122,11 @@ func (g *translator) convertUnaryExpr(d *cc.UnaryExpression) Expr {
 	var op UnaryOp
 	switch d.Case {
 	case cc.UnaryExpressionAddrof: // &x
-		x := g.convertCastExpr(d.CastExpression)
+		x := g.convertExpr(d.CastExpression)
 		return g.cAddr(x)
 	case cc.UnaryExpressionDeref: // *x
-		x := g.convertCastExpr(d.CastExpression)
-		typ := g.convertTypeOper(d.Operand, d.Position())
+		x := g.convertExpr(d.CastExpression)
+		typ := g.convertTypeOper(d.Type(), d.Position())
 		return g.cDerefT(x, typ)
 	case cc.UnaryExpressionPlus: // +x
 		op = UnaryPlus
@@ -1108,34 +1135,34 @@ func (g *translator) convertUnaryExpr(d *cc.UnaryExpression) Expr {
 	case cc.UnaryExpressionCpl: // ~x
 		op = UnaryXor
 	case cc.UnaryExpressionNot: // !x
-		x := g.convertCastExpr(d.CastExpression)
+		x := g.convertExpr(d.CastExpression)
 		return g.cNot(x)
 	default:
 		panic(d.Case.String())
 	}
-	x := g.convertCastExpr(d.CastExpression)
-	if d.Operand == nil {
+	x := g.convertExpr(d.CastExpression)
+	if d.Value() == nil {
 		return g.NewCUnaryExpr(
 			op, x,
 		)
 	}
 	return g.NewCUnaryExprT(
 		op, x,
-		g.convertTypeOper(d.Operand, d.Position()),
+		g.convertTypeOper(d.Type(), d.Position()),
 	)
 }
 
 func (g *translator) convertConstExpr(d *cc.ConstantExpression) Expr {
-	return g.convertCondExpr(d.ConditionalExpression)
+	return g.convertExpr(d.ConditionalExpression)
 }
 
 func (g *translator) convertAssignExpr(d *cc.AssignmentExpression) Expr {
 	switch d.Case {
 	case cc.AssignmentExpressionCond:
-		return g.convertCondExpr(d.ConditionalExpression)
+		return g.convertExpr(d.ConditionalExpression)
 	}
-	x := g.convertUnaryExpr(d.UnaryExpression)
-	y := g.convertAssignExpr(d.AssignmentExpression)
+	x := g.convertExpr(d.UnaryExpression)
+	y := g.convertExpr(d.AssignmentExpression)
 	var op BinaryOp
 	switch d.Case {
 	case cc.AssignmentExpressionAssign:
@@ -1173,12 +1200,12 @@ func (g *translator) convertLabelStmt(st *cc.LabeledStatement) []CStmt {
 	case cc.LabeledStatementLabel: // label:
 		stmts := g.convertStmt(st.Statement)
 		return append([]CStmt{
-			&CLabelStmt{Label: st.Token.Value.String()},
+			&CLabelStmt{Label: st.Token.SrcStr()},
 		}, stmts...)
 	case cc.LabeledStatementCaseLabel: // case xxx:
 		return []CStmt{
 			g.NewCaseStmt(
-				g.convertConstExpr(st.ConstantExpression),
+				g.convertExpr(st.ConstantExpression),
 				g.convertStmt(st.Statement)...,
 			),
 		}
@@ -1195,21 +1222,13 @@ func (g *translator) convertLabelStmt(st *cc.LabeledStatement) []CStmt {
 }
 
 func (g *translator) convertExprStmt(st *cc.ExpressionStatement) []CStmt {
-	var exprs []*cc.AssignmentExpression
-	for e := st.Expression; e != nil; e = e.Expression {
-		exprs = append(exprs, e.AssignmentExpression)
-	}
-	var stmts []CStmt
-	for i := len(exprs) - 1; i >= 0; i-- {
-		stmts = append(stmts, NewCExprStmt(g.convertAssignExpr(exprs[i]))...)
-	}
-	return stmts
+	return NewCExprStmt(g.convertExpr(st.ExpressionList))
 }
 
 func (g *translator) convertSelStmt(st *cc.SelectionStatement) []CStmt {
 	switch st.Case {
 	case cc.SelectionStatementIf: // if (x)
-		cond := g.convertExpr(st.Expression)
+		cond := g.convertExpr(st.ExpressionList)
 		return []CStmt{
 			g.NewCIfStmt(
 				g.ToBool(cond),
@@ -1218,7 +1237,7 @@ func (g *translator) convertSelStmt(st *cc.SelectionStatement) []CStmt {
 			),
 		}
 	case cc.SelectionStatementIfElse: // if (x) else
-		cond := g.convertExpr(st.Expression)
+		cond := g.convertExpr(st.ExpressionList)
 		return []CStmt{
 			g.NewCIfStmt(
 				g.ToBool(cond),
@@ -1227,10 +1246,12 @@ func (g *translator) convertSelStmt(st *cc.SelectionStatement) []CStmt {
 			),
 		}
 	case cc.SelectionStatementSwitch: // switch (x)
-		return []CStmt{g.NewCSwitchStmt(
-			g.convertExpr(st.Expression),
-			[]CStmt{g.convertBlockStmt(st.Statement)},
-		)}
+		return []CStmt{
+			g.NewCSwitchStmt(
+				g.convertExpr(st.ExpressionList),
+				[]CStmt{g.convertBlockStmt(st.Statement)},
+			),
+		}
 	default:
 		panic(st.Case.String())
 	}
@@ -1239,7 +1260,7 @@ func (g *translator) convertSelStmt(st *cc.SelectionStatement) []CStmt {
 func (g *translator) convertIterStmt(st *cc.IterationStatement) []CStmt {
 	switch st.Case {
 	case cc.IterationStatementWhile:
-		x := g.convertExprOpt(st.Expression)
+		x := g.convertExprOpt(st.ExpressionList)
 		var cond BoolExpr
 		if x != nil {
 			cond = g.ToBool(x)
@@ -1255,21 +1276,21 @@ func (g *translator) convertIterStmt(st *cc.IterationStatement) []CStmt {
 	case cc.IterationStatementDo:
 		return []CStmt{
 			g.NewCDoWhileStmt(
-				g.convertExprOpt(st.Expression),
+				g.convertExprOpt(st.ExpressionList),
 				[]CStmt{g.convertBlockStmt(st.Statement)},
 			),
 		}
 	case cc.IterationStatementFor:
-		x := g.convertExprOpt(st.Expression2)
+		x := g.convertExprOpt(st.ExpressionList2)
 		var cond BoolExpr
 		if x != nil {
 			cond = g.ToBool(x)
 		}
 		return []CStmt{
 			g.NewCForStmt(
-				g.convertExprOpt(st.Expression),
+				g.convertExprOpt(st.ExpressionList),
 				cond,
-				g.convertExprOpt(st.Expression3),
+				g.convertExprOpt(st.ExpressionList3),
 				[]CStmt{g.convertBlockStmt(st.Statement)},
 			),
 		}
@@ -1299,7 +1320,7 @@ func (g *translator) convertIterStmt(st *cc.IterationStatement) []CStmt {
 				cur.Inits = append(cur.Inits, d.Inits...)
 			}
 		}
-		x := g.convertExprOpt(st.Expression)
+		x := g.convertExprOpt(st.ExpressionList)
 		var cond BoolExpr
 		if x != nil {
 			cond = g.ToBool(x)
@@ -1308,7 +1329,7 @@ func (g *translator) convertIterStmt(st *cc.IterationStatement) []CStmt {
 			g.NewCForDeclStmt(
 				cur,
 				cond,
-				g.convertExprOpt(st.Expression2),
+				g.convertExprOpt(st.ExpressionList2),
 				[]CStmt{g.convertBlockStmt(st.Statement)},
 			),
 		}
@@ -1321,7 +1342,7 @@ func (g *translator) convertJumpStmt(st *cc.JumpStatement) []CStmt {
 	switch st.Case {
 	case cc.JumpStatementGoto: // goto x
 		return []CStmt{
-			&CGotoStmt{Label: st.Token2.Value.String()},
+			&CGotoStmt{Label: st.Token2.SrcStr()},
 		}
 	case cc.JumpStatementContinue: // continue
 		return []CStmt{
@@ -1333,7 +1354,7 @@ func (g *translator) convertJumpStmt(st *cc.JumpStatement) []CStmt {
 		}
 	case cc.JumpStatementReturn: // return
 		return g.NewReturnStmt(
-			g.convertExprOpt(st.Expression),
+			g.convertExprOpt(st.ExpressionList),
 			nil,
 		)
 	default:

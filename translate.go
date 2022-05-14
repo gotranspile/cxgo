@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"modernc.org/cc/v3"
+	"modernc.org/cc/v4"
 
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/types"
@@ -305,10 +305,8 @@ func (g *translator) translateC(cur string, ast *cc.AST) []CDecl {
 
 	decl := g.convertMacros(ast)
 
-	tu := ast.TranslationUnit
-	for tu != nil {
+	for tu := ast.TranslationUnit; tu != nil; tu = tu.TranslationUnit {
 		d := tu.ExternalDeclaration
-		tu = tu.TranslationUnit
 		if d == nil {
 			continue
 		}
@@ -319,7 +317,7 @@ func (g *translator) translateC(cur string, ast *cc.AST) []CDecl {
 		case cc.ExternalDeclarationDecl:
 			cd = g.convertDecl(d.Declaration)
 		case cc.ExternalDeclarationEmpty:
-			// TODO
+			// nop
 		default:
 			panic(d.Case.String() + " " + d.Position().String())
 		}

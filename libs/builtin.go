@@ -154,6 +154,8 @@ _cxgo_go_iface_slice _rest;
 
 void* malloc(_cxgo_go_int);
 
+int __predefined_declarator;
+
 ` + post.String() + includeHacks,
 			Idents: map[string]*types.Ident{
 				"malloc": c.C().MallocFunc(),
