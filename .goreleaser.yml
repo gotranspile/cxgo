@@ -4,6 +4,11 @@ before:
 builds:
   - id: cxgo
     main: ./cmd/cxgo
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Tag }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
     env:
       - CGO_ENABLED=0
     goos:

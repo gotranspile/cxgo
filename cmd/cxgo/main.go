@@ -29,7 +29,7 @@ var Root = &cobra.Command{
 	RunE:  run,
 }
 
-const (
+var (
 	version = "dev"
 	commit  = ""
 	date    = ""
