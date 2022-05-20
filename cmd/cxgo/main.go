@@ -320,7 +320,7 @@ func run(cmd *cobra.Command, args []string) error {
 			var buf bytes.Buffer
 			fmt.Fprintf(&buf, `module %s
 
-go 1.17
+go 1.18
 
 require (
 	%s %s
