@@ -4,6 +4,8 @@ import (
 	"unsafe"
 )
 
+var allocs syncMap[unsafe.Pointer, []byte]
+
 // makePad creates a slice with a given size, but adds padding before and after the slice.
 // It is required to make some unsafe C code work, e.g. indexing elements after the slice end.
 func makePad(sz int, pad int) []byte {
@@ -19,10 +21,17 @@ func makePad(sz int, pad int) []byte {
 	return p
 }
 
+func malloc(sz int) []byte {
+	b := makePad(sz, 0)
+	p := unsafe.Pointer(&b[0])
+	allocs.Store(p, b)
+	return b
+}
+
 // Malloc allocates a region of memory.
 func Malloc(sz int) unsafe.Pointer {
-	p := makePad(sz, 0)
-	return unsafe.Pointer(&p[0])
+	b := malloc(sz)
+	return unsafe.Pointer(&b[0])
 }
 
 // Calloc allocates a region of memory for num elements of size sz.
@@ -33,22 +42,33 @@ func Calloc(num, sz int) unsafe.Pointer {
 	if sz <= 0 {
 		panic("size should be > 0")
 	}
-	p := makePad(num*sz, sz)
-	return unsafe.Pointer(&p[0])
+	b := makePad(num*sz, sz)
+	p := unsafe.Pointer(&b[0])
+	allocs.Store(p, b)
+	return p
+}
+
+func withSize(p unsafe.Pointer) ([]byte, bool) {
+	return allocs.Load(p)
 }
 
 func Realloc(buf unsafe.Pointer, sz int) unsafe.Pointer {
 	if buf == nil {
 		return Malloc(sz)
 	}
-	p := Malloc(sz)
-	MemCpy(p, buf, sz)
-	return p
+	p := malloc(sz)
+	src, ok := withSize(buf)
+	if !ok {
+		panic("realloc of a pointer not managed by cxgo")
+	}
+	copy(p, src)
+	Free(buf)
+	return unsafe.Pointer(&p[0])
 }
 
 // Free marks the memory as freed. May be a nop in Go.
 func Free(p unsafe.Pointer) {
-	// nop
+	allocs.Delete(p)
 }
 
 // ToPointer converts a uintptr to unsafe.Pointer.

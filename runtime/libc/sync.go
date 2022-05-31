@@ -1,6 +1,30 @@
 package libc
 
-import "sync/atomic"
+import (
+	"sync"
+	"sync/atomic"
+)
+
+type syncMap[K comparable, V any] struct {
+	m sync.Map
+}
+
+func (m *syncMap[K, V]) Store(k K, v V) {
+	m.m.Store(k, v)
+}
+
+func (m *syncMap[K, V]) Load(k K) (V, bool) {
+	vi, ok := m.m.Load(k)
+	if !ok {
+		var zero V
+		return zero, false
+	}
+	return vi.(V), true
+}
+
+func (m *syncMap[K, V]) Delete(k K) {
+	m.m.Delete(k)
+}
 
 // old = *p; *p (op)= val; return old;
 
