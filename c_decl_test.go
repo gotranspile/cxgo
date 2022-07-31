@@ -453,6 +453,26 @@ const (
 	`,
 	},
 	{
+		name: "enum negative",
+		src: `
+	enum Enum
+	{
+	   VALUE_1 = -3,
+	   VALUE_2,
+	   VALUE_3 = 1,
+	};
+	`,
+		exp: `
+type Enum int32
+
+const (
+	VALUE_1 Enum = -3
+	VALUE_2 Enum = -2
+	VALUE_3 Enum = 1
+)
+	`,
+	},
+	{
 		name: "enum in func",
 		src: `
 void foo() {

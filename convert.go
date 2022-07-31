@@ -252,7 +252,7 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 	if len(vd.Inits) != 0 && isIota && values != 0 {
 		panic("TODO: mixed enums")
 	}
-	var next uint64
+	var next int64
 	for it, i := d.EnumeratorList, 0; it != nil; it, i = it.EnumeratorList, i+1 {
 		e := it.Enumerator
 		if isIota {
@@ -270,10 +270,10 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 			}
 		} else {
 			if vd.Inits[i] == nil {
-				vd.Inits[i] = cUintLit(next)
+				vd.Inits[i] = cIntLit(next)
 				next++
 			} else if l, ok := cUnwrap(vd.Inits[i]).(IntLit); ok {
-				next = l.Uint() + 1
+				next = l.Int() + 1
 			}
 		}
 		vd.Names = append(vd.Names, g.newIdent(e.Token.Value.String(), typ))
