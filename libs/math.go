@@ -94,6 +94,8 @@ func init() {
 		buf.WriteString("float modff(float value, float *iptr);\n")
 		buf.WriteString("double ldexp(double x, _cxgo_go_int exp);\n")
 		buf.WriteString("double fmod(double x, double exp);\n")
+		buf.WriteString("int isnan(double x);\n")
+		buf.WriteString("double frexp(double x, int* exp);\n")
 		lib.Header = buf.String()
 		return lib
 	})
