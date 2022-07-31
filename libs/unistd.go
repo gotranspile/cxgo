@@ -52,6 +52,7 @@ _cxgo_sint32  fcntl(_cxgo_go_uintptr, _cxgo_sint32, ...);
 _cxgo_sint32 access(const char *, _cxgo_sint32);
 unsigned     alarm(unsigned);
 _cxgo_sint32 chdir(const char *);
+_cxgo_sint32 fchdir(int fd);
 int          chown(const char *, uid_t, gid_t);
 #define close(fd) _cxgo_fileByFD((_cxgo_go_uintptr)fd)->Close()
 size_t       confstr(int, char *, size_t);
