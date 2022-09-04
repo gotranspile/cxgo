@@ -114,7 +114,7 @@ func Translate(root, fname, out string, env *libs.Env, conf Config) error {
 		decls = decls[len(cur):]
 
 		// generate Go file header with a package name and a list of imports
-		header := goHeader(env, cur)
+		header := ImportsFor(env, cur)
 		buf := make([]GoDecl, 0, len(header)+len(cur))
 		buf = append(buf, header...)
 		buf = append(buf, cur...)

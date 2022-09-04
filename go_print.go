@@ -37,7 +37,8 @@ func goUsedImports(used map[string]struct{}, decls []GoDecl) {
 	}
 }
 
-func goHeader(e *libs.Env, decls []GoDecl) []GoDecl {
+// ImportsFor generates import specs for well-known imports required for given declarations.
+func ImportsFor(e *libs.Env, decls []GoDecl) []GoDecl {
 	used := make(map[string]struct{})
 	goUsedImports(used, decls)
 	var list []string
