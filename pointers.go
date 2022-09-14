@@ -996,9 +996,9 @@ func (e *StringToPtr) CType(exp types.Type) types.Type {
 
 func (e *StringToPtr) AsExpr() GoExpr {
 	if e.X.IsWide() {
-		return call(ident("cstd.CWString"), e.X.AsExpr())
+		return call(ident("libc.CWString"), e.X.AsExpr())
 	}
-	return call(ident("cstd.CString"), e.X.AsExpr())
+	return call(ident("libc.CString"), e.X.AsExpr())
 }
 
 func (e *StringToPtr) IsConst() bool {
