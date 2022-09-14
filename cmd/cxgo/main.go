@@ -91,6 +91,12 @@ func (r Replacement) Build() (*cxgo.Replacer, error) {
 	}, nil
 }
 
+type SrcFile struct {
+	Name    string `yaml:"name"`
+	Content string `yaml:"content"`
+	Perm    int    `yaml:"perm"`
+}
+
 type File struct {
 	Disabled    bool               `yaml:"disabled"`
 	Name        string             `yaml:"name"`
@@ -133,8 +139,9 @@ type Config struct {
 	IgnoreIncludeDir bool               `yaml:"ignore_include_dir"`
 	UnexportedFields bool               `yaml:"unexported_fields"`
 
-	FilePref string  `yaml:"file_pref"`
-	Files    []*File `yaml:"files"`
+	SrcFiles []*SrcFile `yaml:"src_files"`
+	FilePref string     `yaml:"file_pref"`
+	Files    []*File    `yaml:"files"`
 
 	ExecBefore []string `yaml:"exec_before"`
 	ExecAfter  []string `yaml:"exec_after"`
@@ -179,6 +186,19 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	if !filepath.IsAbs(c.Root) {
 		c.Root = filepath.Join(filepath.Dir(conf), c.Root)
+	}
+	for _, f := range c.SrcFiles {
+		if f.Name == "" {
+			return errors.New("src_files entry with no name")
+		}
+		perm := os.FileMode(f.Perm)
+		if perm == 0 {
+			perm = 0644
+		}
+		log.Printf("writing %q (%o)", f.Name, perm)
+		if err := os.WriteFile(filepath.Join(c.Root, f.Name), []byte(f.Content), perm); err != nil {
+			return err
+		}
 	}
 	if !filepath.IsAbs(c.Out) {
 		c.Out = filepath.Join(filepath.Dir(conf), c.Out)
