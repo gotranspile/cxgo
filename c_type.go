@@ -396,11 +396,16 @@ func (g *translator) convertFuncType(conf IdentConfig, d *cc.Declarator, t cc.Ty
 	if d != nil {
 		where = d.Position()
 	}
+	var rconf IdentConfig
 	aconf := make(map[string]IdentConfig)
 	iconf := make(map[int]IdentConfig)
 	for _, f := range conf.Fields {
 		if f.Name != "" {
-			aconf[f.Name] = f
+			if f.Name == "return" {
+				rconf = f
+			} else {
+				aconf[f.Name] = f
+			}
 		} else {
 			iconf[f.Index] = f
 		}
@@ -442,7 +447,7 @@ func (g *translator) convertFuncType(conf IdentConfig, d *cc.Declarator, t cc.Ty
 			}
 		}
 	}
-	ret := g.convertTypeRootOpt(IdentConfig{}, t.Result(), where)
+	ret := g.convertTypeRootOpt(rconf, t.Result(), where)
 	if t.IsVariadic() {
 		return g.env.VarFuncT(ret, args...)
 	}
