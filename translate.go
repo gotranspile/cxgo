@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"modernc.org/cc/v3"
+	"modernc.org/token"
 
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/types"
@@ -60,6 +61,33 @@ type Replacer struct {
 	Old string
 	Re  *regexp.Regexp
 	New string
+}
+
+type FileError struct {
+	Err   error
+	Where token.Position
+}
+
+func (e *FileError) Unwrap() error {
+	return e.Err
+}
+
+func (e *FileError) Error() string {
+	return e.Where.String() + ": " + e.Err.Error()
+}
+
+func ErrorWithPos(err error, where token.Position) error {
+	if err == nil {
+		return nil
+	}
+	if e, ok := err.(*FileError); ok {
+		return e
+	}
+	return &FileError{Err: err, Where: where}
+}
+
+func ErrorfWithPos(where token.Position, format string, args ...any) error {
+	return ErrorWithPos(fmt.Errorf(format, args...), where)
 }
 
 func Translate(root, fname, out string, env *libs.Env, conf Config) error {

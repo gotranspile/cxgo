@@ -862,6 +862,9 @@ func (g *translator) convertPriExpr(d *cc.PrimaryExpression) Expr {
 		if d.Token.String() == "asm" {
 			return &CAsmExpr{e: g.env.Env}
 		}
+		if d.Operand == nil {
+			panic(ErrorfWithPos(d.Position(), "empty operand for %q", d.Token.String()))
+		}
 		return g.convertIdent(d.ResolvedIn(), d.Token, g.convertTypeOper(d.Operand, d.Position()))
 	case cc.PrimaryExpressionEnum: // X
 		return g.convertIdent(d.ResolvedIn(), d.Token, g.convertTypeOper(d.Operand, d.Position()))

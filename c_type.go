@@ -12,6 +12,15 @@ import (
 )
 
 func (g *translator) convertTypeOper(p cc.Operand, where token.Position) types.Type {
+	defer func() {
+		switch r := recover().(type) {
+		case nil:
+		case error:
+			panic(ErrorWithPos(r, where))
+		default:
+			panic(ErrorWithPos(fmt.Errorf("%v", r), where))
+		}
+	}()
 	if d := p.Declarator(); d != nil {
 		where = d.Position()
 	}
