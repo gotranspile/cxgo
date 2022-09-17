@@ -143,6 +143,53 @@ func (g *translator) NewCCallExpr(fnc FuncExpr, args []Expr) Expr {
 					}
 				}
 			}
+		case g.env.Go().SliceFunc():
+			// _slice(arr, -1, 1) -> arr[:1]
+			if len(args) == 3 || len(args) == 4 {
+				var low, high, max Expr
+				if i, ok := args[1].(Number); !ok || !i.IsNegative() {
+					low = args[1]
+				}
+				if i, ok := args[2].(Number); !ok || !i.IsNegative() {
+					high = args[2]
+				}
+				if len(args) > 3 {
+					if i, ok := args[3].(Number); !ok || !i.IsNegative() {
+						max = args[3]
+					}
+				}
+				return &SliceExpr{
+					Expr: args[0],
+					Low:  low, High: high, Max: max,
+					Slice3: len(args) > 3,
+				}
+			}
+		case g.env.Go().MakeFunc():
+			if len(args) == 2 || len(args) == 3 {
+				if arr, ok := args[0].CType(nil).(types.ArrayType); ok {
+					var a3 Expr
+					if len(args) > 2 {
+						a3 = args[2]
+					}
+					return &MakeExpr{
+						e:    g.env.Env,
+						Elem: arr.Elem(),
+						Size: args[1],
+						Cap:  a3,
+					}
+				}
+			}
+		case g.env.Go().AppendFunc():
+			if len(args) == 2 {
+				xt, yt := args[0].CType(nil), args[1].CType(nil)
+				if xt.Kind() == types.Array && yt.Kind() == types.Array {
+					args[1] = &ExpandExpr{X: args[1]}
+					return &CallExpr{
+						Fun:  fnc,
+						Args: args,
+					}
+				}
+			}
 		}
 		//	kf, ok := knownCFuncs[id.Name]
 		//	if !ok {
@@ -217,10 +264,9 @@ func (e *CallExpr) AsExpr() GoExpr {
 	var args []GoExpr
 	vari := false
 	for _, a := range e.Args {
-		if _, ok := a.(*ExpandExpr); ok {
+		if x, ok := a.(*ExpandExpr); ok {
 			vari = true
-			args = append(args, ident("_rest"))
-			continue
+			a = x.X
 		}
 		args = append(args, a.AsExpr())
 	}
@@ -554,10 +600,11 @@ func (e *FuncComparison) Uses() []types.Usage {
 }
 
 type ExpandExpr struct {
-	// TODO: support properly
+	X Expr
 }
 
 func (e *ExpandExpr) Visit(v Visitor) {
+	v(e.X)
 }
 
 func (e *ExpandExpr) CType(_ types.Type) types.Type {
@@ -577,5 +624,5 @@ func (e *ExpandExpr) HasSideEffects() bool {
 }
 
 func (e *ExpandExpr) Uses() []types.Usage {
-	return nil
+	return types.UseWrite(e.X)
 }

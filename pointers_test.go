@@ -1383,6 +1383,82 @@ func foo(x A, y int32) {
 			withIdentField("A", IdentConfig{Name: "ptr", Type: HintSlice}),
 		},
 	},
+	{
+		name:     "slice def index",
+		builtins: true,
+		src: `
+typedef struct {
+	_cxgo_go_slice_t(int) ptr
+} A;
+
+void foo(A x, int y) {
+	y = *x.ptr;
+	y = x.ptr[1];
+	y = *(x.ptr + 1);
+	y = *(x.ptr + 2*y + 1);
+	y = *(&(x.ptr + 2*y + 1)[y]);
+}
+`,
+		exp: `
+type A struct {
+	Ptr []int32
+}
+
+func foo(x A, y int32) {
+	y = x.Ptr[0]
+	y = x.Ptr[1]
+	y = x.Ptr[1]
+	y = x.Ptr[y*2+1]
+	y = x.Ptr[y*2+1+y]
+}
+`,
+	},
+	{
+		name:     "slice def ops",
+		builtins: true,
+		src: `
+void foo(int y) {
+	_cxgo_go_slice_t(int) arr;
+	arr = 0;
+	arr = _cxgo_go_make(_cxgo_go_slice_t(int), 1);
+	arr = _cxgo_go_make(_cxgo_go_slice_t(int), 1, 2);
+	arr = _cxgo_go_make_same(arr, 3, 4);
+	y = _cxgo_go_len(arr);
+	y = _cxgo_go_cap(arr);
+	arr = _cxgo_go_slice(arr, -1, -1);
+	arr = _cxgo_go_slice(arr, -1, 2);
+	arr = _cxgo_go_slice(arr, 1, -1);
+	arr = _cxgo_go_slice(arr, 1, 2);
+	arr = _cxgo_go_slice(arr, -1, -1, -1);
+	arr = _cxgo_go_slice(arr, -1, 2, 3);
+	arr = _cxgo_go_slice(arr, 1, 2, 3);
+	arr = _cxgo_go_append(arr, 1);
+	arr = _cxgo_go_append(arr, 1, 2);
+	arr = _cxgo_go_append(arr, arr);
+}
+`,
+		exp: `
+func foo(y int32) {
+	var arr []int32
+	arr = nil
+	arr = make([]int32, 1)
+	arr = make([]int32, 1, 2)
+	arr = make([]int32, 3, 4)
+	y = int32(len(arr))
+	y = int32(cap(arr))
+	arr = arr[:]
+	arr = arr[:2]
+	arr = arr[1:]
+	arr = arr[1:2]
+	arr = arr[:]
+	arr = arr[:2:3]
+	arr = arr[1:2:3]
+	arr = append(arr, 1)
+	arr = append(arr, 1, 2)
+	arr = append(arr, arr...)
+}
+`,
+	},
 }
 
 func TestPointers(t *testing.T) {

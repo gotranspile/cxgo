@@ -34,12 +34,8 @@ func newGo(size int) *Go {
 		uintptrT: pkg.NewTypeGo(GoPrefix+"uintptr", "uintptr", UintT(size)),
 		intT:     pkg.NewTypeGo(GoPrefix+"int", "int", IntT(size)),
 		uintT:    pkg.NewTypeGo(GoPrefix+"uint", "uint", UintT(size)),
-		stringT:  pkg.NewTypeGo(GoPrefix+"string", "string", UnkT(size*3)),
+		stringT:  pkg.NewTypeGo(GoPrefix+"string", "string", UnkT(size*2)),
 		anyT:     pkg.NewTypeGo(GoPrefix+"any", "any", UnkT(size*2)),
-
-		// register well-know slice types
-		bytesT:    pkg.NewTypeGo(GoPrefix+"bytes", "[]byte", UnkT(size*3)),
-		sliceAnyT: pkg.NewTypeGo(GoPrefix+"slice_any", "[]any", UnkT(size*3)),
 	}
 
 	// register fixed-size builtin Go types
@@ -58,7 +54,11 @@ func newGo(size int) *Go {
 	// identifiers
 	g.iot = NewIdentGo(GoPrefix+"iota", "iota", UntypedIntT(g.size))
 	g.lenF = NewIdentGo(GoPrefix+"len", "len", FuncTT(g.size, g.intT, g.anyT))
+	g.capF = NewIdentGo(GoPrefix+"cap", "cap", FuncTT(g.size, g.intT, g.anyT))
+	g.sliceF = NewIdentGo(GoPrefix+"slice", "_slice", VarFuncTT(g.size, UnkT(g.size), g.anyT))
+	g.appendF = NewIdentGo(GoPrefix+"append", "append", VarFuncTT(g.size, UnkT(g.size), g.anyT))
 	g.copyF = NewIdentGo(GoPrefix+"copy", "copy", FuncTT(g.size, g.intT, g.anyT, g.anyT))
+	g.makeF = NewIdentGo(GoPrefix+"make_impl", "make", VarFuncTT(g.size, UnkT(g.size), g.anyT))
 	g.panicF = NewIdentGo(GoPrefix+"panic", "panic", FuncTT(g.size, nil, g.stringT))
 
 	// stdlib
@@ -72,20 +72,22 @@ type Go struct {
 
 	// don't forget to update g.Types() when adding new types here
 
-	boolT     Type
-	byteT     Type
-	runeT     Type
-	uintptrT  Type
-	intT      Type
-	uintT     Type
-	anyT      Type
-	sliceAnyT Type
-	stringT   Type
-	bytesT    Type
+	boolT    Type
+	byteT    Type
+	runeT    Type
+	uintptrT Type
+	intT     Type
+	uintT    Type
+	anyT     Type
+	stringT  Type
 
 	iot     *Ident
 	lenF    *Ident
+	capF    *Ident
+	sliceF  *Ident
+	appendF *Ident
 	copyF   *Ident
+	makeF   *Ident
 	panicF  *Ident
 	osExitF *Ident
 }
@@ -109,9 +111,7 @@ func (g *Go) Types() []Type {
 		g.intT,
 		g.uintT,
 		g.anyT,
-		g.sliceAnyT,
 		g.stringT,
-		g.bytesT,
 	}
 }
 
@@ -167,7 +167,7 @@ func (g *Go) Any() Type {
 
 // SliceOfAny returns Go []any type.
 func (g *Go) SliceOfAny() Type {
-	return g.sliceAnyT
+	return SliceT(g.anyT)
 }
 
 // String returns Go string type.
@@ -177,7 +177,7 @@ func (g *Go) String() Type {
 
 // Bytes returns Go []byte type.
 func (g *Go) Bytes() Type {
-	return g.bytesT
+	return SliceT(g.Byte())
 }
 
 // Iota returns Go iota identifier.
@@ -190,9 +190,29 @@ func (g *Go) LenFunc() *Ident {
 	return g.lenF
 }
 
+// CapFunc returns Go cap function identifier.
+func (g *Go) CapFunc() *Ident {
+	return g.capF
+}
+
+// SliceFunc returns Go function identifier equivalent to Go slice expression.
+func (g *Go) SliceFunc() *Ident {
+	return g.sliceF
+}
+
+// AppendFunc returns Go append function identifier.
+func (g *Go) AppendFunc() *Ident {
+	return g.appendF
+}
+
 // CopyFunc returns Go copy function identifier.
 func (g *Go) CopyFunc() *Ident {
 	return g.copyF
+}
+
+// MakeFunc returns Go make function identifier.
+func (g *Go) MakeFunc() *Ident {
+	return g.makeF
 }
 
 // PanicFunc returns Go panic function identifier.

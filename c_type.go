@@ -284,6 +284,14 @@ func (g *translator) newTypeCC(conf IdentConfig, t cc.Type, where token.Position
 		if t.Elem().Kind() == cc.Char {
 			return g.env.C().String()
 		}
+		if e := t.Elem(); e.Kind() == cc.Struct && e.NumField() == 1 {
+			// Go slices defined via cxgo builtins
+			f := e.FieldByIndex([]int{0})
+			if f.Name().String() == types.GoPrefix+"slice_data" {
+				elem := g.convertType(IdentConfig{}, f.Type(), where)
+				return types.SliceT(elem)
+			}
+		}
 		var ptr types.PtrType
 		if name := t.Elem().Name(); name != 0 {
 			if pt, ok := g.namedPtrs[name.String()]; ok {

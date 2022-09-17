@@ -1062,10 +1062,12 @@ type MakeExpr struct {
 	e    *types.Env
 	Elem types.Type
 	Size Expr
+	Cap  Expr
 }
 
 func (e *MakeExpr) Visit(v Visitor) {
 	v(e.Size)
+	v(e.Cap)
 }
 
 func (e *MakeExpr) CType(_ types.Type) types.Type {
@@ -1074,6 +1076,9 @@ func (e *MakeExpr) CType(_ types.Type) types.Type {
 
 func (e *MakeExpr) AsExpr() GoExpr {
 	tp := e.CType(nil).GoType()
+	if e.Cap != nil {
+		return call(ident("make"), tp, e.Size.AsExpr(), e.Cap.AsExpr())
+	}
 	return call(ident("make"), tp, e.Size.AsExpr())
 }
 
@@ -1087,5 +1092,5 @@ func (e *MakeExpr) HasSideEffects() bool {
 
 func (e *MakeExpr) Uses() []types.Usage {
 	// TODO: use type
-	return types.UseRead(e.Size)
+	return types.UseRead(e.Size, e.Cap)
 }

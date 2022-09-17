@@ -128,11 +128,7 @@ typedef struct {
 	_cxgo_go_uintptr len_;
 } _cxgo_go_string;
 
-typedef struct {
-	_cxgo_go_unsafeptr ptr; 
-	_cxgo_go_uintptr len_;
-	_cxgo_go_uintptr cap_;
-} _cxgo_go_slice;
+#define _cxgo_go_slice_t(type) struct { type _cxgo_go_slice_data; }*
 
 typedef struct{
 	_cxgo_go_uintptr typ; 
@@ -140,7 +136,7 @@ typedef struct{
 } _cxgo_go_any;
 #define _cxgo_go_iface _cxgo_go_any
 
-typedef _cxgo_go_slice _cxgo_go_slice_any;
+#define _cxgo_go_slice_any _cxgo_go_slice_t(_cxgo_go_any)
 #define _cxgo_go_iface_slice _cxgo_go_slice_any
 
 typedef struct __builtin_va_list __builtin_va_list;
@@ -181,6 +177,11 @@ void* malloc(_cxgo_go_int);
 		}
 		l.Declare(
 			c.Go().LenFunc(),
+			c.Go().CapFunc(),
+			c.Go().SliceFunc(),
+			c.Go().AppendFunc(),
+			c.Go().CopyFunc(),
+			c.Go().MakeFunc(),
 			c.Go().PanicFunc(),
 			c.C().MallocFunc(),
 			c.C().MemmoveFunc(),
@@ -200,6 +201,9 @@ void* malloc(_cxgo_go_int);
 			c.NewIdent("printf", "stdio.Printf", stdio.Printf, c.VarFuncTT(c.Go().Int(), c.Go().String())),
 		)
 		l.Header += `
+#define _cxgo_go_make(type, ...) _cxgo_go_make_impl((type)(0x1), __VA_ARGS__)
+#define _cxgo_go_make_same(arr, ...) _cxgo_go_make_impl(arr, __VA_ARGS__)
+
 _cxgo_go_int _cxgo_offsetof(_cxgo_go_any, _cxgo_go_string);
 #define __builtin_offsetof(type, member) _cxgo_offsetof((type)0, "#member")
 #define offsetof(type, member) _cxgo_offsetof((type)0, "#member")

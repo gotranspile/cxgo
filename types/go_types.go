@@ -19,7 +19,7 @@ func goName(name string) string {
 	case "len", "cap",
 		"var", "const", "func",
 		"type", "chan", "range",
-		"copy", "close", "make",
+		"copy", "close", "make", "append",
 		"string", "byte", "rune",
 		"interface", "map":
 		name += "_"

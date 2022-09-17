@@ -14,6 +14,7 @@ type Number interface {
 	Expr
 	IsZero() bool
 	IsOne() bool
+	IsNegative() bool
 	Negate() Number
 }
 
@@ -159,6 +160,10 @@ func (l IntLit) IsZero() bool {
 
 func (l IntLit) IsOne() bool {
 	return l.val == 1
+}
+
+func (l IntLit) IsNegative() bool {
+	return l.neg
 }
 
 func (l IntLit) Negate() Number {
@@ -328,6 +333,10 @@ func (l FloatLit) IsZero() bool {
 
 func (l FloatLit) IsOne() bool {
 	return l.val == 1.0
+}
+
+func (l FloatLit) IsNegative() bool {
+	return l.val < 0
 }
 
 func (l FloatLit) Negate() Number {

@@ -1408,7 +1408,11 @@ func (e *TypeAssert) AsExpr() GoExpr {
 }
 
 type SliceExpr struct {
-	Expr Expr
+	Expr   Expr
+	Low    Expr
+	High   Expr
+	Max    Expr
+	Slice3 bool
 }
 
 func (e *SliceExpr) Visit(v Visitor) {
@@ -1425,17 +1429,31 @@ func (e *SliceExpr) HasSideEffects() bool {
 
 func (e *SliceExpr) CType(types.Type) types.Type {
 	arr := types.Unwrap(e.Expr.CType(nil)).(types.ArrayType)
-	return types.ArrayT(arr.Elem(), 0)
+	return types.SliceT(arr.Elem())
 }
 
 func (e *SliceExpr) AsExpr() GoExpr {
+	var low, high, max GoExpr
+	if e.Low != nil {
+		low = e.Low.AsExpr()
+	}
+	if e.High != nil {
+		high = e.High.AsExpr()
+	}
+	if e.Max != nil {
+		max = e.Max.AsExpr()
+	}
 	return &ast.SliceExpr{
-		X: e.Expr.AsExpr(),
+		X:   e.Expr.AsExpr(),
+		Low: low, High: high, Max: max,
+		Slice3: e.Slice3,
 	}
 }
 
 func (e *SliceExpr) Uses() []types.Usage {
-	return e.Expr.Uses()
+	uses := e.Expr.Uses()
+	uses = append(uses, types.UseRead(e.Low, e.High, e.Max)...)
+	return uses
 }
 
 func exprCost(e Expr) int {

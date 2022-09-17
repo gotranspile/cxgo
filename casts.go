@@ -17,6 +17,9 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 	if xt == g.env.Go().Any() {
 		return &CCastExpr{Assert: true, Type: typ, Expr: x}
 	}
+	if typ == g.env.Go().Any() {
+		return x
+	}
 	if at, ok := typ.(types.ArrayType); ok && at.IsSlice() {
 		switch x := x.(type) {
 		case Nil:
@@ -30,6 +33,18 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 				if ind.IndexZero() {
 					// special case: unwrap unnecessary cast to slice
 					return ind.Expr
+				}
+			}
+		}
+		if fc, ok := x.(*CallExpr); ok && len(fc.Args) >= 1 {
+			if f, ok := fc.Fun.(Ident); ok {
+				gg := g.env.Go()
+				switch f.Identifier() {
+				case gg.SliceFunc(),
+					gg.AppendFunc():
+					if types.Same(typ, fc.Args[0].CType(nil)) {
+						return x
+					}
 				}
 			}
 		}
@@ -237,7 +252,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 			}
 			argn := fx.ArgN()
 			if ft.Variadic() {
-				callArgs = append(callArgs, &ExpandExpr{})
+				callArgs = append(callArgs, &ExpandExpr{X: IdentExpr{types.NewIdent("_rest", types.UnkT(1))}})
 				argn++
 			}
 			e := g.NewCCallExpr(g.ToFunc(x, nil), callArgs[:argn])

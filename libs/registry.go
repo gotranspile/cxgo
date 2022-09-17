@@ -100,6 +100,9 @@ func cTypeStr(t types.Type) string {
 	case types.BoolType:
 		return "_Bool"
 	default:
+		if t.Kind() == types.Unknown {
+			return types.GoPrefix + "any"
+		}
 		panic(fmt.Errorf("TODO: %T", t))
 	}
 }
