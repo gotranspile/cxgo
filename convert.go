@@ -211,7 +211,7 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 		return nil
 	}
 	if typ == nil {
-		typ = g.env.UntypedIntT()
+		typ = types.UntypedIntT(g.env.IntSize())
 	}
 	vd := &CVarDecl{
 		Const:    true,

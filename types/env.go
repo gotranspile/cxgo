@@ -96,7 +96,7 @@ type Env struct {
 	conf Config
 
 	c           C
-	g           Go
+	g           *Go
 	pkgs        map[string]*Package
 	stringGo2C  *Ident
 	wstringGo2C *Ident
@@ -112,11 +112,6 @@ func (e *Env) PtrSize() int {
 // IntSize returns default size of the integer.
 func (e *Env) IntSize() int {
 	return e.conf.IntSize
-}
-
-// UntypedIntT returns an untyped int.
-func (e *Env) UntypedIntT() IntType {
-	return UntypedIntT(e.conf.IntSize)
 }
 
 // PtrT returns a pointer type with a specified element.
@@ -208,15 +203,15 @@ func (e *Env) WStringC2Go() *Ident {
 	return e.wstringC2Go
 }
 
-func (e *Env) newPackage(name, path string) *Package {
-	return &Package{e: e, name: name, path: path}
+func newPackage(name, path string) *Package {
+	return &Package{name: name, path: path}
 }
 
 func (e *Env) NewPackage(name, path string) *Package {
 	if path == "" {
 		path = name
 	}
-	p := e.newPackage(name, path)
+	p := newPackage(name, path)
 	e.pkgs[path] = p
 	return p
 }
@@ -237,7 +232,6 @@ func (e *Env) Packages() []*Package {
 }
 
 type Package struct {
-	e    *Env
 	name string
 	path string
 

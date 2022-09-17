@@ -4,9 +4,71 @@ import "fmt"
 
 const GoPrefix = "_cxgo_go_"
 
+var (
+	goArch4 = newGo(4)
+	goArch8 = newGo(8)
+)
+
+func GoArch(size int) *Go {
+	switch size {
+	case 4:
+		return goArch4
+	case 8:
+		return goArch8
+	default:
+		return newGo(size)
+	}
+}
+
+func newGo(size int) *Go {
+	pkg := newPackage("", "")
+	// Those are native Go types that will always be mapped to themselves when transpiling
+	// All other types might be mapped differently from C to Go
+	g := &Go{
+		size: size, pkg: pkg,
+		// register basic Go types
+		boolT: pkg.NewAlias(GoPrefix+"bool", "bool", BoolT()),
+		byteT: pkg.NewTypeGo(GoPrefix+"byte", "byte", UintT(1)),
+		runeT: pkg.NewTypeGo(GoPrefix+"rune", "rune", IntT(4)),
+
+		uintptrT: pkg.NewTypeGo(GoPrefix+"uintptr", "uintptr", UintT(size)),
+		intT:     pkg.NewTypeGo(GoPrefix+"int", "int", IntT(size)),
+		uintT:    pkg.NewTypeGo(GoPrefix+"uint", "uint", UintT(size)),
+		stringT:  pkg.NewTypeGo(GoPrefix+"string", "string", UnkT(size*3)),
+		ifaceT:   pkg.NewTypeGo(GoPrefix+"iface", "interface{}", UnkT(size*2)),
+
+		// register well-know slice types
+		bytesT:   pkg.NewTypeGo(GoPrefix+"bytes", "[]byte", UnkT(size*3)),
+		ifaceSlT: pkg.NewTypeGo(GoPrefix+"iface_slice", "[]interface{}", UnkT(size*3)),
+	}
+
+	// register fixed-size builtin Go types
+	for _, sz := range []int{
+		1, 2, 4, 8,
+	} {
+		name := fmt.Sprintf("int%d", sz*8)
+		g.pkg.NewAlias(GoPrefix+name, name, IntT(sz))          // intN
+		g.pkg.NewAlias(GoPrefix+"u"+name, "u"+name, UintT(sz)) // uintN
+		if sz >= 4 {
+			name = fmt.Sprintf("float%d", sz*8)
+			g.pkg.NewAlias(GoPrefix+name, name, FloatT(sz)) // floatN
+		}
+	}
+
+	// identifiers
+	g.iot = NewIdentGo(GoPrefix+"iota", "iota", UntypedIntT(g.size))
+	g.lenF = NewIdentGo(GoPrefix+"len", "len", FuncTT(g.size, g.intT, g.ifaceT))
+	g.copyF = NewIdentGo(GoPrefix+"copy", "copy", FuncTT(g.size, g.intT, g.ifaceT, g.ifaceT))
+	g.panicF = NewIdentGo(GoPrefix+"panic", "panic", FuncTT(g.size, nil, g.stringT))
+
+	// stdlib
+	g.osExitF = NewIdentGo("_Exit", "os.Exit", FuncTT(g.size, nil, g.intT))
+	return g
+}
+
 type Go struct {
-	e   *Env
-	pkg *Package
+	size int // size of (u)int and pointers
+	pkg  *Package
 
 	// don't forget to update g.Types() when adding new types here
 
@@ -30,13 +92,12 @@ type Go struct {
 
 // Go returns a package containing builtin Go types.
 func (e *Env) Go() *Go {
-	return &e.g
+	return e.g
 }
 
 func (e *Env) initGo() {
-	e.g.e = e
-	e.g.pkg = e.newPackage("", "")
-	e.g.init()
+	// TODO: we are assuming Go arch = C arch here
+	e.g = GoArch(e.conf.PtrSize)
 }
 
 func (g *Go) Types() []Type {
@@ -63,52 +124,6 @@ func (g *Go) IsBuiltinType(t Type) bool {
 	return false
 }
 
-func (g *Go) init() {
-	const cpref = GoPrefix
-
-	// Those are native Go types that will always be mapped to themselves when transpiling
-	// All other types might be mapped differently from C to Go
-
-	// register basic Go types
-	g.boolT = g.pkg.NewAlias(cpref+"bool", "bool", BoolT())
-	g.byteT = g.pkg.NewTypeGo(cpref+"byte", "byte", UintT(1))
-	g.runeT = g.pkg.NewTypeGo(cpref+"rune", "rune", IntT(4))
-
-	ptrSize := g.e.PtrSize()
-	// TODO: we are assuming Go arch = C arch here
-	g.uintptrT = g.pkg.NewTypeGo(cpref+"uintptr", "uintptr", UintT(ptrSize))
-	g.intT = g.pkg.NewTypeGo(cpref+"int", "int", IntT(g.e.conf.IntSize))
-	g.uintT = g.pkg.NewTypeGo(cpref+"uint", "uint", UintT(g.e.conf.IntSize))
-	g.stringT = g.pkg.NewTypeGo(cpref+"string", "string", UnkT(ptrSize*3))
-	g.ifaceT = g.pkg.NewTypeGo(cpref+"iface", "interface{}", UnkT(ptrSize*2))
-
-	// register well-know slice types
-	g.bytesT = g.pkg.NewTypeGo(cpref+"bytes", "[]byte", UnkT(ptrSize*3))
-	g.ifaceSlT = g.pkg.NewTypeGo(cpref+"iface_slice", "[]interface{}", UnkT(ptrSize*3))
-
-	// register fixed-size builtin Go types
-	for _, sz := range []int{
-		1, 2, 4, 8,
-	} {
-		name := fmt.Sprintf("int%d", sz*8)
-		g.pkg.NewAlias(cpref+name, name, IntT(sz))          // intN
-		g.pkg.NewAlias(cpref+"u"+name, "u"+name, UintT(sz)) // uintN
-		if sz >= 4 {
-			name = fmt.Sprintf("float%d", sz*8)
-			g.pkg.NewAlias(cpref+name, name, FloatT(sz)) // floatN
-		}
-	}
-
-	// identifiers
-	g.iot = NewIdentGo(cpref+"iota", "iota", g.e.UntypedIntT())
-	g.lenF = NewIdentGo(cpref+"len", "len", g.e.FuncTT(g.intT, g.ifaceT))
-	g.copyF = NewIdentGo(cpref+"copy", "copy", g.e.FuncTT(g.intT, g.ifaceT, g.ifaceT))
-	g.panicF = NewIdentGo(cpref+"panic", "panic", g.e.FuncTT(nil, g.stringT))
-
-	// stdlib
-	g.osExitF = NewIdentGo("_Exit", "os.Exit", g.e.FuncTT(nil, g.intT))
-}
-
 // Bool returns Go bool type.
 func (g *Go) Bool() Type {
 	return g.boolT
@@ -132,7 +147,7 @@ func (g *Go) Uintptr() Type {
 // UnsafePtr returns Go unsafe.Pointer type.
 func (g *Go) UnsafePtr() Type {
 	// TODO: reserve a special type for it?
-	return PtrT(g.e.PtrSize(), nil)
+	return PtrT(g.size, nil)
 }
 
 // Int returns Go int type.

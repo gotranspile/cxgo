@@ -25,7 +25,7 @@ func (e *Env) C() *C {
 
 func (e *Env) initC() {
 	e.c.e = e
-	e.c.pkg = e.newPackage("", "")
+	e.c.pkg = newPackage("", "")
 	e.c.init()
 }
 
