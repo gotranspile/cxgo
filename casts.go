@@ -14,7 +14,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 	tk := typ.Kind()
 	xt := x.CType(typ)
 	xk := xt.Kind()
-	if xt == g.env.Go().Iface() {
+	if xt == g.env.Go().Any() {
 		return &CCastExpr{Assert: true, Type: typ, Expr: x}
 	}
 	if at, ok := typ.(types.ArrayType); ok && at.IsSlice() {
@@ -78,7 +78,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 	// strings are immutable, so call a specialized function for conversion
 	if types.Same(xt, g.env.Go().String()) {
 		// [N]byte = "xyz"
-		if at, ok := types.Unwrap(typ).(types.ArrayType); ok && (types.Same(at.Elem(), g.env.Go().Byte())||xk == types.Unknown) {
+		if at, ok := types.Unwrap(typ).(types.ArrayType); ok && (types.Same(at.Elem(), g.env.Go().Byte()) || xk == types.Unknown) {
 			if !at.IsSlice() {
 				tmp := types.NewIdent("t", at)
 				copyF := FuncIdent{g.env.Go().CopyFunc()}
@@ -94,7 +94,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 					// copy string into it
 					&CExprStmt{Expr: &CallExpr{
 						Fun: copyF, Args: []Expr{
-							&SliceExpr{Expr: IdentExpr{tmp}}, // tmp[:]
+							&SliceExpr{Expr: IdentExpr{tmp}},                   // tmp[:]
 							&CCastExpr{Type: types.SliceT(at.Elem()), Expr: x}, // ([]TYPE)("xyz")
 						},
 					}},

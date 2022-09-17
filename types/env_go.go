@@ -35,11 +35,11 @@ func newGo(size int) *Go {
 		intT:     pkg.NewTypeGo(GoPrefix+"int", "int", IntT(size)),
 		uintT:    pkg.NewTypeGo(GoPrefix+"uint", "uint", UintT(size)),
 		stringT:  pkg.NewTypeGo(GoPrefix+"string", "string", UnkT(size*3)),
-		ifaceT:   pkg.NewTypeGo(GoPrefix+"iface", "interface{}", UnkT(size*2)),
+		anyT:     pkg.NewTypeGo(GoPrefix+"any", "any", UnkT(size*2)),
 
 		// register well-know slice types
-		bytesT:   pkg.NewTypeGo(GoPrefix+"bytes", "[]byte", UnkT(size*3)),
-		ifaceSlT: pkg.NewTypeGo(GoPrefix+"iface_slice", "[]interface{}", UnkT(size*3)),
+		bytesT:    pkg.NewTypeGo(GoPrefix+"bytes", "[]byte", UnkT(size*3)),
+		sliceAnyT: pkg.NewTypeGo(GoPrefix+"slice_any", "[]any", UnkT(size*3)),
 	}
 
 	// register fixed-size builtin Go types
@@ -57,8 +57,8 @@ func newGo(size int) *Go {
 
 	// identifiers
 	g.iot = NewIdentGo(GoPrefix+"iota", "iota", UntypedIntT(g.size))
-	g.lenF = NewIdentGo(GoPrefix+"len", "len", FuncTT(g.size, g.intT, g.ifaceT))
-	g.copyF = NewIdentGo(GoPrefix+"copy", "copy", FuncTT(g.size, g.intT, g.ifaceT, g.ifaceT))
+	g.lenF = NewIdentGo(GoPrefix+"len", "len", FuncTT(g.size, g.intT, g.anyT))
+	g.copyF = NewIdentGo(GoPrefix+"copy", "copy", FuncTT(g.size, g.intT, g.anyT, g.anyT))
 	g.panicF = NewIdentGo(GoPrefix+"panic", "panic", FuncTT(g.size, nil, g.stringT))
 
 	// stdlib
@@ -72,16 +72,16 @@ type Go struct {
 
 	// don't forget to update g.Types() when adding new types here
 
-	boolT    Type
-	byteT    Type
-	runeT    Type
-	uintptrT Type
-	intT     Type
-	uintT    Type
-	ifaceT   Type
-	ifaceSlT Type
-	stringT  Type
-	bytesT   Type
+	boolT     Type
+	byteT     Type
+	runeT     Type
+	uintptrT  Type
+	intT      Type
+	uintT     Type
+	anyT      Type
+	sliceAnyT Type
+	stringT   Type
+	bytesT    Type
 
 	iot     *Ident
 	lenF    *Ident
@@ -108,8 +108,8 @@ func (g *Go) Types() []Type {
 		g.uintptrT,
 		g.intT,
 		g.uintT,
-		g.ifaceT,
-		g.ifaceSlT,
+		g.anyT,
+		g.sliceAnyT,
 		g.stringT,
 		g.bytesT,
 	}
@@ -160,14 +160,14 @@ func (g *Go) Uint() Type {
 	return g.uintT
 }
 
-// Iface returns Go interface{} type.
-func (g *Go) Iface() Type {
-	return g.ifaceT
+// Any returns Go any type.
+func (g *Go) Any() Type {
+	return g.anyT
 }
 
-// IfaceSlice returns Go []interface{} type.
-func (g *Go) IfaceSlice() Type {
-	return g.ifaceSlT
+// SliceOfAny returns Go []any type.
+func (g *Go) SliceOfAny() Type {
+	return g.sliceAnyT
 }
 
 // String returns Go string type.

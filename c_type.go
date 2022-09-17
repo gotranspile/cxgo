@@ -31,7 +31,7 @@ func (g *translator) convertType(conf IdentConfig, t cc.Type, where token.Positi
 	case HintBool:
 		return g.env.Go().Bool()
 	case HintIface:
-		return g.env.Go().Iface()
+		return g.env.Go().Any()
 	case HintString:
 		return g.env.Go().String()
 	case HintSlice:

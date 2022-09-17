@@ -45,8 +45,8 @@ func init() {
 		psz := c.PtrT(nil).Sizeof()
 
 		// builtin variable arguments list
-		ifaceT := c.Go().Iface()
-		sliceT := c.Go().IfaceSlice()
+		ifaceT := c.Go().Any()
+		sliceT := c.Go().SliceOfAny()
 		valistPtr := c.PtrT(nil)
 		valistT := types.NamedTGo("__builtin_va_list", "libc.ArgList", c.MethStructT(map[string]*types.FuncType{
 			"Start": c.FuncTT(nil, ifaceT, sliceT),
@@ -137,20 +137,22 @@ typedef struct {
 typedef struct{
 	_cxgo_go_uintptr typ; 
 	_cxgo_go_unsafeptr ptr; 
-} _cxgo_go_iface;
+} _cxgo_go_any;
+#define _cxgo_go_iface _cxgo_go_any
 
-typedef _cxgo_go_slice _cxgo_go_iface_slice;
+typedef _cxgo_go_slice _cxgo_go_slice_any;
+#define _cxgo_go_iface_slice _cxgo_go_slice_any
 
 typedef struct __builtin_va_list __builtin_va_list;
 typedef struct __builtin_va_list {
-	void (*Start) (_cxgo_go_uint n, _cxgo_go_iface_slice rest);
-	_cxgo_go_iface (*Arg) ();
+	void (*Start) (_cxgo_go_uint n, _cxgo_go_slice_any rest);
+	_cxgo_go_any (*Arg) ();
 	void (*End) ();
 } __builtin_va_list;
 #define __gnuc_va_list __builtin_va_list
 
 // a hack for C parser to resolve macro references to _rest arg
-_cxgo_go_iface_slice _rest;
+_cxgo_go_slice_any _rest;
 
 void* malloc(_cxgo_go_int);
 
@@ -198,7 +200,7 @@ void* malloc(_cxgo_go_int);
 			c.NewIdent("printf", "stdio.Printf", stdio.Printf, c.VarFuncTT(c.Go().Int(), c.Go().String())),
 		)
 		l.Header += `
-_cxgo_go_int _cxgo_offsetof(_cxgo_go_iface, _cxgo_go_string);
+_cxgo_go_int _cxgo_offsetof(_cxgo_go_any, _cxgo_go_string);
 #define __builtin_offsetof(type, member) _cxgo_offsetof((type)0, "#member")
 #define offsetof(type, member) _cxgo_offsetof((type)0, "#member")
 
