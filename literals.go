@@ -355,6 +355,10 @@ func (l FloatLit) Uses() []types.Usage {
 	return nil
 }
 
+func (g *translator) stringLit(s string) StringLit {
+	return StringLit{typ: g.env.Go().String(), val: s}
+}
+
 func (g *translator) parseCStringLit(s string) (StringLit, error) {
 	return StringLit{typ: g.env.Go().String(), val: s}, nil
 }

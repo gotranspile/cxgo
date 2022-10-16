@@ -217,6 +217,12 @@ func (g *translator) rewriteStmt(st CStmt) (CStmt, bool) {
 					if len(c.Args) == 1 && canAssignTo(c.Args[0]) {
 						return g.NewCAssignStmtP(c.Args[0], "", g.Nil()), true
 					}
+				case g.env.C().AssertFunc():
+					if len(c.Args) == 1 {
+						return g.NewCIfStmt(g.cNot(c.Args[0]), NewCExprStmt(
+							&CallExpr{Fun: FuncIdent{g.env.Go().PanicFunc()}, Args: []Expr{g.stringLit("assert failed")}},
+						), nil), true
+					}
 				}
 			}
 		}

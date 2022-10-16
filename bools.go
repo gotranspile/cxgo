@@ -194,6 +194,16 @@ const (
 
 type BoolOp string
 
+func (op BoolOp) Negate() BoolOp {
+	switch op {
+	case BinOpAnd:
+		return BinOpOr
+	case BinOpOr:
+		return BinOpAnd
+	}
+	panic(op)
+}
+
 func (op BoolOp) GoToken() token.Token {
 	var tok token.Token
 	switch op {
@@ -253,7 +263,11 @@ func (e *BinaryBoolExpr) HasSideEffects() bool {
 }
 
 func (e *BinaryBoolExpr) Negate() BoolExpr {
-	return &Not{X: e}
+	return &BinaryBoolExpr{
+		X:  e.X.Negate(),
+		Op: e.Op.Negate(),
+		Y:  e.Y.Negate(),
+	}
 }
 
 func (e *BinaryBoolExpr) Uses() []types.Usage {

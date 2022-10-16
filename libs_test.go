@@ -38,8 +38,12 @@ void foo(int a) {
 `,
 		exp: `
 func foo(a int32) {
-	libc.Assert(a != 0)
-	libc.Assert(a != 5)
+	if a == 0 {
+		panic("assert failed")
+	}
+	if a == 5 {
+		panic("assert failed")
+	}
 	panic(0)
 	panic("fail")
 }
