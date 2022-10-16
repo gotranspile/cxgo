@@ -572,10 +572,12 @@ var a int32 = int32(unsafe.Sizeof(int32(0)))
 void foo() {
 	size_t a;
 	int b[10];
+	unsigned char b2[10];
 	void* c;
 	int* d;
 	int (*e)(void);
 	a = sizeof(b);
+	a = sizeof(b2);
 	a = sizeof(c);
 	a = sizeof(d);
 	a = sizeof(e);
@@ -587,6 +589,8 @@ func foo() {
 	_ = a
 	var b [10]int32
 	_ = b
+	var b2 [10]uint8
+	_ = b2
 	var c unsafe.Pointer
 	_ = c
 	var d *int32
@@ -594,6 +598,7 @@ func foo() {
 	var e func() int32
 	_ = e
 	a = size_t(unsafe.Sizeof([10]int32{}))
+	a = size_t(10)
 	a = size_t(unsafe.Sizeof(unsafe.Pointer(nil)))
 	a = size_t(unsafe.Sizeof((*int32)(nil)))
 	a = size_t(unsafe.Sizeof(uintptr(0)))

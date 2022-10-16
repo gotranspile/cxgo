@@ -1044,6 +1044,12 @@ func (e *CSizeofExpr) Uses() []types.Usage {
 }
 
 func sizeOf(typ types.Type) GoExpr {
+	switch typ := types.Unwrap(typ).(type) {
+	case types.ArrayType:
+		if !typ.IsSlice() && types.Unwrap(typ.Elem()) == types.UintT(1) {
+			return intLit(typ.Len())
+		}
+	}
 	x := typ.GoType()
 	switch types.Unwrap(typ).(type) {
 	case *types.StructType, types.ArrayType:
