@@ -473,6 +473,31 @@ const (
 	`,
 	},
 	{
+		name: "use enum",
+		src: `
+enum Enum
+{
+   VALUE_1,
+   VALUE_2,
+};
+enum Enum foo() {
+	return VALUE_1;
+}
+	`,
+		exp: `
+type Enum int32
+
+const (
+	VALUE_1 = Enum(iota)
+	VALUE_2
+)
+
+func foo() Enum {
+	return VALUE_1
+}
+	`,
+	},
+	{
 		name: "enum in func",
 		src: `
 void foo() {

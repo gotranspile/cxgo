@@ -276,7 +276,7 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 				next = l.Int() + 1
 			}
 		}
-		vd.Names = append(vd.Names, g.newIdent(e.Token.Value.String(), typ))
+		vd.Names = append(vd.Names, g.convertIdentWith(e.Token.Value.String(), typ, e).Ident)
 	}
 	if len(vd.Names) == 0 {
 		return nil
