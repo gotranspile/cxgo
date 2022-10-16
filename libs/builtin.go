@@ -187,6 +187,8 @@ void* malloc(_cxgo_go_int);
 			c.C().MemmoveFunc(),
 			c.C().MemcpyFunc(),
 			c.C().MemsetFunc(),
+			c.C().StrdupFunc(),
+			c.C().StrndupFunc(),
 			c.NewIdent("_cxgo_func_name", "libc.FuncName", libc.FuncName, c.FuncTT(c.Go().String())),
 			c.NewIdent("__builtin_strcpy", "libc.StrCpy", libc.StrCpy, c.FuncTT(charP, charP, charP)),
 			c.NewIdent("__sync_lock_test_and_set", "atomic.SwapInt32", atomic.SwapInt32, c.FuncTT(int32T, c.PtrT(int32T), int32T)),

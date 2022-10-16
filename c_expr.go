@@ -1438,9 +1438,8 @@ func (e *SliceExpr) HasSideEffects() bool {
 	return false
 }
 
-func (e *SliceExpr) CType(types.Type) types.Type {
-	arr := types.Unwrap(e.Expr.CType(nil)).(types.ArrayType)
-	return types.SliceT(arr.Elem())
+func (e *SliceExpr) CType(exp types.Type) types.Type {
+	return e.Expr.CType(exp)
 }
 
 func (e *SliceExpr) AsExpr() GoExpr {

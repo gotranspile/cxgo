@@ -143,6 +143,20 @@ func (g *translator) NewCCallExpr(fnc FuncExpr, args []Expr) Expr {
 					}
 				}
 			}
+		case g.env.C().StrdupFunc():
+			// strdup(string) -> string
+			if len(args) == 1 {
+				if args[0].CType(nil) == g.env.Go().String() {
+					return args[0]
+				}
+			}
+		case g.env.C().StrndupFunc():
+			// strndup(string, n) -> string[:n]
+			if len(args) == 2 {
+				if args[0].CType(nil) == g.env.Go().String() {
+					return &SliceExpr{Expr: args[0], High: args[1]}
+				}
+			}
 		case g.env.Go().SliceFunc():
 			// _slice(arr, -1, 1) -> arr[:1]
 			if len(args) == 3 || len(args) == 4 {

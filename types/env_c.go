@@ -16,6 +16,8 @@ type C struct {
 	memmoveF *Ident
 	memcpyF  *Ident
 	memsetF  *Ident
+	strdupF  *Ident
+	strndupF *Ident
 }
 
 // C returns a package containing builtin C types.
@@ -60,12 +62,15 @@ func (c *C) init() {
 	c.pkg.NewAlias("_QWORD", "", UintT(8))
 
 	unsafePtr := g.UnsafePtr()
+	cstring := c.String()
 	c.mallocF = NewIdentGo("__builtin_malloc", "libc.Malloc", c.e.FuncTT(unsafePtr, g.Int()))
 	c.freeF = NewIdentGo("free", "libc.Free", c.e.FuncTT(nil, unsafePtr))
 	c.callocF = NewIdentGo("calloc", "libc.Calloc", c.e.FuncTT(unsafePtr, g.Int(), g.Int()))
 	c.memmoveF = NewIdentGo("__builtin_memmove", "libc.MemMove", c.e.FuncTT(unsafePtr, unsafePtr, unsafePtr, g.Int()))
 	c.memcpyF = NewIdentGo("__builtin_memcpy", "libc.MemCpy", c.e.FuncTT(unsafePtr, unsafePtr, unsafePtr, g.Int()))
 	c.memsetF = NewIdentGo("__builtin_memset", "libc.MemSet", c.e.FuncTT(unsafePtr, unsafePtr, g.Byte(), g.Int()))
+	c.strdupF = NewIdentGo("__builtin_strdup", "libc.StrDup", c.e.FuncTT(cstring, cstring))
+	c.strndupF = NewIdentGo("__builtin_strndup", "libc.StrNDup", c.e.FuncTT(cstring, cstring, g.Int()))
 }
 
 func (c *C) WCharSize() int {
@@ -233,4 +238,14 @@ func (c *C) MemcpyFunc() *Ident {
 // MemsetFunc returns C memset function ident.
 func (c *C) MemsetFunc() *Ident {
 	return c.memsetF
+}
+
+// StrdupFunc returns C strdup function ident.
+func (c *C) StrdupFunc() *Ident {
+	return c.strdupF
+}
+
+// StrndupFunc returns C strndup function ident.
+func (c *C) StrndupFunc() *Ident {
+	return c.strndupF
 }

@@ -35,8 +35,6 @@ func init() {
 				"strtok":      c.NewIdent("strtok", "libc.StrTok", libc.StrTok, c.FuncTT(cstrT, cstrT, cstrT)),
 				"strspn":      c.NewIdent("strspn", "libc.StrSpn", libc.StrSpn, c.FuncTT(gintT, cstrT, cstrT)),
 				"strcspn":     c.NewIdent("strcspn", "libc.StrCSpn", libc.StrCSpn, c.FuncTT(gintT, cstrT, cstrT)),
-				"strdup":      c.NewIdent("strdup", "libc.StrDup", libc.StrDup, c.FuncTT(cstrT, cstrT)),
-				"strndup":     c.NewIdent("strndup", "libc.StrNDup", libc.StrNDup, c.FuncTT(cstrT, cstrT, gintT)),
 			},
 			Header: `
 #include <` + BuiltinH + `>
@@ -59,7 +57,8 @@ _cxgo_go_int      strcoll(const char *, const char *);
 //int      strcoll_l(const char *, const char *, locale_t);
 char    *strcpy(char *restrict, const char *restrict);
 _cxgo_go_int   strcspn(const char *, const char *);
-char    *strdup(const char *);
+#define strdup __builtin_strdup
+#define strndup __builtin_strndup
 char    *strerror(int);
 //char    *strerror_l(int, locale_t);
 int      strerror_r(int, char *, size_t);
@@ -67,7 +66,6 @@ _cxgo_go_int   strlen(const char *);
 char    *strncat(char *restrict, const char *restrict, _cxgo_go_int);
 _cxgo_go_int      strncmp(const char *, const char *, _cxgo_go_int);
 char    *strncpy(char *restrict, const char *restrict, _cxgo_go_int);
-char    *strndup(const char *, _cxgo_go_int);
 _cxgo_go_int   strnlen(const char *, _cxgo_go_int);
 char    *strpbrk(const char *, const char *);
 char    *strrchr(const char *, _cxgo_go_byte);
