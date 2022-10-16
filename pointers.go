@@ -268,6 +268,14 @@ func (g *translator) cDeref(x PtrExpr) Expr {
 		return cParenLazy(x.X)
 	}
 	switch x := cUnwrap(x).(type) {
+	case *PtrOffset:
+		if x.Ind == 0 {
+			ptr := x.X
+			if x.Conv != nil {
+				ptr = g.ToPointer(g.cCast(*x.Conv, ptr))
+			}
+			return &Deref{g: g, X: ptr}
+		}
 	case *FuncToPtr:
 		// C has pointers to function, as opposed to Go where function variables are always pointers
 		// so we should unwrap the cast and return the function identifier itself
