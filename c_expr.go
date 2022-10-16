@@ -607,6 +607,13 @@ func (e *CParentExpr) Uses() []types.Usage {
 
 func (g *translator) NewCIndexExpr(x, ind Expr, typ types.Type) Expr {
 	ind = cUnwrap(ind)
+	if types.Same(x.CType(nil), g.env.Go().String()) {
+		return &CIndexExpr{
+			ctype: g.env.Go().Byte(),
+			Expr:  x,
+			Index: ind,
+		}
+	}
 	if addr, ok := cUnwrap(x).(*TakeAddr); ok {
 		if ind2, ok := addr.X.(*CIndexExpr); ok {
 			// add another component to the index expr
