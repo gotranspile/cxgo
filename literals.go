@@ -451,7 +451,7 @@ func (e *CLiteral) CType(types.Type) types.Type {
 	}
 	switch e.Kind {
 	case CLitChar:
-		return types.IntT(1)
+		return types.AsUntypedIntT(types.UintT(1))
 	case CLitWChar:
 		panic("TODO")
 	default:

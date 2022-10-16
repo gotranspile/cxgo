@@ -32,6 +32,20 @@ func foo() {
 `,
 	},
 	{
+		name: "rune -> int",
+		src: `
+void foo() {
+	int a = 'a';
+}
+`,
+		exp: `
+func foo() {
+	var a int32 = 'a'
+	_ = a
+}
+`,
+	},
+	{
 		name: "wstring -> wchar ptr",
 		src: `
 #include <stddef.h>
