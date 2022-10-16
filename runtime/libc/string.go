@@ -414,3 +414,16 @@ func StrCSpn(a, b *byte) int {
 func StrDup(s *byte) *byte {
 	return CString(GoString(s))
 }
+
+// StrNDup copies a null-terminated C string up to N bytes.
+// Null terminator is added if the string is larger than N.
+func StrNDup(s *byte, n int) *byte {
+	sz := findnull(s)
+	src := unsafe.Slice(s, sz)
+	if sz > n {
+		src = src[:n]
+	}
+	out := make([]byte, len(src)+1)
+	copy(out, src)
+	return &out[0]
+}

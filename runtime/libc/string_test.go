@@ -156,3 +156,17 @@ func TestStrDup(t *testing.T) {
 	b := unsafe.Slice(p, len(a))
 	require.Equal(t, string(a), string(b))
 }
+
+func TestStrNDup(t *testing.T) {
+	a := []byte("123abc\x00")
+
+	p := StrNDup(&a[0], 3)
+	require.True(t, &a[0] != p)
+	b := unsafe.Slice(p, 4)
+	require.Equal(t, "123\x00", string(b))
+
+	p = StrNDup(&a[0], 8)
+	require.True(t, &a[0] != p)
+	b = unsafe.Slice(p, len(a))
+	require.Equal(t, string(a), string(b))
+}

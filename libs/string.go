@@ -36,6 +36,7 @@ func init() {
 				"strspn":      c.NewIdent("strspn", "libc.StrSpn", libc.StrSpn, c.FuncTT(gintT, cstrT, cstrT)),
 				"strcspn":     c.NewIdent("strcspn", "libc.StrCSpn", libc.StrCSpn, c.FuncTT(gintT, cstrT, cstrT)),
 				"strdup":      c.NewIdent("strdup", "libc.StrDup", libc.StrDup, c.FuncTT(cstrT, cstrT)),
+				"strndup":     c.NewIdent("strndup", "libc.StrNDup", libc.StrNDup, c.FuncTT(cstrT, cstrT, gintT)),
 			},
 			Header: `
 #include <` + BuiltinH + `>
