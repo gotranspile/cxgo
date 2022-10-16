@@ -68,6 +68,8 @@ func unwrapCasts(e Expr) Expr {
 		return unwrapCasts(e.Expr)
 	case *CCastExpr:
 		return unwrapCasts(e.Expr)
+	case *StringToPtr:
+		return unwrapCasts(e.X)
 	}
 	return e
 }
@@ -77,8 +79,13 @@ func IsNil(e Expr) bool {
 	if e == nil {
 		return false
 	}
-	_, ok := e.(Nil)
-	return ok
+	switch e := e.(type) {
+	case Nil:
+		return true
+	case IntLit:
+		return e.IsZero()
+	}
+	return false
 }
 
 type Nil struct {
@@ -631,6 +638,12 @@ func (e *PtrComparison) AsExpr() GoExpr {
 }
 
 func (e *PtrComparison) IsConst() bool {
+	if IsNil(e.Y) {
+		switch x := e.X.(type) {
+		case *StringToPtr:
+			return x.X.IsConst()
+		}
+	}
 	return e.X.IsConst() && e.Y.IsConst()
 }
 

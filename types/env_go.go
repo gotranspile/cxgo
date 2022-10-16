@@ -59,7 +59,7 @@ func newGo(size int) *Go {
 	g.appendF = NewIdentGo(GoPrefix+"append", "append", VarFuncTT(g.size, UnkT(g.size), g.anyT))
 	g.copyF = NewIdentGo(GoPrefix+"copy", "copy", FuncTT(g.size, g.intT, g.anyT, g.anyT))
 	g.makeF = NewIdentGo(GoPrefix+"make_impl", "make", VarFuncTT(g.size, UnkT(g.size), g.anyT))
-	g.panicF = NewIdentGo(GoPrefix+"panic", "panic", FuncTT(g.size, nil, g.stringT))
+	g.panicF = NewIdentGo(GoPrefix+"panic", "panic", FuncTT(g.size, nil, g.anyT))
 
 	// stdlib
 	g.osExitF = NewIdentGo("_Exit", "os.Exit", FuncTT(g.size, nil, g.intT))

@@ -25,6 +25,27 @@ func foo() {
 `,
 	},
 	{
+		name: "assert",
+		src: `
+#include <assert.h>
+
+void foo(int a) {
+	assert(a);
+	assert(a != 5);
+	assert(0);
+	assert(!"fail");
+}
+`,
+		exp: `
+func foo(a int32) {
+	libc.Assert(a != 0)
+	libc.Assert(a != 5)
+	panic(0)
+	panic("fail")
+}
+`,
+	},
+	{
 		name: "varargs",
 		src: `
 #include <stdarg.h>

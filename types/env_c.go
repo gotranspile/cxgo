@@ -10,6 +10,7 @@ type C struct {
 
 	charT    Type
 	wcharT   Type
+	assertF  *Ident
 	mallocF  *Ident
 	freeF    *Ident
 	callocF  *Ident
@@ -63,6 +64,7 @@ func (c *C) init() {
 
 	unsafePtr := g.UnsafePtr()
 	cstring := c.String()
+	c.assertF = NewIdentGo("assert", "libc.Assert", c.e.FuncTT(nil, g.Any()))
 	c.mallocF = NewIdentGo("__builtin_malloc", "libc.Malloc", c.e.FuncTT(unsafePtr, g.Int()))
 	c.freeF = NewIdentGo("free", "libc.Free", c.e.FuncTT(nil, unsafePtr))
 	c.callocF = NewIdentGo("calloc", "libc.Calloc", c.e.FuncTT(unsafePtr, g.Int(), g.Int()))
@@ -208,6 +210,11 @@ func (c *C) WString() PtrType {
 // BytesN returns C char[N] type.
 func (c *C) BytesN(n int) Type {
 	return ArrayT(c.e.Go().Byte(), n)
+}
+
+// AssertFunc returns C assert function ident.
+func (c *C) AssertFunc() *Ident {
+	return c.assertF
 }
 
 // MallocFunc returns C malloc function ident.

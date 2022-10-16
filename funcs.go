@@ -112,6 +112,50 @@ func (g *translator) NewCCallExpr(fnc FuncExpr, args []Expr) Expr {
 	if id, ok := cUnwrap(fnc).(IdentExpr); ok {
 		// TODO: another way to hook into it?
 		switch id.Ident {
+		case g.env.C().AssertFunc():
+			// assert(!const) -> panic(const)
+			if len(args) == 1 {
+				a1 := args[0]
+				if a1.IsConst() {
+					if IsNil(a1) {
+						return &CallExpr{
+							Fun:  FuncIdent{g.env.Go().PanicFunc()},
+							Args: []Expr{a1},
+						}
+					}
+					switch a1 := a1.(type) {
+					case *Not:
+						return &CallExpr{
+							Fun:  FuncIdent{g.env.Go().PanicFunc()},
+							Args: []Expr{unwrapCasts(a1.X)},
+						}
+					case *Comparison:
+						switch a1.Op {
+						case BinOpEq:
+							if !IsNil(a1.X) && IsNil(a1.Y) {
+								return &CallExpr{
+									Fun:  FuncIdent{g.env.Go().PanicFunc()},
+									Args: []Expr{unwrapCasts(a1.X)},
+								}
+							}
+						}
+					case *PtrComparison:
+						switch a1.Op {
+						case BinOpEq:
+							if !IsNil(a1.X) && IsNil(a1.Y) {
+								return &CallExpr{
+									Fun:  FuncIdent{g.env.Go().PanicFunc()},
+									Args: []Expr{unwrapCasts(a1.X)},
+								}
+							}
+						}
+					}
+				}
+				return &CallExpr{
+					Fun:  FuncIdent{g.env.C().AssertFunc()},
+					Args: []Expr{g.ToBool(a1)},
+				}
+			}
 		case g.env.C().MallocFunc():
 			// malloc(sizeof(T)) -> new(T)
 			if len(args) == 1 {
