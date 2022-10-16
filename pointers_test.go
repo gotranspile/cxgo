@@ -1292,7 +1292,7 @@ void foo(int* a, int* b, int c) {
 `,
 		exp: `
 func foo(a []int32, b *int32, c int32) {
-	a = ([]int32)(b)
+	a = []int32(b)
 	b = &a[0]
 	c = a[0]
 	c = a[1]
@@ -1381,6 +1381,27 @@ func foo(x A, y int32) {
 `,
 		configFuncs: []configFunc{
 			withIdentField("A", IdentConfig{Name: "ptr", Type: HintSlice}),
+		},
+	},
+	{
+		name: "slice to bytes",
+		src: `
+void foo(unsigned char* x) {
+}
+void foo2(char* x) {
+	foo(x);
+}
+`,
+		exp: `
+func foo(x []byte) {
+}
+func foo2(x string) {
+	foo([]byte(x))
+}
+`,
+		configFuncs: []configFunc{
+			withIdentField("foo", IdentConfig{Name: "x", Type: HintSlice}),
+			withIdentField("foo2", IdentConfig{Name: "x", Type: HintString}),
 		},
 	},
 	{

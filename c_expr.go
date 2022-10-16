@@ -834,6 +834,17 @@ func (e *CCastExpr) HasSideEffects() bool {
 	return e.Expr.HasSideEffects()
 }
 
+func isParenSafe(v ast.Node) bool {
+	switch v := v.(type) {
+	case *ast.Ident:
+		return true
+	case *ast.ArrayType:
+		return isParenSafe(v.Elt)
+	default:
+		return false
+	}
+}
+
 func (e *CCastExpr) AsExpr() GoExpr {
 	tp := e.Type.GoType()
 	if e.Assert {
@@ -852,7 +863,7 @@ func (e *CCastExpr) AsExpr() GoExpr {
 			}
 		}
 	}
-	if _, ok := tp.(*ast.Ident); !ok {
+	if !isParenSafe(tp) {
 		tp = paren(tp)
 	}
 	return call(tp, e.Expr.AsExpr())

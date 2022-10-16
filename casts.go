@@ -92,6 +92,10 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 	}
 	// strings are immutable, so call a specialized function for conversion
 	if types.Same(xt, g.env.Go().String()) {
+		// string -> []byte
+		if at, ok := types.Unwrap(typ).(types.ArrayType); ok && at.IsSlice() && at.Elem() == g.env.Go().Byte() {
+			return &CCastExpr{Type: at, Expr: x}
+		}
 		// [N]byte = "xyz"
 		if at, ok := types.Unwrap(typ).(types.ArrayType); ok && (types.Same(at.Elem(), g.env.Go().Byte()) || xk == types.Unknown) {
 			if !at.IsSlice() {

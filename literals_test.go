@@ -337,7 +337,7 @@ char b[] = "===";
 		exp: `
 var b [4]byte = func() [4]byte {
 	var t [4]byte
-	copy(t[:], ([]byte)("==="))
+	copy(t[:], []byte("==="))
 	return t
 }()
 `,
@@ -354,7 +354,7 @@ type MYubyte uint8
 
 var vendor [15]MYubyte = func() [15]MYubyte {
 	var t [15]MYubyte
-	copy(t[:], ([]MYubyte)("something here"))
+	copy(t[:], []MYubyte("something here"))
 	return t
 }()
 `,

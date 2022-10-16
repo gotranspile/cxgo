@@ -54,6 +54,9 @@ func (g *translator) convertType(conf IdentConfig, t cc.Type, where token.Positi
 		default:
 			panic("expected an array or a pointer")
 		}
+		if elem == types.UintT(1) {
+			elem = g.env.Go().Byte()
+		}
 		return types.SliceT(elem)
 	}
 	// allow invalid types, they might still be useful
