@@ -33,6 +33,11 @@ func (g *translator) convertTypeOper(p cc.Operand, where token.Position) types.T
 
 // convertType is similar to newTypeCC but it will first consult the type cache.
 func (g *translator) convertType(conf IdentConfig, t cc.Type, where token.Position) types.Type {
+	defer func() {
+		if r := recover(); r != nil {
+			panic(fmt.Errorf("type conversion failed at %v: %v", where, r))
+		}
+	}()
 	// custom type overrides coming from the config
 	// note that we don't save them since they might depend
 	// not only on the input type, but also on a field name
@@ -52,7 +57,7 @@ func (g *translator) convertType(conf IdentConfig, t cc.Type, where token.Positi
 		case types.ArrayType:
 			elem = ct.Elem()
 		default:
-			panic("expected an array or a pointer")
+			panic(fmt.Errorf("expected an array or a pointer, got: %#v", ct))
 		}
 		if elem == types.UintT(1) {
 			elem = g.env.Go().Byte()
