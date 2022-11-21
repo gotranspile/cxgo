@@ -9,15 +9,16 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/types"
-	"github.com/stretchr/testify/require"
 )
 
 func numStmt(n int) CStmt {
 	return NewCExprStmt1(&CallExpr{
 		Fun:  FuncIdent{types.NewIdent("foo", types.UnkT(1))},
-		Args: []Expr{cIntLit(int64(n))},
+		Args: []Expr{cIntLit(int64(n), 10)},
 	})
 }
 
@@ -29,7 +30,7 @@ func varDecl(n int) CStmt {
 				types.NewIdent(fmt.Sprintf("foo%d", n), types.UnkT(1)),
 			},
 			Inits: []Expr{
-				cIntLit(int64(n)),
+				cIntLit(int64(n), 10),
 			},
 		},
 	}}
@@ -40,7 +41,7 @@ func numCond(n int) BoolExpr {
 }
 
 func ret(n int) CStmt {
-	return &CReturnStmt{Expr: cIntLit(int64(n))}
+	return &CReturnStmt{Expr: cIntLit(int64(n), 10)}
 }
 
 func newBlock(stmts ...CStmt) *BlockStmt {
@@ -460,11 +461,11 @@ return 3
 		name: "switch",
 		tree: []CStmt{
 			&CSwitchStmt{
-				Cond: cIntLit(1),
+				Cond: cIntLit(1, 10),
 				Cases: []*CCaseStmt{
-					{Expr: cIntLit(1), Stmts: []CStmt{numStmt(1)}},
-					{Expr: cIntLit(2), Stmts: []CStmt{numStmt(2)}},
-					{Expr: cIntLit(3), Stmts: []CStmt{numStmt(3), &CBreakStmt{}}},
+					{Expr: cIntLit(1, 10), Stmts: []CStmt{numStmt(1)}},
+					{Expr: cIntLit(2, 10), Stmts: []CStmt{numStmt(2)}},
+					{Expr: cIntLit(3, 10), Stmts: []CStmt{numStmt(3), &CBreakStmt{}}},
 					{Stmts: []CStmt{numStmt(4)}},
 				},
 			},
@@ -540,11 +541,11 @@ goto L_4
 		name: "switch no default",
 		tree: []CStmt{
 			&CSwitchStmt{
-				Cond: cIntLit(1),
+				Cond: cIntLit(1, 10),
 				Cases: []*CCaseStmt{
-					{Expr: cIntLit(1), Stmts: []CStmt{numStmt(1)}},
-					{Expr: cIntLit(2), Stmts: []CStmt{&CBreakStmt{}}},
-					{Expr: cIntLit(3), Stmts: []CStmt{numStmt(3), &CBreakStmt{}}},
+					{Expr: cIntLit(1, 10), Stmts: []CStmt{numStmt(1)}},
+					{Expr: cIntLit(2, 10), Stmts: []CStmt{&CBreakStmt{}}},
+					{Expr: cIntLit(3, 10), Stmts: []CStmt{numStmt(3), &CBreakStmt{}}},
 				},
 			},
 			ret(1),
@@ -808,7 +809,7 @@ goto L_1
 	{
 		name: "for cond",
 		tree: []CStmt{
-			&CForStmt{Cond: cIntLit(1), Body: *newBlock(
+			&CForStmt{Cond: cIntLit(1, 10), Body: *newBlock(
 				numStmt(1),
 			)},
 			ret(2),
@@ -851,7 +852,7 @@ goto L_1
 		name: "for cond break",
 		tree: []CStmt{
 			&CForStmt{
-				Cond: cIntLit(1),
+				Cond: cIntLit(1, 10),
 				Body: *newBlock(
 					&CIfStmt{
 						Cond: numCond(2),
@@ -923,9 +924,9 @@ goto L_1
 	{
 		name: "for cond nested",
 		tree: []CStmt{
-			&CForStmt{Cond: cIntLit(2), Body: *newBlock(
+			&CForStmt{Cond: cIntLit(2, 10), Body: *newBlock(
 				numStmt(2),
-				&CForStmt{Cond: cIntLit(3), Body: *newBlock(
+				&CForStmt{Cond: cIntLit(3, 10), Body: *newBlock(
 					numStmt(3),
 				)},
 			)},
@@ -989,9 +990,9 @@ goto L_4
 	{
 		name: "for cond nested 2",
 		tree: []CStmt{
-			&CForStmt{Cond: cIntLit(2), Body: *newBlock(
+			&CForStmt{Cond: cIntLit(2, 10), Body: *newBlock(
 				numStmt(2),
-				&CForStmt{Cond: cIntLit(3), Body: *newBlock(
+				&CForStmt{Cond: cIntLit(3, 10), Body: *newBlock(
 					numStmt(3),
 				)},
 				numStmt(4),
@@ -1065,7 +1066,7 @@ goto L_4
 		name: "for full",
 		tree: []CStmt{
 			&CForStmt{
-				Init: numStmt(1), Cond: cIntLit(1), Iter: numStmt(2),
+				Init: numStmt(1), Cond: cIntLit(1, 10), Iter: numStmt(2),
 				Body: *newBlock(
 					numStmt(3),
 				),
@@ -1125,7 +1126,7 @@ goto L_1
 		name: "for full break",
 		tree: []CStmt{
 			&CForStmt{
-				Init: numStmt(1), Cond: cIntLit(1), Iter: numStmt(2),
+				Init: numStmt(1), Cond: cIntLit(1, 10), Iter: numStmt(2),
 				Body: *newBlock(
 					&CIfStmt{
 						Cond: numCond(2),

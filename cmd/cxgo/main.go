@@ -138,6 +138,7 @@ type Config struct {
 	ImplicitReturns  bool               `yaml:"implicit_returns"`
 	IgnoreIncludeDir bool               `yaml:"ignore_include_dir"`
 	UnexportedFields bool               `yaml:"unexported_fields"`
+	IntReformat      bool               `yaml:"int_reformat"`
 
 	SrcFiles []*SrcFile `yaml:"src_files"`
 	FilePref string     `yaml:"file_pref"`
@@ -273,6 +274,7 @@ func run(cmd *cobra.Command, args []string) error {
 			FixImplicitReturns: c.ImplicitReturns,
 			IgnoreIncludeDir:   c.IgnoreIncludeDir,
 			UnexportedFields:   c.UnexportedFields,
+			IntReformat:        c.IntReformat,
 		}
 		if f.MaxDecls > 0 {
 			fc.MaxDecls = f.MaxDecls

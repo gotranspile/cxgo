@@ -32,14 +32,49 @@ func intLit(v int) GoExpr {
 	}
 }
 
-func intLit64(v int64) GoExpr {
+func formatInt(v int64, base int) string {
+	s := strconv.FormatInt(v, base)
+	switch base {
+	case 2:
+		s = "0b" + s
+	case 8:
+		s = "0o" + s
+	case 16:
+		s = "0x" + strings.ToUpper(s)
+	}
+	return s
+}
+
+func formatUint(v uint64, base int) string {
+	s := strconv.FormatUint(v, base)
+	switch base {
+	case 2:
+		s = "0b" + s
+	case 8:
+		s = "0o" + s
+	case 16:
+		s = "0x" + strings.ToUpper(s)
+	}
+	return s
+}
+
+func intLit64(v int64, base int) GoExpr {
+	if base <= 0 {
+		base = 10
+	}
 	return &ast.BasicLit{
 		Kind:  token.INT,
-		Value: strconv.FormatInt(v, 10),
+		Value: formatInt(v, base),
 	}
 }
 
-func uintLit64(v uint64) GoExpr {
+func uintLit64(v uint64, base int) GoExpr {
+	if base > 0 {
+		return &ast.BasicLit{
+			Kind:  token.INT,
+			Value: formatUint(v, base),
+		}
+	}
 	s10 := strconv.FormatUint(v, 10)
 	s := s10
 	if len(s) > 4 {

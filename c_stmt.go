@@ -1402,9 +1402,9 @@ func (s *CIncrStmt) AsStmt() []GoStmt {
 	if s.Expr.CType(nil).Kind().IsPtr() {
 		var arg Expr
 		if s.Decr {
-			arg = cIntLit(-1)
+			arg = cIntLit(-1, 10)
 		} else {
-			arg = cIntLit(+1)
+			arg = cIntLit(+1, 10)
 		}
 		x := cPtrOffset(s.g.ToPointer(s.Expr), arg)
 		return asStmts(s.g.NewCAssignStmt(s.Expr, "", x))

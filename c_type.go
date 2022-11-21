@@ -503,7 +503,7 @@ func (g *translator) ZeroValue(t types.Type) Expr {
 	case types.Ptr, types.Func:
 		return g.Nil()
 	case types.Int, types.Float:
-		return cUintLit(0)
+		return cUintLit(0, 10)
 	case types.Struct, types.Array:
 		return &CCompLitExpr{Type: t}
 	default:

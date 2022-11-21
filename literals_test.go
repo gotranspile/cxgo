@@ -113,7 +113,7 @@ func foo() {
 	var a uint16
 	_ = a
 	a = math.MaxUint16
-	a = 0xFFFE
+	a = 65534
 }
 `,
 	},
@@ -131,7 +131,7 @@ func foo() {
 	var a uint32
 	_ = a
 	a = math.MaxUint32
-	a = 0xFFFFFFFE
+	a = 4294967294
 }
 `,
 	},

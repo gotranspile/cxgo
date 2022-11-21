@@ -2,10 +2,11 @@ package cxgo
 
 import (
 	"fmt"
-	"github.com/gotranspile/cxgo/types"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/gotranspile/cxgo/types"
 
 	"modernc.org/cc/v3"
 )
@@ -13,9 +14,9 @@ import (
 func (g *translator) convertValue(v cc.Value) Expr {
 	switch v := v.(type) {
 	case cc.Int64Value:
-		return cIntLit(int64(v))
+		return cIntLit(int64(v), 0)
 	case cc.Uint64Value:
-		return cUintLit(uint64(v))
+		return cUintLit(uint64(v), 0)
 	case cc.Float32Value:
 		return FloatLit{val: float64(v)}
 	case cc.Float64Value:
@@ -85,7 +86,7 @@ func (g *translator) evalMacro(m *cc.Macro, ast *cc.AST) Expr {
 			}
 		}
 	} else {
-		if l, err := parseCIntLit(src); err == nil {
+		if l, err := parseCIntLit(src, g.conf.IntReformat); err == nil {
 			return l
 		}
 		if l, err := parseCFloatLit(src); err == nil {
@@ -104,9 +105,9 @@ func evalMacro2(m *cc.Macro, ast *cc.AST) Expr {
 
 	switch x := op.Value().(type) {
 	case cc.Int64Value:
-		return cIntLit(int64(x))
+		return cIntLit(int64(x), 0)
 	case cc.Uint64Value:
-		return cUintLit(uint64(x))
+		return cUintLit(uint64(x), 0)
 	default:
 		return nil
 	}

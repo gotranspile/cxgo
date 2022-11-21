@@ -658,7 +658,7 @@ void foo() {
 func foo() {
 	var a *byte
 	a = (*byte)(unsafe.Pointer(uintptr(math.MaxUint32)))
-	a = (*byte)(unsafe.Pointer(uintptr(0xFFFFFFFE)))
+	a = (*byte)(unsafe.Pointer(uintptr(4294967294)))
 	if uintptr(unsafe.Pointer(a)) == uintptr(math.MaxUint32) {
 		return
 	}
@@ -683,7 +683,7 @@ func foo() {
 	var a unsafe.Pointer
 	a = unsafe.Pointer(uintptr(math.MaxUint32))
 	a = unsafe.Pointer(uintptr(math.MaxUint32))
-	a = unsafe.Pointer(uintptr(0xFFFFFFFE))
+	a = unsafe.Pointer(uintptr(4294967294))
 	if uintptr(a) == uintptr(math.MaxUint32) {
 		return
 	}
@@ -850,7 +850,7 @@ void foo() {
 		exp: `
 func foo() {
 	var a [10]int32
-	if uintptr(unsafe.Pointer(&a[0])) == uintptr(4096) {
+	if uintptr(unsafe.Pointer(&a[0])) == uintptr(0x1000) {
 		return
 	}
 }

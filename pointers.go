@@ -37,7 +37,7 @@ func (g *translator) ToPointer(x Expr) PtrExpr {
 	}
 	if xk.Is(types.Array) {
 		// &x[0]
-		return g.cAddr(g.NewCIndexExpr(x, cIntLit(0), nil))
+		return g.cAddr(g.NewCIndexExpr(x, cIntLit(0, 10), nil))
 	}
 	if xk.IsInt() {
 		return g.cIntToPtr(x)
@@ -223,7 +223,7 @@ func (g *translator) cAddr(x Expr) PtrExpr {
 				}
 			}
 		}
-		return g.cAddr(g.NewCIndexExpr(x, cUintLit(0), nil))
+		return g.cAddr(g.NewCIndexExpr(x, cUintLit(0, 10), nil))
 	}
 	return &TakeAddr{g: g, X: x}
 }
@@ -730,7 +730,7 @@ func (e *PtrOffset) parts() (GoExpr, BinaryOp, GoExpr) {
 		ind = -ind
 		op = BinOpSub
 	}
-	y := intLit64(ind)
+	y := intLit64(ind, 10)
 	if e.X.PtrType(nil).Elem() != nil {
 		x = call(unsafePtr(), x)
 	}

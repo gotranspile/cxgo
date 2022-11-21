@@ -163,7 +163,7 @@ func (g *translator) convertInitList(typ types.Type, list *cc.InitializerList) E
 		if it.Designation == nil {
 			// no index in the initializer - assign automatically
 			pi++
-			f = &CompLitField{Index: cIntLit(prev + pi), Value: val}
+			f = &CompLitField{Index: cIntLit(prev+pi, 10), Value: val}
 			items = append(items, f)
 			continue
 		}
@@ -177,7 +177,7 @@ func (g *translator) convertInitList(typ types.Type, list *cc.InitializerList) E
 				// for items without any index designators
 				// it looks like it is fixed now, but we keep the workaround just in case
 				pi++
-				f.Index = cIntLit(prev + pi)
+				f.Index = cIntLit(prev+pi, 10)
 			} else {
 				// valid index - set previous and reset relative index
 				prev = lit.Int()
@@ -236,7 +236,7 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 	if autos == 1 && vd.Inits[0] == nil {
 		autos--
 		values++
-		vd.Inits[0] = cIntLit(0)
+		vd.Inits[0] = cIntLit(0, 10)
 	}
 
 	// use iota if there is only one explicit init (the first one), or no explicit values are set
@@ -270,7 +270,7 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 			}
 		} else {
 			if vd.Inits[i] == nil {
-				vd.Inits[i] = cIntLit(next)
+				vd.Inits[i] = cIntLit(next, 10)
 				next++
 			} else if l, ok := cUnwrap(vd.Inits[i]).(IntLit); ok {
 				next = l.Int() + 1
@@ -870,7 +870,7 @@ func (g *translator) convertPriExpr(d *cc.PrimaryExpression) Expr {
 		return g.convertIdent(d.ResolvedIn(), d.Token, g.convertTypeOper(d.Operand, d.Position()))
 	case cc.PrimaryExpressionInt: // 1
 		fnc := func() Expr {
-			v, err := parseCIntLit(d.Token.String())
+			v, err := parseCIntLit(d.Token.String(), g.conf.IntReformat)
 			if err != nil {
 				panic(err)
 			}
@@ -1021,7 +1021,7 @@ func (g *translator) convertPostfixExpr(d *cc.PostfixExpression) Expr {
 			return NewCSelectExpr(
 				g.NewCIndexExpr(
 					exp,
-					cUintLit(0), // index the first element
+					cUintLit(0, 10), // index the first element
 					g.convertTypeOper(d.Operand, d.Position()),
 				), g.convertIdentOn(exp.CType(nil), d.Token2),
 			)

@@ -394,7 +394,7 @@ void foo(unsigned int a) {
 func foo(a uint32) {
 	var b uint32
 	_ = b
-	b = a - 1
+	b = a - 0x1
 }
 `,
 	},
@@ -496,7 +496,7 @@ func foo() {
 		a int16
 		b uint32
 	)
-	if b != uint32(int32(a)&6128) {
+	if b != uint32(int32(a)&0x17F0) {
 		return
 	}
 }

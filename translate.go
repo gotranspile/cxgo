@@ -36,6 +36,7 @@ type Config struct {
 	FixImplicitReturns bool
 	IgnoreIncludeDir   bool
 	UnexportedFields   bool // do not export struct fields for Go
+	IntReformat        bool // automatically select new base for formatting int literals
 }
 
 type TypeHint string
@@ -283,7 +284,7 @@ func (g *translator) translateMain(d *CFuncDecl) {
 		}
 		e := r.Expr
 		if e == nil {
-			e = cIntLit(0)
+			e = cIntLit(0, 10)
 		}
 		ex := g.NewCCallExpr(FuncIdent{osExit}, []Expr{g.cCast(g.env.Go().Int(), e)})
 		return NewCExprStmt(ex), true

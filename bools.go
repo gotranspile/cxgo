@@ -49,7 +49,7 @@ func (g *translator) ToBool(x Expr) BoolExpr {
 	return g.Compare(
 		x,
 		BinOpNeq,
-		cIntLit(0),
+		cIntLit(0, 10),
 	)
 }
 

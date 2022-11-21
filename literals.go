@@ -18,7 +18,7 @@ type Number interface {
 	Negate() Number
 }
 
-func parseCIntLit(s string) (IntLit, error) {
+func parseCIntLit(s string, auto bool) (IntLit, error) {
 	s = strings.ToLower(s)
 	s = strings.TrimRight(s, "ul")
 	base := 10
@@ -34,20 +34,26 @@ func parseCIntLit(s string) (IntLit, error) {
 	}
 	uv, err := strconv.ParseUint(s, base, 64)
 	if err == nil {
-		return cUintLit(uv), nil
+		if auto {
+			base = 0
+		}
+		return cUintLit(uv, base), nil
 	}
 	iv, err := strconv.ParseInt(s, base, 64)
 	if err != nil {
 		return IntLit{}, err
 	}
-	return cIntLit(iv), nil
+	if auto {
+		base = 0
+	}
+	return cIntLit(iv, base), nil
 }
 
-func cIntLit(v int64) IntLit {
+func cIntLit(v int64, base int) IntLit {
 	if v >= 0 {
-		return cUintLit(uint64(v))
+		return cUintLit(uint64(v), base)
 	}
-	l := IntLit{val: uint64(-v), neg: true}
+	l := IntLit{val: uint64(-v), neg: true, base: base}
 	if v >= math.MinInt8 && v <= math.MaxInt8 {
 		l.typ = types.IntT(1)
 	} else if v >= math.MinInt16 && v <= math.MaxInt16 {
@@ -60,8 +66,8 @@ func cIntLit(v int64) IntLit {
 	return l
 }
 
-func cUintLit(v uint64) IntLit {
-	l := IntLit{val: v}
+func cUintLit(v uint64, base int) IntLit {
+	l := IntLit{val: v, base: base}
 	if v <= math.MaxUint8 {
 		l.typ = types.AsUntypedIntT(types.UintT(1))
 	} else if v <= math.MaxUint16 {
@@ -120,9 +126,10 @@ func litCanStore(t types.IntType, v IntLit) bool {
 var _ Number = IntLit{}
 
 type IntLit struct {
-	typ types.IntType
-	val uint64
-	neg bool
+	typ  types.IntType
+	val  uint64
+	base int
+	neg  bool
 }
 
 func (IntLit) Visit(v Visitor) {}
@@ -172,12 +179,12 @@ func (l IntLit) Negate() Number {
 
 func (l IntLit) NegateLit() IntLit {
 	if l.neg {
-		return cUintLit(l.val)
+		return cUintLit(l.val, l.base)
 	}
 	if l.val > math.MaxInt64 {
 		panic("cannot negate")
 	}
-	return cIntLit(-int64(l.val))
+	return cIntLit(-int64(l.val), l.base)
 }
 
 func (l IntLit) MulLit(v int64) IntLit {
@@ -219,16 +226,16 @@ func (l IntLit) OverflowInt(sz int) IntLit {
 	switch sz {
 	case 8:
 		v := int64(l.Uint())
-		return cIntLit(v)
+		return cIntLit(v, l.base)
 	case 4:
 		v := int32(uint32(l.Uint()))
-		return cIntLit(int64(v))
+		return cIntLit(int64(v), l.base)
 	case 2:
 		v := int16(uint16(l.Uint()))
-		return cIntLit(int64(v))
+		return cIntLit(int64(v), l.base)
 	case 1:
 		v := int8(uint8(l.Uint()))
-		return cIntLit(int64(v))
+		return cIntLit(int64(v), l.base)
 	}
 	return l
 }
@@ -237,16 +244,16 @@ func (l IntLit) OverflowUint(sz int) IntLit {
 	switch sz {
 	case 8:
 		v := uint64(l.Int())
-		return cUintLit(v)
+		return cUintLit(v, l.base)
 	case 4:
 		v := uint32(int32(l.Int()))
-		return cUintLit(uint64(v))
+		return cUintLit(uint64(v), l.base)
 	case 2:
 		v := uint16(int16(l.Int()))
-		return cUintLit(uint64(v))
+		return cUintLit(uint64(v), l.base)
 	case 1:
 		v := uint8(int8(l.Int()))
-		return cUintLit(uint64(v))
+		return cUintLit(uint64(v), l.base)
 	}
 	return l
 }
@@ -264,7 +271,7 @@ func (l IntLit) AsExpr() GoExpr {
 		case math.MinInt8:
 			return ident("math.MinInt8")
 		}
-		return intLit64(val)
+		return intLit64(val, l.base)
 	}
 	switch l.val {
 	case math.MaxUint64:
@@ -284,7 +291,7 @@ func (l IntLit) AsExpr() GoExpr {
 	case math.MaxInt8:
 		return ident("math.MaxInt8")
 	}
-	return uintLit64(l.val)
+	return uintLit64(l.val, l.base)
 }
 
 func (l IntLit) Uses() []types.Usage {

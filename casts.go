@@ -181,7 +181,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 				}
 			}
 			uv -= uint64(-l.Int()) - 1
-			return cUintLit(uv)
+			return cUintLit(uv, l.base)
 		}
 		if xk.IsFunc() {
 			// func() -> int

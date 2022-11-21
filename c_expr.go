@@ -322,7 +322,7 @@ func (g *translator) newCBinaryExpr(exp types.Type, x Expr, op BinaryOp, y Expr)
 		}
 		inc := xt.ElemSizeof()
 		if inc != 1 {
-			y = g.newCBinaryExpr(exp, y, BinOpMult, cIntLit(int64(inc)))
+			y = g.newCBinaryExpr(exp, y, BinOpMult, cIntLit(int64(inc), 10))
 		}
 		return &CBinaryExpr{
 			Left:  x,
