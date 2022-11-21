@@ -33,14 +33,13 @@ func intLit(v int) GoExpr {
 }
 
 func formatInt(v int64, base int) string {
-	s := strconv.FormatInt(v, base)
-	switch base {
-	case 2:
-		s = "0b" + s
-	case 8:
-		s = "0o" + s
-	case 16:
-		s = "0x" + strings.ToUpper(s)
+	neg := v < 0
+	if neg {
+		v = -v
+	}
+	s := formatUint(uint64(v), base)
+	if neg {
+		s = "-" + s
 	}
 	return s
 }
