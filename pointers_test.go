@@ -1229,6 +1229,28 @@ var foo []int32
 		},
 	},
 	{
+		name: "slice override global struct",
+		skip: true, // FIXME
+		src: `
+struct bar {
+	int a;
+};
+struct bar* foo;
+`,
+		exp: `
+type bar struct {
+	A int32
+}
+var foo []bar
+`,
+		configFuncs: []configFunc{
+			withIdent(IdentConfig{
+				Name: "foo",
+				Type: HintSlice,
+			}),
+		},
+	},
+	{
 		name: "slice override func arg",
 		src: `
 void foo(int* a);
