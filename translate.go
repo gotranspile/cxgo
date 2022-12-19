@@ -37,6 +37,7 @@ type Config struct {
 	IgnoreIncludeDir   bool
 	UnexportedFields   bool // do not export struct fields for Go
 	IntReformat        bool // automatically select new base for formatting int literals
+	KeepFree           bool // do not rewrite free() calls to nil assignments
 }
 
 type TypeHint string

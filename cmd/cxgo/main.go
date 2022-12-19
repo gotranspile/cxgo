@@ -139,6 +139,7 @@ type Config struct {
 	IgnoreIncludeDir bool               `yaml:"ignore_include_dir"`
 	UnexportedFields bool               `yaml:"unexported_fields"`
 	IntReformat      bool               `yaml:"int_reformat"`
+	KeepFree         bool               `yaml:"keep_free"`
 
 	SrcFiles []*SrcFile `yaml:"src_files"`
 	FilePref string     `yaml:"file_pref"`
@@ -275,6 +276,7 @@ func run(cmd *cobra.Command, args []string) error {
 			IgnoreIncludeDir:   c.IgnoreIncludeDir,
 			UnexportedFields:   c.UnexportedFields,
 			IntReformat:        c.IntReformat,
+			KeepFree:           c.KeepFree,
 		}
 		if f.MaxDecls > 0 {
 			fc.MaxDecls = f.MaxDecls

@@ -214,7 +214,7 @@ func (g *translator) rewriteStmt(st CStmt) (CStmt, bool) {
 			if id, ok := c.Fun.(Ident); ok {
 				switch id.Identifier() {
 				case g.env.C().FreeFunc():
-					if len(c.Args) == 1 && canAssignTo(c.Args[0]) {
+					if !g.conf.KeepFree && len(c.Args) == 1 && canAssignTo(c.Args[0]) {
 						return g.NewCAssignStmtP(c.Args[0], "", g.Nil()), true
 					}
 				case g.env.C().AssertFunc():
