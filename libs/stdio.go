@@ -143,6 +143,7 @@ const int _cxgo_EOF = -1;
 #define ftell(f) ((FILE*)f)->Tell()
 #define getc(f) ((FILE*)f)->GetC()
 #define ungetc(c, f) ((FILE*)f)->UnGetC(c)
+#define putchar(v) ((FILE*)stdout)->PutC(c)
 
 void     clearerr(FILE *);
 char    *ctermid(char *);
@@ -168,7 +169,6 @@ int      pclose(FILE *);
 void     perror(const char *);
 FILE    *popen(const char *, const char *);
 int      putc(int, FILE *);
-int      putchar(int);
 int      putc_unlocked(int, FILE *);
 int      putchar_unlocked(int);
 int      puts(const char *);
