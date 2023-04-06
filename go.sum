@@ -1,9 +1,9 @@
-git.maze.io/go/math32 v0.0.0-20181106113604-c78ed91899f1 h1:VptAfeYGT/FPuzWFzyvne+vdXT881tTmEMhV+txQ+E0=
-git.maze.io/go/math32 v0.0.0-20181106113604-c78ed91899f1/go.mod h1:bJoNp9NkyV0uYcHyBBgt/o4wVEVc8wfGXFBV7qgPReE=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/bmatcuk/doublestar v1.3.0 h1:1jLE2y0VpSrOn/QR9G4f2RmrCtkM3AuATcWradjHUvM=
 github.com/bmatcuk/doublestar v1.3.0/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
+github.com/chewxy/math32 v1.10.1 h1:LFpeY0SLJXeaiej/eIp2L40VYfscTvKh/FSEZ68uMkU=
+github.com/chewxy/math32 v1.10.1/go.mod h1:dOB2rcuFrCn6UHrze36WSLVPKtzPMRAQvBvUwkSsLqs=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/go-etcd v2.0.0+incompatible/go.mod h1:Jez6KQU2B/sWsbdaef3ED8NzMklzPG4d5KIOhIy30Tk=
 github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
@@ -58,8 +58,6 @@ gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2/go.mod h1:K4uyk7z7BCEPqu6E+C
 lukechampine.com/uint128 v1.1.1/go.mod h1:c4eWIwlEGaxC/+H1VguhU4PHXNWDCDMUlWdIWl2j1gk=
 lukechampine.com/uint128 v1.2.0 h1:mBi/5l91vocEN8otkC5bDLhi2KdCticRiwbdB0O+rjI=
 lukechampine.com/uint128 v1.2.0/go.mod h1:c4eWIwlEGaxC/+H1VguhU4PHXNWDCDMUlWdIWl2j1gk=
-maze.io/x/math32 v0.0.0-20181106113604-c78ed91899f1 h1:SgIJGhlYkU+wmyP0xBEOdLVRIwVR4HSp/9kfv1BSvKQ=
-maze.io/x/math32 v0.0.0-20181106113604-c78ed91899f1/go.mod h1:OL5aVu+KUQ0mSadkiIseNiKIX6dJ2Ul1RlNWSMCP5y8=
 modernc.org/cc/v3 v3.36.1 h1:CICrjwr/1M4+6OQ4HJZ/AHxjcwe67r5vPUF518MkO8A=
 modernc.org/cc/v3 v3.36.1/go.mod h1:NFUHyPn4ekoC/JHeZFfZurN6ixxawE1BnVonP/oahEI=
 modernc.org/mathutil v1.2.2/go.mod h1:mZW8CKdRPY1v87qxC/wUdX5O1qDzXMP5TH3wjfpga6E=

@@ -2,7 +2,8 @@ package cmath
 
 import (
 	"math"
-	"maze.io/x/math32"
+
+	"github.com/chewxy/math32"
 )
 
 const TowardZero = 1

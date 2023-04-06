@@ -24,7 +24,7 @@ func init() {
 			Imports: map[string]string{
 				cpkg:     RuntimePrefix + cpkg,
 				"math":   "math",
-				"math32": "maze.io/x/math32",
+				"math32": "github.com/chewxy/math32",
 			},
 			Idents: map[string]*types.Ident{
 				"atan2": types.NewIdent("math.Atan2", c.FuncTT(doubleT, doubleT, doubleT)),
