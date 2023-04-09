@@ -58,3 +58,16 @@ headers bundled into `cxgo`.
 
 It serves two purposes: provides a zero-config experience for common use cases and allows `cxgo` to implement C stdlib
 differently and adapt it to the needs of Go.
+
+### typedef void
+
+Example from struct_FILE.h:
+
+    typedef void _IO_lock_t;
+ 
+    _IO_lock_t *_lock;
+
+For now `cxgo` interprets it as int8_t
+
+
+
