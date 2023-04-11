@@ -497,7 +497,7 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 			conf := g.idents[dname]
 			vt := g.convertTypeRootOpt(conf, dd.Type(), id.Position())
 			if isTypedef && vt == nil {
-				vt = types.IntT(1)
+				vt = types.StructT(nil)
 			}
 			var init Expr
 			if id.Initializer != nil && inCur {

@@ -67,7 +67,10 @@ Example from struct_FILE.h:
  
     _IO_lock_t *_lock;
 
-For now `cxgo` interprets it as int8_t
+For now `cxgo` interprets it as 
+
+    typedef struct{} _IO_lock_t;
+
 
 
 
