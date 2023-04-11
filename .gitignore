@@ -4,3 +4,4 @@
 /.examples/
 .idea/
 /dist/
+.vscode/
