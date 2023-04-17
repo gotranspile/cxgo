@@ -22,10 +22,6 @@ func init() {
 	})
 }
 
-type errnoInf struct {
-	name  string
-	value int
-}
 
 func errnoHeader() string {
 
