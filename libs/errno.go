@@ -51,7 +51,7 @@ func errnoIdents(c *Env) map[string]*types.Ident {
 	}
 
 	for _, v := range errnoInfs {
-		res[v.name] = c.NewIdent(v.name, "libc."+v.name, libc.ERRNOCONST, gint)
+		res[v.name] = c.NewIdent(v.name, "libc."+v.name, libc.Errno, gint)
 	}
 
 	return res
