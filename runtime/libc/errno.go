@@ -305,5 +305,3 @@ const EWOULDBLOCK = 90
 
 // Cross-device link.
 const EXDEV = 91
-
-const ERRNOCONST = 1
