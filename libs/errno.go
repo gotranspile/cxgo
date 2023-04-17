@@ -57,7 +57,10 @@ func errnoIdents(c *Env) map[string]*types.Ident {
 	return res
 }
 
-var errnoInfs []errnoInf = []errnoInf{
+var errnoInfs = []struct {
+	name  string
+	value int
+}{
 	// Argument list too long.
 	{"E2BIG", 2},
 	// Permission denied.
