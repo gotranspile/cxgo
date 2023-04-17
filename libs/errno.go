@@ -36,7 +36,7 @@ func errnoHeader() string {
 	}
 
 	for _, v := range errnoInfs {
-		lines = append(lines, fmt.Sprintf("const int %s = %d;", v.name, v.value))
+		lines = append(lines, fmt.Sprintf("const _cxgo_go_int %s = %d;", v.name, v.value))
 	}
 	res := strings.Join(lines, "\n")
 	return res
