@@ -1,6 +1,9 @@
 package libs
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gotranspile/cxgo/runtime/libc"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -9,185 +12,211 @@ import (
 
 func init() {
 	RegisterLibrary("errno.h", func(c *Env) *Library {
-		gint := c.Go().Int()
 		return &Library{
-			Header: `
-#include <` + BuiltinH + `>
-
-_cxgo_go_int errno = 0;
-
-char* strerror (_cxgo_go_int errnum);
-
-// Argument list too long.
-#define E2BIG 2
-// Permission denied.
-#define EACCES 3
-// Address in use.
-#define EADDRINUSE 4
-// Address not available.
-#define EADDRNOTAVAIL 5
-// Address family not supported.
-#define EAFNOSUPPORT 6
-// Resource unavailable, try again (may be the same value as EWOULDBLOCK).
-#define EAGAIN 7
-// Connection already in progress.
-#define EALREADY 8
-// Bad file descriptor.
-#define EBADF 9
-// Bad message.
-#define EBADMSG 10
-// Device or resource busy.
-#define EBUSY 11
-// Operation canceled.
-#define ECANCELED 12
-// No child processes.
-#define ECHILD 13
-// Connection aborted.
-#define ECONNABORTED 14
-// Connection refused.
-#define ECONNREFUSED 15
-// Connection reset.
-#define ECONNRESET 16
-// Resource deadlock would occur.
-#define EDEADLK 17
-// Destination address required.
-#define EDESTADDRREQ 18
-// Mathematics argument out of domain of function.
-#define EDOM 19
-// Reserved.
-#define EDQUOT 20
-// File exists.
-#define EEXIST 21
-// Bad address.
-#define EFAULT 22
-// File too large.
-#define EFBIG 23
-// Host is unreachable.
-#define EHOSTUNREACH 24
-// Identifier removed.
-#define EIDRM 25
-// Illegal byte sequence.
-#define EILSEQ 26
-// Operation in progress.
-#define EINPROGRESS 27
-// Interrupted function.
-#define EINTR 28
-// Invalid argument.
-#define EINVAL 29
-// I/O error.
-#define EIO 30
-// Socket is connected.
-#define EISCONN 31
-// Is a directory.
-#define EISDIR 32
-// Too many levels of symbolic links.
-#define ELOOP 33
-// File descriptor value too large.
-#define EMFILE 34
-// Too many links.
-#define EMLINK 35
-// Message too large.
-#define EMSGSIZE 36
-// Reserved.
-#define EMULTIHOP 37
-// Filename too long.
-#define ENAMETOOLONG 38
-// Network is down.
-#define ENETDOWN 39
-// Connection aborted by network.
-#define ENETRESET 40
-// Network unreachable.
-#define ENETUNREACH 41
-// Too many files open in system.
-#define ENFILE 42
-// No buffer space available.
-#define ENOBUFS 43
-// No message is available on the STREAM head read queue.
-#define ENODATA 44
-// No such device.
-#define ENODEV 45
-// No such file or directory.
-#define ENOENT 46
-// Executable file format error.
-#define ENOEXEC 47
-// No locks available.
-#define ENOLCK 48
-// Reserved.
-#define ENOLINK 49
-// Not enough space.
-#define ENOMEM 50
-// No message of the desired type.
-#define ENOMSG 51
-// Protocol not available.
-#define ENOPROTOOPT 52
-// No space left on device.
-#define ENOSPC 53
-// No STREAM resources.
-#define ENOSR 54
-// Not a STREAM.
-#define ENOSTR 55
-// Functionality not supported.
-#define ENOSYS 56
-// The socket is not connected.
-#define ENOTCONN 57
-// Not a directory or a symbolic link to a directory.
-#define ENOTDIR 58
-// Directory not empty.
-#define ENOTEMPTY 59
-// Env not recoverable.
-#define ENOTRECOVERABLE 60
-// Not a socket.
-#define ENOTSOCK 61
-// Not supported (may be the same value as EOPNOTSUPP).
-#define ENOTSUP 62
-// Inappropriate I/O control operation.
-#define ENOTTY 63
-// No such device or address.
-#define ENXIO 64
-// Operation not supported on socket (may be the same value as ENOTSUP).
-#define EOPNOTSUPP 65
-// Value too large to be stored in data type.
-#define EOVERFLOW 66
-// Previous owner died.
-#define EOWNERDEAD 67
-// Operation not permitted.
-#define EPERM 68
-// Broken pipe.
-#define EPIPE 69
-// Protocol error.
-#define EPROTO 79
-// Protocol not supported.
-#define EPROTONOSUPPORT 80
-// Protocol wrong type for socket.
-#define EPROTOTYPE 81
-// Result too large.
-#define ERANGE 82
-// Read-only file system.
-#define EROFS 83
-// Invalid seek.
-#define ESPIPE 84
-// No such process.
-#define ESRCH 85
-// Reserved.
-#define ESTALE 86
-// Stream ioctl() timeout.
-#define ETIME 87
-// Connection timed out.
-#define ETIMEDOUT 88
-// Text file busy.
-#define ETXTBSY 89
-// Operation would block (may be the same value as EAGAIN).
-#define EWOULDBLOCK 90
-// Cross-device link. 
-#define EXDEV 91
-`,
+			Header: errnoHeader(),
 			Imports: map[string]string{
 				"libc": RuntimeLibc,
 			},
-			Idents: map[string]*types.Ident{
-				"errno":    c.NewIdent("errno", "libc.Errno", libc.Errno, gint),
-				"strerror": c.NewIdent("strerror", "libc.StrError", libc.StrError, c.FuncTT(c.C().String(), gint)),
-			},
+			Idents: errnoIdents(c),
 		}
 	})
+}
+
+
+func errnoHeader() string {
+
+	lines := []string{
+		"#include <" + BuiltinH + ">",
+		"_cxgo_go_int errno = 0;",
+		"char* strerror (_cxgo_go_int errnum);",
+	}
+
+	for _, v := range errnoInfs {
+		lines = append(lines, fmt.Sprintf("const _cxgo_go_int %s = %d;", v.name, v.value))
+	}
+	res := strings.Join(lines, "\n")
+	return res
+}
+
+func errnoIdents(c *Env) map[string]*types.Ident {
+	gint := c.Go().Int()
+
+	res := map[string]*types.Ident{
+		"errno":    c.NewIdent("errno", "libc.Errno", libc.Errno, gint),
+		"strerror": c.NewIdent("strerror", "libc.StrError", libc.StrError, c.FuncTT(c.C().String(), gint)),
+	}
+
+	for _, v := range errnoInfs {
+		res[v.name] = c.NewIdent(v.name, "libc."+v.name, libc.Errno, gint)
+	}
+
+	return res
+}
+
+var errnoInfs = []struct {
+	name  string
+	value int
+}{
+	// Argument list too long.
+	{"E2BIG", 2},
+	// Permission denied.
+	{"EACCES", 3},
+	// Address in use.
+	{"EADDRINUSE", 4},
+	// Address not available.
+	{"EADDRNOTAVAIL", 5},
+	// Address family not supported.
+	{"EAFNOSUPPORT", 6},
+	// Resource unavailable, try again (may be the same value as EWOULDBLOCK).
+	{"EAGAIN", 7},
+	// Connection already in progress.
+	{"EALREADY", 8},
+	// Bad file descriptor.
+	{"EBADF", 9},
+	// Bad message.
+	{"EBADMSG", 10},
+	// Device or resource busy.
+	{"EBUSY", 11},
+	// Operation canceled.
+	{"ECANCELED", 12},
+	// No child processes.
+	{"ECHILD", 13},
+	// Connection aborted.
+	{"ECONNABORTED", 14},
+	// Connection refused.
+	{"ECONNREFUSED", 15},
+	// Connection reset.
+	{"ECONNRESET", 16},
+	// Resource deadlock would occur.
+	{"EDEADLK", 17},
+	// Destination address required.
+	{"EDESTADDRREQ", 18},
+	// Mathematics argument out of domain of function.
+	{"EDOM", 19},
+	// Reserved.
+	{"EDQUOT", 20},
+	// File exists.
+	{"EEXIST", 21},
+	// Bad address.
+	{"EFAULT", 22},
+	// File too large.
+	{"EFBIG", 23},
+	// Host is unreachable.
+	{"EHOSTUNREACH", 24},
+	// Identifier removed.
+	{"EIDRM", 25},
+	// Illegal byte sequence.
+	{"EILSEQ", 26},
+	// Operation in progress.
+	{"EINPROGRESS", 27},
+	// Interrupted function.
+	{"EINTR", 28},
+	// Invalid argument.
+	{"EINVAL", 29},
+	// I/O error.
+	{"EIO", 30},
+	// Socket is connected.
+	{"EISCONN", 31},
+	// Is a directory.
+	{"EISDIR", 32},
+	// Too many levels of symbolic links.
+	{"ELOOP", 33},
+	// File descriptor value too large.
+	{"EMFILE", 34},
+	// Too many links.
+	{"EMLINK", 35},
+	// Message too large.
+	{"EMSGSIZE", 36},
+	// Reserved.
+	{"EMULTIHOP", 37},
+	// Filename too long.
+	{"ENAMETOOLONG", 38},
+	// Network is down.
+	{"ENETDOWN", 39},
+	// Connection aborted by network.
+	{"ENETRESET", 40},
+	// Network unreachable.
+	{"ENETUNREACH", 41},
+	// Too many files open in system.
+	{"ENFILE", 42},
+	// No buffer space available.
+	{"ENOBUFS", 43},
+	// No message is available on the STREAM head read queue.
+	{"ENODATA", 44},
+	// No such device.
+	{"ENODEV", 45},
+	// No such file or directory.
+	{"ENOENT", 46},
+	// Executable file format error.
+	{"ENOEXEC", 47},
+	// No locks available.
+	{"ENOLCK", 48},
+	// Reserved.
+	{"ENOLINK", 49},
+	// Not enough space.
+	{"ENOMEM", 50},
+	// No message of the desired type.
+	{"ENOMSG", 51},
+	// Protocol not available.
+	{"ENOPROTOOPT", 52},
+	// No space left on device.
+	{"ENOSPC", 53},
+	// No STREAM resources.
+	{"ENOSR", 54},
+	// Not a STREAM.
+	{"ENOSTR", 55},
+	// Functionality not supported.
+	{"ENOSYS", 56},
+	// The socket is not connected.
+	{"ENOTCONN", 57},
+	// Not a directory or a symbolic link to a directory.
+	{"ENOTDIR", 58},
+	// Directory not empty.
+	{"ENOTEMPTY", 59},
+	// Env not recoverable.
+	{"ENOTRECOVERABLE", 60},
+	// Not a socket.
+	{"ENOTSOCK", 61},
+	// Not supported (may be the same value as EOPNOTSUPP).
+	{"ENOTSUP", 62},
+	// Inappropriate I/O control operation.
+	{"ENOTTY", 63},
+	// No such device or address.
+	{"ENXIO", 64},
+	// Operation not supported on socket (may be the same value as ENOTSUP).
+	{"EOPNOTSUPP", 65},
+	// Value too large to be stored in data type.
+	{"EOVERFLOW", 66},
+	// Previous owner died.
+	{"EOWNERDEAD", 67},
+	// Operation not permitted.
+	{"EPERM", 68},
+	// Broken pipe.
+	{"EPIPE", 69},
+	// Protocol error.
+	{"EPROTO", 79},
+	// Protocol not supported.
+	{"EPROTONOSUPPORT", 80},
+	// Protocol wrong type for socket.
+	{"EPROTOTYPE", 81},
+	// Result too large.
+	{"ERANGE", 82},
+	// Read-only file system.
+	{"EROFS", 83},
+	// Invalid seek.
+	{"ESPIPE", 84},
+	// No such process.
+	{"ESRCH", 85},
+	// Reserved.
+	{"ESTALE", 86},
+	// Stream ioctl() timeout.
+	{"ETIME", 87},
+	// Connection timed out.
+	{"ETIMEDOUT", 88},
+	// Text file busy.
+	{"ETXTBSY", 89},
+	// Operation would block (may be the same value as EAGAIN).
+	{"EWOULDBLOCK", 90},
+	// Cross-device link. },
+	{"EXDEV", 91},
 }
