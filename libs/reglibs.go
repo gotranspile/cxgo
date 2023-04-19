@@ -20,7 +20,7 @@ func RegisterLibraries() {
 		fNames, err := fileNames()
 
 		if err != nil {
-			break
+			panic(err)
 		}
 
 		for _, fName := range fNames {
