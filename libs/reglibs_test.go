@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var autoRegLibs []string = []string{
+var autoRegLibs = []string{
 
 	"AL/alc.h",
 	"AL/al.h",
