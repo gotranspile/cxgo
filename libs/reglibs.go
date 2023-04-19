@@ -30,7 +30,7 @@ func RegisterLibraries() {
 				break
 			}
 
-			include := strings.Replace(fName, "includes/", "", -1)
+			include := strings.TrimPrefix(fName, "includes/")
 			registerInclude(include, string(fBuff))
 		}
 
