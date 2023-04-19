@@ -1,16 +1,4 @@
-package libs
 
-// https://pubs.opengroup.org/onlinepubs/009695399/basedefs/float.h.html
-
-const (
-	floatH = "float.h"
-)
-
-func init() {
-	RegisterLibrary(floatH, func(c *Env) *Library {
-		return &Library{
-			// TODO
-			Header: `
 #define FLT_RADIX 2
 #define DECIMAL_DIG 10
 #define FLT_DIG 6
@@ -31,7 +19,3 @@ func init() {
 #define FLT_MIN 1E-37
 #define DBL_MIN 1E-37
 #define LDBL_MIN 1E-37
-`,
-		}
-	})
-}

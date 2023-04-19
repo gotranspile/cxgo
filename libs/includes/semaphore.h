@@ -1,16 +1,5 @@
-package libs
 
-const (
-	semaphoreH = "semaphore.h"
-)
-
-func init() {
-	RegisterLibrary(semaphoreH, func(c *Env) *Library {
-		return &Library{
-			// TODO
-			Header: `
-#include <` + BuiltinH + `>
-#include <` + timeH + `>
+#include <time.h>
 
 typedef struct {} sem_t;
 
@@ -24,7 +13,3 @@ int    sem_timedwait(sem_t *, const struct timespec *);
 int    sem_trywait(sem_t *);
 int    sem_unlink(const char *);
 int    sem_wait(sem_t *);
-`,
-		}
-	})
-}

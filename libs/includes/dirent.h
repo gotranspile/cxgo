@@ -1,15 +1,5 @@
-package libs
 
-const (
-	direntH = "dirent.h"
-)
-
-func init() {
-	RegisterLibrary(direntH, func(c *Env) *Library {
-		l := &Library{
-			Header: `
-#include <` + BuiltinH + `>
-#include <` + sysTypesH + `>
+#include <sys/types.h>
 
 typedef struct {
 	int pad;
@@ -27,8 +17,3 @@ int            readdir_r(DIR *, struct dirent *, struct dirent **);
 void           rewinddir(DIR *);
 void           seekdir(DIR *, long int);
 long int       telldir(DIR *);
-`,
-		}
-		return l
-	})
-}

@@ -1,16 +1,5 @@
-package libs
 
-const (
-	schedH = "sched.h"
-)
-
-func init() {
-	RegisterLibrary(schedH, func(c *Env) *Library {
-		return &Library{
-			// TODO
-			Header: `
-#include <` + BuiltinH + `>
-#include <` + sysTypesH + `>
+#include <sys/types.h>
 
 typedef struct sched_param {} sched_param;
 
@@ -22,7 +11,4 @@ int    sched_rr_get_interval(pid_t, struct timespec *);
 int    sched_setparam(pid_t, const struct sched_param *);
 int    sched_setscheduler(pid_t, int, const struct sched_param *);
 int    sched_yield(void);
-`,
-		}
-	})
-}
+

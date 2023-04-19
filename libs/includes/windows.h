@@ -1,18 +1,7 @@
-package libs
 
-const (
-	windowsH = "windows.h"
-)
-
-func init() {
-	RegisterLibrary(windowsH, func(c *Env) *Library {
-		return &Library{
-			// TODO
-			Header: `
-#include <` + BuiltinH + `>
-#include <` + stddefH + `>
-#include <` + sysSocketH + `>
-#include <` + unistdH + `>
+#include <stddef.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #define __cdecl
 #define __fastcall
@@ -332,7 +321,3 @@ int WINAPI recvfrom(int sockfd, void* buffer, unsigned int length, int flags, st
 		    unsigned int* addrlen);
 int WINAPI sendto(int sockfd, void* buffer, unsigned int length, int flags, const struct sockaddr* addr,
 		  unsigned int addrlen);
-`,
-		}
-	})
-}

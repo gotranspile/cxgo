@@ -1,15 +1,3 @@
-package libs
-
-const (
-	glH = "GL/gl.h"
-)
-
-func init() {
-	RegisterLibrary(glH, func(c *Env) *Library {
-		return &Library{
-			// TODO
-			Header: `
-#include <` + BuiltinH + `>
 
 typedef int GLint;
 typedef float GLfloat;
@@ -123,7 +111,3 @@ void glBufferData( 	GLenum target,
   	GLsizeiptr size,
   	const GLvoid * data,
   	GLenum usage);
-`,
-		}
-	})
-}

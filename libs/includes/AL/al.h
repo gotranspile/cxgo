@@ -1,16 +1,3 @@
-package libs
-
-const (
-	alH  = "AL/al.h"
-	alcH = "AL/alc.h"
-)
-
-func init() {
-	RegisterLibrary(alH, func(c *Env) *Library {
-		return &Library{
-			// TODO
-			Header: `
-#include <` + BuiltinH + `>
 
 #define ALvoid void
 
@@ -47,27 +34,4 @@ void alSourceQueueBuffers(ALuint source, ALsizei n, ALuint* buffers);
 void alSourceUnqueueBuffers(ALuint source, ALsizei n, ALuint* buffers);
 void alSourcePlay(ALuint source);
 void alSourceStop(ALuint source);
-`,
-		}
-	})
-	RegisterLibrary(alcH, func(c *Env) *Library {
-		return &Library{
-			// TODO
-			Header: `
-#include <` + alH + `>
 
-typedef int ALCenum;
-typedef int ALCint;
-typedef char ALCchar;
-typedef int ALCboolean;
-
-typedef struct{} ALCdevice;
-typedef struct{} ALCcontext;
-
-ALCdevice *alcOpenDevice(const ALCchar *devicename);
-ALCcontext * alcCreateContext(ALCdevice *device, ALCint* attrlist);
-ALCboolean alcMakeContextCurrent(ALCcontext *context);
-`,
-		}
-	})
-}
