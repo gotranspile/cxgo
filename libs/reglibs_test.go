@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-autoRegLibs := []string {
+var autoRegLibs []string = []string{
 
 	"AL/alc.h",
 	"AL/al.h",
