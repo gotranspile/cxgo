@@ -1,6 +1,8 @@
 package libs
 
 import (
+	_ "embed"
+
 	"github.com/gotranspile/cxgo/runtime/csys"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -8,6 +10,9 @@ import (
 const (
 	sysTypesH = "sys/types.h"
 )
+
+//go:embed sys_types.h
+var hsysTypes string
 
 func init() {
 	RegisterLibrary(sysTypesH, func(c *Env) *Library {
@@ -22,31 +27,7 @@ func init() {
 				"O_TRUNC":  c.NewIdent("O_TRUNC", "csys.O_TRUNC", csys.O_TRUNC, intT),
 			},
 			// TODO
-			Header: `
-#include <` + BuiltinH + `>
-#include <` + stddefH + `>
-#include <` + timeH + `>
-
-#define off_t _cxgo_int64
-#define ssize_t _cxgo_int64
-#define off_t _cxgo_uint64
-#define pid_t _cxgo_uint64
-#define gid_t _cxgo_uint32
-#define uid_t _cxgo_uint32
-#define ino_t _cxgo_uint64
-
-#define u_short unsigned short
-#define u_long unsigned long
-
-
-// TODO: should be in fcntl.h
-const _cxgo_int32 O_RDONLY = 1;
-const _cxgo_int32 O_WRONLY = 2;
-const _cxgo_int32 O_RDWR = 3;
-const _cxgo_int32 O_CREAT = 4;
-const _cxgo_int32 O_EXCL = 5;
-const _cxgo_int32 O_TRUNC = 6;
-`,
+			Header: hsysTypes,
 		}
 	})
 }
