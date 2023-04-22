@@ -1,19 +1,15 @@
 package libs
 
 import (
+	"testing"
+
 	"github.com/gotranspile/cxgo/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
-func TestStdargH(t *testing.T) {
-	c := NewEnv(types.Config32())
-	l, ok := c.GetLibrary(StdargH)
-	require.True(t, ok)
-	require.Equal(t, `
+var expStdArgsH = `
 #ifndef _cxgo_STDARG_H
 #define _cxgo_STDARG_H
-
 
 #include <cxgo_builtin.h>
 
@@ -25,5 +21,11 @@ func TestStdargH(t *testing.T) {
 
 
 #endif // _cxgo_STDARG_H
-`, l.Header)
+`
+
+func TestStdargH(t *testing.T) {
+	c := NewEnv(types.Config32())
+	l, ok := c.GetLibrary(StdargH)
+	require.True(t, ok)
+	require.Equal(t, expStdArgsH, l.Header)
 }

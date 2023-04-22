@@ -1,10 +1,17 @@
 package libs
 
-import "github.com/gotranspile/cxgo/types"
+import (
+	_ "embed"
+
+	"github.com/gotranspile/cxgo/types"
+)
 
 const (
 	setjmpH = "setjmp.h"
 )
+
+//go:embed setjmp.h
+var hsetjmp string
 
 func init() {
 	RegisterLibrary(setjmpH, func(c *Env) *Library {
@@ -20,17 +27,7 @@ func init() {
 			Imports: map[string]string{
 				"libc": RuntimeLibc,
 			},
-			Header: `
-#include <` + BuiltinH + `>
-
-typedef struct jmp_buf {
-	_cxgo_go_int (*SetJump) ();
-	void (*LongJump) (_cxgo_go_int);
-} jmp_buf;
-
-#define setjmp(b) ((jmp_buf)b).SetJump()
-#define longjmp(b, v) ((jmp_buf)b).LongJump(v)
-`,
+			Header: hsetjmp,
 		}
 	})
 }

@@ -1,6 +1,8 @@
 package libs
 
 import (
+	_ "embed"
+
 	"github.com/gotranspile/cxgo/runtime/cnet"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -10,6 +12,9 @@ import (
 const (
 	arpaInetH = "arpa/inet.h"
 )
+
+//go:embed arpa_inet.h
+var harpaInet string
 
 func init() {
 	RegisterLibrary(arpaInetH, func(c *Env) *Library {
@@ -40,28 +45,7 @@ func init() {
 				"inet_ntop": c.NewIdent("inet_ntop", "cnet.Ntop", cnet.Ntop, c.FuncTT(strT, types.IntT(4), c.PtrT(nil), strT, sockLenT)),
 				"inet_pton": c.NewIdent("inet_pton", "cnet.Pton", cnet.Pton, c.FuncTT(strT, types.IntT(4), strT, c.PtrT(nil))),
 			},
-			// TODO: split the file as per the spec
-			Header: `
-#include <` + stdintH + `>
-
-uint32_t htonl(uint32_t);
-uint16_t htons(uint16_t);
-uint32_t ntohl(uint32_t);
-uint16_t ntohs(uint16_t);
-
-struct in_addr {
-    uint32_t s_addr;
-};
-
-typedef uint64_t in_addr_t;
-typedef uint32_t in_port_t;
-#define socklen_t uint32_t
-
-in_addr_t    inet_addr(const char *);
-char        *inet_ntoa(struct in_addr);
-const char  *inet_ntop(int32_t, const void *restrict, char *restrict, socklen_t);
-int32_t      inet_pton(int32_t, const char *restrict, void *restrict);
-`,
+			Header: harpaInet,
 		}
 	})
 }

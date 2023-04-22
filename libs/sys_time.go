@@ -1,6 +1,8 @@
 package libs
 
 import (
+	_ "embed"
+
 	"github.com/gotranspile/cxgo/runtime/csys"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -8,6 +10,9 @@ import (
 const (
 	sysTimeH = "sys/time.h"
 )
+
+//go:embed sys_time.h
+var hsys_time string
 
 func init() {
 	RegisterLibrary(sysTimeH, func(c *Env) *Library {
@@ -25,19 +30,7 @@ func init() {
 				"gettimeofday": c.NewIdent("gettimeofday", "csys.GetTimeOfDay", csys.GetTimeOfDay, c.FuncTT(intT, c.PtrT(timevalT), c.PtrT(nil))),
 			},
 			// TODO
-			Header: `
-#include <` + timeH + `>
-#include <` + sysTypesH + `>
-
-typedef struct fd_set {
-	long fds_bits[];
-} fd_set;
-
-_cxgo_int32   getitimer(_cxgo_int32, struct itimerval *);
-_cxgo_int32   gettimeofday(struct timeval *restrict, void *restrict);
-int   select(int, fd_set *restrict, fd_set *restrict, fd_set *restrict, struct timeval *restrict);
-int   setitimer(int, const struct itimerval *restrict, struct itimerval *restrict);
-`,
+			Header: hsys_time,
 		}
 	})
 }
