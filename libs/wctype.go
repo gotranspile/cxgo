@@ -14,7 +14,7 @@ const (
 	wctypeH = "wctype.h"
 )
 
-//go:embed wctype.h
+//go:embed includes/wctype.h
 var hwctype string
 
 func init() {

@@ -11,7 +11,7 @@ const (
 	timeH = "time.h"
 )
 
-//go:embed time.h
+//go:embed includes/time.h
 var htime string
 
 func init() {

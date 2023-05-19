@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-//go:embed includes/*
+//go:embed includes/embed/*
 var efs embed.FS
 
 func init() {

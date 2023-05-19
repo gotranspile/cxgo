@@ -11,7 +11,7 @@ const (
 	sysTimeH = "sys/time.h"
 )
 
-//go:embed sys_time.h
+//go:embed includes/sys_time.h
 var hsys_time string
 
 func init() {

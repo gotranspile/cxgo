@@ -11,7 +11,7 @@ const (
 	netdbH = "netdb.h"
 )
 
-//go:embed netdb.h
+//go:embed includes/netdb.h
 var hnetdb string
 
 func init() {

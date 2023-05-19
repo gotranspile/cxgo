@@ -13,7 +13,7 @@ const (
 	stringH = "string.h"
 )
 
-//go:embed string.h
+//go:embed includes/string.h
 var hstring string
 
 func init() {
