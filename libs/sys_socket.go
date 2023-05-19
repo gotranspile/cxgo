@@ -11,7 +11,7 @@ const (
 	sysSocketH = "sys/socket.h"
 )
 
-//go:embed sys_socket.h
+//go:embed includes/sys_socket.h
 var hsys_socket string
 
 func init() {

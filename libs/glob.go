@@ -11,7 +11,7 @@ const (
 	globH = "glob.h"
 )
 
-//go:embed glob.h
+//go:embed includes/glob.h
 var hglob string
 
 func init() {

@@ -12,7 +12,7 @@ import (
 
 const StdlibH = "stdlib.h"
 
-//go:embed stdlib.h
+//go:embed includes/stdlib.h
 var hstdlib string
 
 // https://pubs.opengroup.org/onlinepubs/9699919799/

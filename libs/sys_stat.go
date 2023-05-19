@@ -11,7 +11,7 @@ const (
 	sysStatH = "sys/stat.h"
 )
 
-//go:embed sys_stat.h
+//go:embed includes/sys_stat.h
 var hsys_stat string
 
 func init() {

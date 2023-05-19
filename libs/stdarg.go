@@ -6,7 +6,7 @@ const (
 	StdargH = "stdarg.h"
 )
 
-//go:embed stdarg.h
+//go:embed includes/stdarg.h
 var hstdarg string
 
 func init() {

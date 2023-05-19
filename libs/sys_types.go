@@ -11,7 +11,7 @@ const (
 	sysTypesH = "sys/types.h"
 )
 
-//go:embed sys_types.h
+//go:embed includes/sys_types.h
 var hsysTypes string
 
 func init() {

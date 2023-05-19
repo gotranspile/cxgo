@@ -10,7 +10,7 @@ const (
 	setjmpH = "setjmp.h"
 )
 
-//go:embed setjmp.h
+//go:embed includes/setjmp.h
 var hsetjmp string
 
 func init() {

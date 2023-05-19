@@ -11,7 +11,7 @@ const (
 	pthreadH = "pthread.h"
 )
 
-//go:embed pthread.h
+//go:embed includes/pthread.h
 var hpthread string
 
 func init() {

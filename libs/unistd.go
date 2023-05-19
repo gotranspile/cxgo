@@ -12,7 +12,7 @@ const (
 	unistdH = "unistd.h"
 )
 
-//go:embed unistd.h
+//go:embed includes/unistd.h
 var hunistd string
 
 func init() {

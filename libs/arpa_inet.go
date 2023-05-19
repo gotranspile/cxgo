@@ -13,7 +13,7 @@ const (
 	arpaInetH = "arpa/inet.h"
 )
 
-//go:embed arpa_inet.h
+//go:embed includes/arpa_inet.h
 var harpaInet string
 
 func init() {
