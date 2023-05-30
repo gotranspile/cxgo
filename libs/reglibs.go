@@ -2,16 +2,15 @@ package libs
 
 import (
 	"embed"
-	"fmt"
 	"io/fs"
 	"strings"
 )
 
-//go:embed includes/embed
+//go:embed includes
 var efs embed.FS
 
 func init() {
-	const root = "includes/embed"
+	const root = "includes"
 	err := fs.WalkDir(efs, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -23,11 +22,7 @@ func init() {
 			return err
 		}
 		fname := strings.TrimPrefix(path, root+"/")
-		RegisterLibrary(fname, func(env *Env) *Library {
-			return &Library{
-				Header: fmt.Sprintf("#include <%s>\n%s", BuiltinH, string(data)),
-			}
-		})
+		RegisterLibrarySrc(fname, string(data))
 		return nil
 	})
 	if err != nil {

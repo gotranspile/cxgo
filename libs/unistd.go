@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/cnet"
 	"github.com/gotranspile/cxgo/runtime/stdio"
 	"github.com/gotranspile/cxgo/types"
@@ -11,9 +9,6 @@ import (
 const (
 	unistdH = "unistd.h"
 )
-
-//go:embed includes/unistd.h
-var hunistd string
 
 func init() {
 	RegisterLibrary(unistdH, func(c *Env) *Library {
@@ -42,7 +37,6 @@ func init() {
 				"getcwd":      c.NewIdent("getcwd", "stdio.GetCwd", stdio.GetCwd, c.FuncTT(strT, strT, gintT)),
 				"gethostname": c.NewIdent("gethostname", "cnet.GetHostname", cnet.GetHostname, c.FuncTT(gintT, strT, gintT)),
 			},
-			Header: hunistd,
 		}
 	})
 }

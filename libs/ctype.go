@@ -39,24 +39,6 @@ func init() {
 				"tolower": c.NewIdent("tolower", "unicode.ToLower", unicode.ToLower, toT),
 				"toupper": c.NewIdent("toupper", "unicode.ToUpper", unicode.ToUpper, toT),
 			},
-			// TODO
-			Header: `
-_cxgo_go_bool isalnum(_cxgo_go_rune);
-_cxgo_go_bool isalpha(_cxgo_go_rune);
-_cxgo_go_bool isascii(_cxgo_go_rune);
-_cxgo_go_bool iscntrl(_cxgo_go_rune);
-_cxgo_go_bool isdigit(_cxgo_go_rune);
-_cxgo_go_bool isgraph(_cxgo_go_rune);
-_cxgo_go_bool islower(_cxgo_go_rune);
-_cxgo_go_bool isprint(_cxgo_go_rune);
-_cxgo_go_bool ispunct(_cxgo_go_rune);
-_cxgo_go_bool isspace(_cxgo_go_rune);
-_cxgo_go_bool isupper(_cxgo_go_rune);
-_cxgo_go_bool isxdigit(_cxgo_go_rune);
-_cxgo_go_rune toascii(_cxgo_go_rune);
-_cxgo_go_rune tolower(_cxgo_go_rune);
-_cxgo_go_rune toupper(_cxgo_go_rune);
-`,
 		}
 	})
 }

@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/libc"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -10,9 +8,6 @@ import (
 const (
 	timeH = "time.h"
 )
-
-//go:embed includes/time.h
-var htime string
 
 func init() {
 	RegisterLibrary(timeH, func(c *Env) *Library {
@@ -71,8 +66,6 @@ func init() {
 				"CLOCK_MONOTONIC": c.NewIdent("CLOCK_MONOTONIC", "libc.CLOCK_MONOTONIC", libc.CLOCK_MONOTONIC, gintT),
 				"CLOCKS_PER_SEC":  c.NewIdent("CLOCKS_PER_SEC", "libc.CLOCKS_PER_SEC", libc.CLOCKS_PER_SEC, gintT),
 			},
-			// TODO
-			Header: htime,
 		}
 	})
 }

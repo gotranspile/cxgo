@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/csys"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -10,9 +8,6 @@ import (
 const (
 	sysStatH = "sys/stat.h"
 )
-
-//go:embed includes/sys_stat.h
-var hsys_stat string
 
 func init() {
 	RegisterLibrary(sysStatH, func(c *Env) *Library {
@@ -49,8 +44,6 @@ func init() {
 				"mkdir":   c.NewIdent("mkdir", "csys.Mkdir", csys.Mkdir, c.FuncTT(intT, strT, modeT)),
 				"S_ISDIR": c.NewIdent("S_ISDIR", "csys.IsDir", csys.IsDir, c.FuncTT(intT, modeT)),
 			},
-			// TODO
-			Header: hsys_stat,
 		}
 	})
 }

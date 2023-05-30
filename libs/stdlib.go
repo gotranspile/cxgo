@@ -1,7 +1,6 @@
 package libs
 
 import (
-	_ "embed"
 	"fmt"
 	"os"
 
@@ -11,9 +10,6 @@ import (
 )
 
 const StdlibH = "stdlib.h"
-
-//go:embed includes/stdlib.h
-var hstdlib string
 
 // https://pubs.opengroup.org/onlinepubs/9699919799/
 
@@ -48,7 +44,7 @@ func init() {
 				"bsearch":  c.NewIdent("bsearch", "libc.Search", libc.Search, c.FuncTT(voidPtr, voidPtr, voidPtr, uintT, uintT, c.FuncTT(intT, voidPtr, voidPtr))),
 				"mbstowcs": c.NewIdent("mbstowcs", "libc.Mbstowcs", libc.Mbstowcs, c.FuncTT(uintT, wstrT, cstrT, uintT)),
 			},
-			Header: hstdlib + fmt.Sprintf("#define RAND_MAX %d\n", libc.RandMax),
+			Header: fmt.Sprintf("#define RAND_MAX %d\n", libc.RandMax),
 		}
 
 		l.Declare(

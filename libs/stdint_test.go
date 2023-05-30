@@ -4,17 +4,19 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gotranspile/cxgo/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gotranspile/cxgo/types"
 )
 
 func TestStdInt(t *testing.T) {
-	c := types.NewEnv(types.Config32())
-	s := incStdInt(c, nil)
-	s = strings.TrimSpace(s)
-	s = strings.TrimSpace(s)
-	require.Equal(t, strings.TrimSpace(`
+	c := NewEnv(types.Config32())
+	l, ok := c.GetLibrary(stdintH)
+	require.True(t, ok)
+	require.Equal(t, strings.TrimSpace(`#ifndef _cxgo_STDINT_H
+#define _cxgo_STDINT_H
 #include <cxgo_builtin.h>
+
 #define int8_t _cxgo_sint8
 #define int16_t _cxgo_sint16
 #define int32_t _cxgo_sint32
@@ -108,5 +110,9 @@ typedef _cxgo_uint64 uintmax_t;
 
 #define WINT_MIN 0
 #define WINT_MAX 4294967295u
-`), strings.TrimSpace(s))
+
+
+
+#endif // _cxgo_STDINT_H
+`), strings.TrimSpace(l.Header))
 }

@@ -1,5 +1,3 @@
-#include <cxgo_builtin.h>
-
 typedef struct jmp_buf {
 	_cxgo_go_int (*SetJump) ();
 	void (*LongJump) (_cxgo_go_int);

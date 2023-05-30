@@ -3,14 +3,13 @@ package libs
 import (
 	"testing"
 
-	"github.com/gotranspile/cxgo/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gotranspile/cxgo/types"
 )
 
-var expStdArgsH = `
-#ifndef _cxgo_STDARG_H
+var expStdArgsH = `#ifndef _cxgo_STDARG_H
 #define _cxgo_STDARG_H
-
 #include <cxgo_builtin.h>
 
 #define va_list __builtin_va_list

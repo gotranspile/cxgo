@@ -107,11 +107,16 @@ func cTypeStr(t types.Type) string {
 	}
 }
 
-var libs = make(map[string]LibraryFunc)
+var (
+	libs   = make(map[string]LibraryFunc)
+	libsrc = make(map[string]string)
+)
 
 type LibraryFunc func(c *Env) *Library
 
 // RegisterLibrary registers an override for a C library.
+//
+// If the library provides no custom cxgo identifiers or types, RegisterLibrarySrc can be used instead.
 func RegisterLibrary(name string, fnc LibraryFunc) {
 	if name == "" {
 		panic("empty name")
@@ -125,6 +130,19 @@ func RegisterLibrary(name string, fnc LibraryFunc) {
 	libs[name] = fnc
 }
 
+// RegisterLibrarySrc registers an override for a C library source.
+//
+// For registering custom cxgo identifiers or types see RegisterLibrary.
+func RegisterLibrarySrc(name string, hdr string) {
+	if name == "" {
+		panic("empty name")
+	}
+	if _, ok := libsrc[name]; ok {
+		panic("already registered")
+	}
+	libsrc[name] = hdr
+}
+
 const IncludePath = "/_cxgo_overrides"
 
 var defPathReplacer = strings.NewReplacer(
@@ -134,14 +152,19 @@ var defPathReplacer = strings.NewReplacer(
 
 // GetLibrary finds or initializes the library, given a C include filename.
 func (c *Env) GetLibrary(name string) (*Library, bool) {
-	if l, ok := c.libs[name]; ok {
+	l, ok := c.libs[name]
+	if ok {
 		return l, true
 	}
-	fnc, ok := libs[name]
-	if !ok {
+	// First consult a general library registry.
+	// If not found, but we have a library source - register library anyway.
+	if fnc, ok := libs[name]; ok {
+		l = fnc(c)
+	} else if _, ok := libsrc[name]; ok {
+		l = new(Library)
+	} else {
 		return nil, false
 	}
-	l := fnc(c)
 	l.created = true
 	l.Name = name
 	//for name, typ := range l.Types {
@@ -163,21 +186,24 @@ func (c *Env) GetLibrary(name string) (*Library, bool) {
 	for k, v := range l.ForceMacros {
 		c.macros[k] = v
 	}
-
 	ifdef := "_cxgo_" + strings.ToUpper(defPathReplacer.Replace(name))
-	l.Header = fmt.Sprintf(`
-#ifndef %s
-#define %s
-
-%s
-
-#endif // %s
-`,
-		ifdef,
-		ifdef,
-		l.Header,
-		ifdef,
-	)
+	var hdr strings.Builder
+	hdr.WriteString("#ifndef " + ifdef + "\n")
+	hdr.WriteString("#define " + ifdef + "\n")
+	if name != BuiltinH {
+		hdr.WriteString("#include <" + BuiltinH + ">\n")
+	}
+	hdr.WriteString("\n")
+	if src := libsrc[name]; src != "" {
+		hdr.WriteString(src)
+		hdr.WriteString("\n")
+	}
+	if l.Header != "" {
+		hdr.WriteString(l.Header)
+		hdr.WriteString("\n")
+	}
+	hdr.WriteString("\n#endif // " + ifdef + "\n")
+	l.Header = hdr.String()
 	return l, true
 }
 

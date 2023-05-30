@@ -1,4 +1,3 @@
-#include <cxgo_builtin.h>
 #include <stddef.h>
 
 #define EXIT_FAILURE 1
