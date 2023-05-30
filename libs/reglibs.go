@@ -7,38 +7,30 @@ import (
 	"strings"
 )
 
-//go:embed includes/embed/*
+//go:embed includes/embed
 var efs embed.FS
 
 func init() {
-
-	onFile := func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
+	const root = "includes/embed"
+	err := fs.WalkDir(efs, root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		} else if d.IsDir() {
 			return nil
 		}
-		return registerInclude(path)
-	}
-
-	err := fs.WalkDir(efs, ".", onFile)
-
+		data, err := efs.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		fname := strings.TrimPrefix(path, root+"/")
+		RegisterLibrary(fname, func(env *Env) *Library {
+			return &Library{
+				Header: fmt.Sprintf("#include <%s>\n%s", BuiltinH, string(data)),
+			}
+		})
+		return nil
+	})
 	if err != nil {
 		panic(err)
 	}
-}
-
-func registerInclude(fName string) error {
-
-	fBuff, fErr := efs.ReadFile(fName)
-
-	if fErr != nil {
-		return fErr
-	}
-
-	RegisterLibrary(strings.TrimPrefix(fName, "includes/"), func(env *Env) *Library {
-		return &Library{
-			Header: fmt.Sprintf("#include <%s>\n%s", BuiltinH, string(fBuff)),
-		}
-	})
-
-	return nil
 }
