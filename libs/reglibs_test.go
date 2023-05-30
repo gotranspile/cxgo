@@ -1,30 +1,31 @@
 package libs
 
 import (
-	"github.com/gotranspile/cxgo/types"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/gotranspile/cxgo/types"
 )
 
 var autoRegLibs = []string{
-
 	"AL/alc.h",
 	"AL/al.h",
-	
+
 	"dirent.h",
 	"fcntl.h",
 	"float.h",
 	"getopt.h",
-	 
+
 	"GL/gl.h",
-	
+
 	"inttypes.h",
 	"libgen.h",
 	"sched.h",
 	"semaphore.h",
 	"signal.h",
 	"strings.h",
-	 
+
 	"sys/mkdev.h",
 	"windows.h",
 }
