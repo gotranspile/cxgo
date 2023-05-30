@@ -156,7 +156,6 @@ var (
 
 func incStdInt(e *types.Env, m map[string]*types.Ident) string {
 	var buf strings.Builder
-	buf.WriteString("#include <" + BuiltinH + ">\n")
 	buf.WriteString(fixedIntTypes())
 	buf.WriteString(maxIntTypes(e))
 	buf.WriteString(intLimits(m))

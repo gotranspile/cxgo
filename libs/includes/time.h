@@ -1,4 +1,3 @@
-#include <cxgo_builtin.h>
 #include <sys/types.h>
 
 const _cxgo_go_int CLOCK_REALTIME = 0;

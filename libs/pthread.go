@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/pthread"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -10,9 +8,6 @@ import (
 const (
 	pthreadH = "pthread.h"
 )
-
-//go:embed includes/pthread.h
-var hpthread string
 
 func init() {
 	RegisterLibrary(pthreadH, func(c *Env) *Library {
@@ -70,8 +65,6 @@ func init() {
 				"pthread_cond_init":       c.NewIdent("pthread_cond_init", "pthread.CondInit", pthread.CondInit, c.FuncTT(intT, c.PtrT(condT), c.PtrT(condAttrT))),
 				"pthread_cond_destroy":    c.NewIdent("pthread_cond_destroy", "pthread.CondFree", pthread.CondFree, c.FuncTT(intT, c.PtrT(condT))),
 			},
-			// TODO
-			Header: hpthread,
 		}
 	})
 }

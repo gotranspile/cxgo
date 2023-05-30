@@ -22,11 +22,8 @@ func init() {
 	})
 }
 
-
 func errnoHeader() string {
-
 	lines := []string{
-		"#include <" + BuiltinH + ">",
 		"_cxgo_go_int errno = 0;",
 		"char* strerror (_cxgo_go_int errnum);",
 	}

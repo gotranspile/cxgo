@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/stdio"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -10,9 +8,6 @@ import (
 const (
 	globH = "glob.h"
 )
-
-//go:embed includes/glob.h
-var hglob string
 
 func init() {
 	RegisterLibrary(globH, func(c *Env) *Library {
@@ -38,8 +33,6 @@ func init() {
 			Idents: map[string]*types.Ident{
 				"GLOB_NOESCAPE": c.NewIdent("GLOB_NOESCAPE", "stdio.GlobNoEscape", stdio.GlobNoEscape, gint),
 			},
-			// TODO
-			Header: hglob,
 		}
 	})
 }

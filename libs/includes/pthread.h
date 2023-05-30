@@ -1,4 +1,3 @@
-#include <cxgo_builtin.h>
 #include <time.h>
 
 const _cxgo_go_int PTHREAD_MUTEX_RECURSIVE = 1;

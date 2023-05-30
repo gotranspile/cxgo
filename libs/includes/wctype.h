@@ -1,5 +1,3 @@
-//#include <cxgo_builtin.h>
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>

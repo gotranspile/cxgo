@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/csys"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -10,9 +8,6 @@ import (
 const (
 	sysTypesH = "sys/types.h"
 )
-
-//go:embed includes/sys_types.h
-var hsysTypes string
 
 func init() {
 	RegisterLibrary(sysTypesH, func(c *Env) *Library {
@@ -26,8 +21,6 @@ func init() {
 				"O_EXCL":   c.NewIdent("O_EXCL", "csys.O_EXCL", csys.O_EXCL, intT),
 				"O_TRUNC":  c.NewIdent("O_TRUNC", "csys.O_TRUNC", csys.O_TRUNC, intT),
 			},
-			// TODO
-			Header: hsysTypes,
 		}
 	})
 }

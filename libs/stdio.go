@@ -58,7 +58,6 @@ func init() {
 				"_cxgo_EOF": c.NewIdent("_cxgo_EOF", "stdio.EOF", stdio.EOF, types.UntypedIntT(1)),
 			},
 			Header: `
-#include <` + BuiltinH + `>
 #include <` + stddefH + `>
 #include <` + StdargH + `>
 #include <` + StdlibH + `>

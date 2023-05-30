@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/cnet"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -10,9 +8,6 @@ import (
 const (
 	sysSocketH = "sys/socket.h"
 )
-
-//go:embed includes/sys_socket.h
-var hsys_socket string
 
 func init() {
 	RegisterLibrary(sysSocketH, func(c *Env) *Library {
@@ -59,8 +54,6 @@ func init() {
 				"socket":       c.NewIdent("socket", "cnet.Socket", cnet.Socket, c.FuncTT(gintT, gintT, gintT, gintT)),
 				"setsockopt":   c.NewIdent("setsockopt", "cnet.SetSockOpt", cnet.SetSockOpt, c.FuncTT(gintT, gintT, gintT, gintT, bytesT, gintT)),
 			},
-			// TODO
-			Header: hsys_socket,
 		}
 	})
 }

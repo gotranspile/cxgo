@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/cnet"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -10,9 +8,6 @@ import (
 const (
 	netdbH = "netdb.h"
 )
-
-//go:embed includes/netdb.h
-var hnetdb string
 
 func init() {
 	RegisterLibrary(netdbH, func(c *Env) *Library {
@@ -35,8 +30,6 @@ func init() {
 			Idents: map[string]*types.Ident{
 				"gethostbyname": c.NewIdent("gethostbyname", "cnet.GetHostByName", cnet.GetHostByName, c.FuncTT(c.PtrT(hostentT), strT)),
 			},
-			// TODO
-			Header: hnetdb,
 		}
 	})
 }

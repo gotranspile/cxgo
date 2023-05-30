@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/libc"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -12,9 +10,6 @@ import (
 const (
 	stringH = "string.h"
 )
-
-//go:embed includes/string.h
-var hstring string
 
 func init() {
 	// TODO: should include <locale.h>
@@ -45,7 +40,6 @@ func init() {
 				"strspn":      c.NewIdent("strspn", "libc.StrSpn", libc.StrSpn, c.FuncTT(gintT, cstrT, cstrT)),
 				"strcspn":     c.NewIdent("strcspn", "libc.StrCSpn", libc.StrCSpn, c.FuncTT(gintT, cstrT, cstrT)),
 			},
-			Header: hstring,
 		}
 	})
 }

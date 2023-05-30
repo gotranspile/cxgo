@@ -1,8 +1,6 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/runtime/cnet"
 	"github.com/gotranspile/cxgo/types"
 )
@@ -12,9 +10,6 @@ import (
 const (
 	arpaInetH = "arpa/inet.h"
 )
-
-//go:embed includes/arpa_inet.h
-var harpaInet string
 
 func init() {
 	RegisterLibrary(arpaInetH, func(c *Env) *Library {
@@ -45,7 +40,6 @@ func init() {
 				"inet_ntop": c.NewIdent("inet_ntop", "cnet.Ntop", cnet.Ntop, c.FuncTT(strT, types.IntT(4), c.PtrT(nil), strT, sockLenT)),
 				"inet_pton": c.NewIdent("inet_pton", "cnet.Pton", cnet.Pton, c.FuncTT(strT, types.IntT(4), strT, c.PtrT(nil))),
 			},
-			Header: harpaInet,
 		}
 	})
 }

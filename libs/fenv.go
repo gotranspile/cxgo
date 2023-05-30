@@ -21,12 +21,6 @@ func init() {
 				"FE_TOWARDZERO": c.NewIdent("FE_TOWARDZERO", "cmath.TowardZero", cmath.TowardZero, gint),
 				"fesetround":    c.NewIdent("fesetround", "cmath.FSetRound", cmath.FSetRound, c.FuncTT(intT, intT)),
 			},
-			// TODO
-			Header: `
-#include <` + BuiltinH + `>
-const _cxgo_go_int FE_TOWARDZERO = 1;
-_cxgo_sint32 fesetround(_cxgo_sint32 round);
-`,
 		}
 	})
 }

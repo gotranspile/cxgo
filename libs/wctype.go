@@ -1,7 +1,6 @@
 package libs
 
 import (
-	_ "embed"
 	"unicode"
 
 	"github.com/gotranspile/cxgo/runtime/libc"
@@ -13,9 +12,6 @@ import (
 const (
 	wctypeH = "wctype.h"
 )
-
-//go:embed includes/wctype.h
-var hwctype string
 
 func init() {
 	RegisterLibrary(wctypeH, func(c *Env) *Library {
@@ -42,7 +38,6 @@ func init() {
 				"towlower": c.NewIdent("towlower", "unicode.ToLower", unicode.ToLower, toT),
 				"towupper": c.NewIdent("towupper", "unicode.ToUpper", unicode.ToUpper, toT),
 			},
-			Header: hwctype,
 		}
 	})
 }

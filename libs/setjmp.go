@@ -1,17 +1,12 @@
 package libs
 
 import (
-	_ "embed"
-
 	"github.com/gotranspile/cxgo/types"
 )
 
 const (
 	setjmpH = "setjmp.h"
 )
-
-//go:embed includes/setjmp.h
-var hsetjmp string
 
 func init() {
 	RegisterLibrary(setjmpH, func(c *Env) *Library {
@@ -27,7 +22,6 @@ func init() {
 			Imports: map[string]string{
 				"libc": RuntimeLibc,
 			},
-			Header: hsetjmp,
 		}
 	})
 }

@@ -18,7 +18,6 @@ func init() {
 		doubleT := types.FloatT(8)
 		floatT := types.FloatT(4)
 		var buf bytes.Buffer
-		buf.WriteString("#include <" + BuiltinH + ">\n")
 		buf.WriteString("const double M_PI = 3.1415;\n")
 		lib := &Library{
 			Imports: map[string]string{
