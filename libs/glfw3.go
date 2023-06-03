@@ -10,6 +10,7 @@ const (
 
 func init() {
 	RegisterLibrary(glfw3H, func(env *Env) *Library {
+		intPtrT := env.PtrT(env.Go().Int())
 		hintT := types.NamedTGo("Hint", "glfw.Hint", env.Go().Int())
 		actionT := types.NamedTGo("Action", "glfw.Action", env.Go().Int())
 		joystickHatStateT := types.NamedTGo("JoystickHatState", "glfw.JoystickHatState", env.Go().Int())
@@ -62,7 +63,7 @@ func init() {
 			"GetInputMode":       env.FuncTT(env.Go().Int(), inputModeT),
 			"SetInputMode":       env.FuncTT(nil, inputModeT, env.Go().Int()),
 			"SetShouldClose":     env.FuncTT(nil, env.Go().Bool()),
-			"GetFramebufferSize": env.FuncTT(nil, env.Go().Int(), env.Go().Int()),
+			"GetFramebufferSize": env.FuncTT(nil, intPtrT, intPtrT),
 			"Destroy":            env.FuncTT(nil, nil),
 			"Focus":              env.FuncTT(nil, nil),
 			"Maximize":           env.FuncTT(nil, nil),
