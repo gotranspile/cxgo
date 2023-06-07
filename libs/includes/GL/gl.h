@@ -27,6 +27,7 @@ const int GL_LINEAR = 0;
 const int GL_ARRAY_BUFFER = 0;
 const int GL_FLOAT = 0;
 const int GL_TRIANGLE_STRIP = 0;
+const int GL_TRIANGLES = 0;
 const int GL_CLAMP_TO_EDGE = 0;
 const int GL_TEXTURE0 = 0;
 const int GL_VERTEX_SHADER = 0;
@@ -58,6 +59,7 @@ void glUseProgram( 	GLuint program);
 void glUniform1i( 	GLint location, GLint v0);
 void glUniform1f(GLint location,  GLfloat v0);
 void glUniformMatrix2fv(GLint location,  GLsizei count,  GLboolean transpose,  const GLfloat *value);
+void glUniformMatrix4fv(GLint location,  GLsizei count,  GLboolean transpose,  const GLfloat *value);
 void glBindBuffer( 	GLenum target,
   	GLuint buffer);
 
