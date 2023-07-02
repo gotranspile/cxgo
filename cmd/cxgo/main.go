@@ -239,7 +239,12 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 		c.SysInclude[i] = filepath.Join(c.Root, c.SysInclude[i])
 	}
+	seen := make(map[string]struct{})
 	processFile := func(f *File) error {
+		if _, ok := seen[f.Name]; ok {
+			return fmt.Errorf("ducplicate entry for file: %q", f.Name)
+		}
+		seen[f.Name] = struct{}{}
 		if f.Content != "" {
 			data := []byte(f.Content)
 			if fdata, err := format.Source(data); err == nil {
@@ -320,6 +325,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	for _, f := range c.Files {
 		if f.Disabled {
+			seen[f.Name] = struct{}{}
 			continue
 		}
 		if strings.Contains(f.Name, "*") {
@@ -331,6 +337,9 @@ func run(cmd *cobra.Command, args []string) error {
 				rel, err := filepath.Rel(c.Root, path)
 				if err != nil {
 					return fmt.Errorf("%s: %w", path, err)
+				}
+				if _, ok := seen[rel]; ok {
+					continue
 				}
 				f2 := *f
 				f2.Name = rel
