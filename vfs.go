@@ -7,8 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gotranspile/cxgo/libs"
 	"modernc.org/cc/v3"
+
+	"github.com/gotranspile/cxgo/libs"
 )
 
 var timeRun = time.Now()
@@ -23,7 +24,9 @@ type includeFS struct {
 
 func (fs includeFS) content(path string, sys bool) (string, error) {
 	if !sys {
-		return "", os.ErrNotExist
+		if _, ok := fs.c.Map[strings.TrimPrefix(path, libs.IncludePath+"/")]; !ok {
+			return "", os.ErrNotExist
+		}
 	}
 	l, ok := fs.c.NewLibrary(path)
 	if !ok {

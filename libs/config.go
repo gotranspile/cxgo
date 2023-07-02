@@ -62,6 +62,9 @@ func (c *Env) ResolveImport(name string) string {
 //
 // Typically, the GetLibrary function should be used instead, because it will load the library automatically, if needed.
 func (c *Env) LookupLibrary(name string) *Library {
+	if v, ok := c.Map[name]; ok {
+		name = v
+	}
 	if c.NoLibs && name != BuiltinH {
 		return nil
 	}

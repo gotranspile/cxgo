@@ -152,11 +152,11 @@ var defPathReplacer = strings.NewReplacer(
 
 // GetLibrary finds or initializes the library, given a C include filename.
 func (c *Env) GetLibrary(name string) (*Library, bool) {
-	if c.NoLibs && name != BuiltinH {
-		return nil, false
-	}
 	if v, ok := c.Map[name]; ok {
 		name = v
+	}
+	if c.NoLibs && name != BuiltinH {
+		return nil, false
 	}
 	l, ok := c.libs[name]
 	if ok {
@@ -231,6 +231,9 @@ func (c *Env) NewLibrary(path string) (*Library, bool) {
 }
 
 func (c *Env) TypeByName(name string) (types.Type, bool) {
+	if v, ok := c.Map[name]; ok {
+		name = v
+	}
 	if c.NoLibs && name != BuiltinH {
 		return nil, false
 	}
@@ -243,6 +246,9 @@ func (c *Env) TypeByName(name string) (types.Type, bool) {
 }
 
 func (c *Env) LibIdentByName(name string) (*Library, *types.Ident, bool) {
+	if v, ok := c.Map[name]; ok {
+		name = v
+	}
 	if c.NoLibs && name != BuiltinH {
 		return nil, nil, false
 	}
