@@ -22,13 +22,15 @@ func NewEnv(conf types.Config) *Env {
 
 type Env struct {
 	*types.Env
+	NoLibs  bool              // completely disable library lookups
+	Map     map[string]string // when searching for library name, consult the map first and search that name instead
 	libs    map[string]*Library
 	imports map[string]string
 	macros  map[string]bool
 }
 
 func (c *Env) Clone() *Env {
-	c2 := &Env{Env: c.Env}
+	c2 := &Env{Env: c.Env, NoLibs: c.NoLibs}
 	c2.libs = make(map[string]*Library)
 	for k, v := range c.libs {
 		c2.libs[k] = v
@@ -40,6 +42,10 @@ func (c *Env) Clone() *Env {
 	c2.macros = make(map[string]bool)
 	for k, v := range c.macros {
 		c2.macros[k] = v
+	}
+	c2.Map = make(map[string]string)
+	for k, v := range c.Map {
+		c2.Map[k] = v
 	}
 	return c2
 }
@@ -56,6 +62,12 @@ func (c *Env) ResolveImport(name string) string {
 //
 // Typically, the GetLibrary function should be used instead, because it will load the library automatically, if needed.
 func (c *Env) LookupLibrary(name string) *Library {
+	if c.NoLibs && name != BuiltinH {
+		return nil
+	}
+	if v, ok := c.Map[name]; ok {
+		name = v
+	}
 	l, ok := c.libs[name]
 	if !ok {
 		panic(errors.New("cannot find library: " + name))

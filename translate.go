@@ -24,6 +24,7 @@ type Config struct {
 	GoFilePref         string
 	Include            []string
 	SysInclude         []string
+	IncludeMap         map[string]string
 	MaxDecls           int
 	Predef             string
 	Define             []Define

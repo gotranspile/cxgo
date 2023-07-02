@@ -112,17 +112,18 @@ type File struct {
 }
 
 type Config struct {
-	VCS        string        `yaml:"vcs"`
-	Branch     string        `yaml:"branch"`
-	Root       string        `yaml:"root"`
-	Out        string        `yaml:"out"`
-	Package    string        `yaml:"package"`
-	Include    []string      `yaml:"include"`
-	SysInclude []string      `yaml:"sys_include"`
-	Hooks      bool          `yaml:"hooks"`
-	Define     []cxgo.Define `yaml:"define"`
-	Predef     string        `yaml:"predef"`
-	SubPackage bool          `yaml:"subpackage"`
+	VCS        string            `yaml:"vcs"`
+	Branch     string            `yaml:"branch"`
+	Root       string            `yaml:"root"`
+	Out        string            `yaml:"out"`
+	Package    string            `yaml:"package"`
+	Include    []string          `yaml:"include"`
+	SysInclude []string          `yaml:"sys_include"`
+	IncludeMap map[string]string `yaml:"include_map"`
+	Hooks      bool              `yaml:"hooks"`
+	Define     []cxgo.Define     `yaml:"define"`
+	Predef     string            `yaml:"predef"`
+	SubPackage bool              `yaml:"subpackage"`
 
 	IntSize   int  `yaml:"int_size"`
 	PtrSize   int  `yaml:"ptr_size"`
@@ -140,6 +141,7 @@ type Config struct {
 	UnexportedFields bool               `yaml:"unexported_fields"`
 	IntReformat      bool               `yaml:"int_reformat"`
 	KeepFree         bool               `yaml:"keep_free"`
+	NoLibs           bool               `yaml:"no_libs"`
 
 	SrcFiles []*SrcFile `yaml:"src_files"`
 	FilePref string     `yaml:"file_pref"`
@@ -272,12 +274,15 @@ func run(cmd *cobra.Command, args []string) error {
 			Idents:             ilist,
 			Include:            c.Include,
 			SysInclude:         c.SysInclude,
+			IncludeMap:         c.IncludeMap,
 			FixImplicitReturns: c.ImplicitReturns,
 			IgnoreIncludeDir:   c.IgnoreIncludeDir,
 			UnexportedFields:   c.UnexportedFields,
 			IntReformat:        c.IntReformat,
 			KeepFree:           c.KeepFree,
 		}
+		env.NoLibs = c.NoLibs
+		env.Map = c.IncludeMap
 		if f.MaxDecls > 0 {
 			fc.MaxDecls = f.MaxDecls
 		}
