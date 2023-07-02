@@ -332,7 +332,7 @@ func (g *translator) convertDecl(d *cc.Declaration) []CDecl {
 		}
 	}
 	spec := d.DeclarationSpecifiers
-	if spec.Case == cc.DeclarationSpecifiersStorage &&
+	if spec != nil && spec.Case == cc.DeclarationSpecifiersStorage &&
 		spec.StorageClassSpecifier.Case == cc.StorageClassSpecifierTypedef {
 		isTypedef = true
 		spec = spec.DeclarationSpecifiers
