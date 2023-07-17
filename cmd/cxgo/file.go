@@ -34,8 +34,9 @@ func init() {
 			UseGoInt: true,
 		})
 		fc := cxgo.Config{
-			Package: *fPkg,
-			GoFile:  out,
+			Package:  *fPkg,
+			GoFile:   out,
+			MaxDecls: -1,
 		}
 		return cxgo.Translate("", in, filepath.Dir(out), env, fc)
 	}
