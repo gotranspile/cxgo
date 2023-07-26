@@ -39,6 +39,7 @@ type Config struct {
 	UnexportedFields   bool // do not export struct fields for Go
 	IntReformat        bool // automatically select new base for formatting int literals
 	KeepFree           bool // do not rewrite free() calls to nil assignments
+	DoNotEdit          bool // generate DO NOT EDIT header comments
 }
 
 type TypeHint string
@@ -151,7 +152,7 @@ func Translate(root, fname, out string, env *libs.Env, conf Config) error {
 		buf = append(buf, cur...)
 
 		bbuf.Reset()
-		err = PrintGo(bbuf, pkg, buf)
+		err = PrintGo(bbuf, pkg, buf, conf.DoNotEdit)
 		if err != nil {
 			return err
 		}

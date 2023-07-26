@@ -142,6 +142,7 @@ type Config struct {
 	IntReformat      bool               `yaml:"int_reformat"`
 	KeepFree         bool               `yaml:"keep_free"`
 	NoLibs           bool               `yaml:"no_libs"`
+	DoNotEdit        bool               `yaml:"do_not_edit"`
 
 	SrcFiles []*SrcFile `yaml:"src_files"`
 	FilePref string     `yaml:"file_pref"`
@@ -285,6 +286,7 @@ func run(cmd *cobra.Command, args []string) error {
 			UnexportedFields:   c.UnexportedFields,
 			IntReformat:        c.IntReformat,
 			KeepFree:           c.KeepFree,
+			DoNotEdit:          c.DoNotEdit,
 		}
 		env.NoLibs = c.NoLibs
 		env.Map = c.IncludeMap
