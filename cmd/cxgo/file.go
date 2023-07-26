@@ -21,6 +21,7 @@ func init() {
 
 	fOut := cmdFile.Flags().StringP("out", "o", "", "output file to write to")
 	fPkg := cmdFile.Flags().StringP("pkg", "p", "main", "package name for a Go file")
+	fExportFields := cmdFile.Flags().Bool("export-fields", false, "export struct fields")
 	cmdFile.RunE = func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return errors.New("exactly one file must be specified")
@@ -34,9 +35,10 @@ func init() {
 			UseGoInt: true,
 		})
 		fc := cxgo.Config{
-			Package:  *fPkg,
-			GoFile:   filepath.Base(out),
-			MaxDecls: -1,
+			Package:          *fPkg,
+			GoFile:           filepath.Base(out),
+			MaxDecls:         -1,
+			UnexportedFields: !*fExportFields,
 		}
 		return cxgo.Translate("", in, filepath.Dir(out), env, fc)
 	}
