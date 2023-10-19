@@ -18,7 +18,7 @@ func init() {
 		doubleT := types.FloatT(8)
 		floatT := types.FloatT(4)
 		var buf bytes.Buffer
-		buf.WriteString("const double M_PI = 3.1415;\n")
+		buf.WriteString("const double M_PI_val = 3.1415;\n#define M_PI M_PI_val\n")
 		lib := &Library{
 			Imports: map[string]string{
 				cpkg:     RuntimePrefix + cpkg,
@@ -26,12 +26,12 @@ func init() {
 				"math32": "github.com/chewxy/math32",
 			},
 			Idents: map[string]*types.Ident{
-				"atan2": types.NewIdent("math.Atan2", c.FuncTT(doubleT, doubleT, doubleT)),
-				"modf":  types.NewIdent(cpkg+".Modf", c.FuncTT(doubleT, doubleT, c.PtrT(doubleT))),
-				"modff": types.NewIdent(cpkg+".Modff", c.FuncTT(floatT, floatT, c.PtrT(floatT))),
-				"ldexp": types.NewIdent("math.Ldexp", c.FuncTT(doubleT, doubleT, c.Go().Int())),
-				"fmod":  types.NewIdent("math.Mod", c.FuncTT(doubleT, doubleT, doubleT)),
-				"M_PI":  types.NewIdent("math.Pi", doubleT),
+				"atan2":    types.NewIdent("math.Atan2", c.FuncTT(doubleT, doubleT, doubleT)),
+				"modf":     types.NewIdent(cpkg+".Modf", c.FuncTT(doubleT, doubleT, c.PtrT(doubleT))),
+				"modff":    types.NewIdent(cpkg+".Modff", c.FuncTT(floatT, floatT, c.PtrT(floatT))),
+				"ldexp":    types.NewIdent("math.Ldexp", c.FuncTT(doubleT, doubleT, c.Go().Int())),
+				"fmod":     types.NewIdent("math.Mod", c.FuncTT(doubleT, doubleT, doubleT)),
+				"M_PI_val": types.NewIdent("math.Pi", doubleT),
 			},
 		}
 		func2arg := func(pkg, name, cname string, arg types.Type, argc string) {
@@ -81,6 +81,7 @@ func init() {
 		func2df("ceil")
 		func2df("floor")
 		func2dfc("fabs", "abs")
+		func2dfc("fabsf", "abs")
 		func3df("pow")
 		func2df("sqrt")
 		func2df("exp")
@@ -89,12 +90,17 @@ func init() {
 		func2df("log10")
 		func2df("log2")
 		buf.WriteString("double atan2(double y, double x);\n")
+		buf.WriteString("float atan2f(float y, float x);\n")
 		buf.WriteString("double modf(double x, double *iptr);\n")
 		buf.WriteString("float modff(float value, float *iptr);\n")
 		buf.WriteString("double ldexp(double x, _cxgo_go_int exp);\n")
 		buf.WriteString("double fmod(double x, double exp);\n")
 		buf.WriteString("int isnan(double x);\n")
 		buf.WriteString("double frexp(double x, int* exp);\n")
+		buf.WriteString("double hypot(double x, double y);\n")
+		buf.WriteString("float hypotf(float x, float y);\n")
+		buf.WriteString("double fmax(double x, double y);\n")
+		buf.WriteString("float fmaxf(float x, float y);\n")
 		lib.Header = buf.String()
 		return lib
 	})
