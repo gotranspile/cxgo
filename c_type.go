@@ -57,7 +57,7 @@ func (g *translator) convertType(conf IdentConfig, t cc.Type, where token.Positi
 		case types.ArrayType:
 			elem = ct.Elem()
 		default:
-			panic(fmt.Errorf("expected an array or a pointer, got: %#v", ct))
+			panic(fmt.Errorf("expected an array or a pointer, got: %v, %#v; defined at: %v", ct, ct, where))
 		}
 		if elem == types.UintT(1) {
 			elem = g.env.Go().Byte()
