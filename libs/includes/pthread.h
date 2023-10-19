@@ -64,3 +64,5 @@ typedef struct pthread_mutex_t {
 
 #define pthread_join(thread, retval) ((pthread_t_*)thread)->Join(retval)
 #define pthread_timedjoin_np(thread, retval, abstime) ((pthread_t_*)thread)->TimedJoinNP(retval, abstime)
+
+void pthread_exit(void *retval);
