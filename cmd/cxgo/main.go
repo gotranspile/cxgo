@@ -342,6 +342,8 @@ func run(cmd *cobra.Command, args []string) error {
 				}
 				if _, ok := seen[rel]; ok {
 					continue
+				} else if _, ok = seen["./"+rel]; ok {
+					continue
 				}
 				f2 := *f
 				f2.Name = rel
