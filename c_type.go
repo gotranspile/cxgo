@@ -85,6 +85,9 @@ func (g *translator) convertTypeRoot(conf IdentConfig, t cc.Type, where token.Po
 	if p, ok := ft.(types.PtrType); ok && p.ElemKind().IsFunc() {
 		ft = p.Elem()
 	}
+	if p, ok := ft.(types.ArrayType); ok && p.Len() == 0 {
+		ft = types.SliceT(p.Elem())
+	}
 	return ft
 }
 

@@ -676,6 +676,17 @@ func foo() {
 `,
 	},
 	{
+		name: "dyn array arg",
+		src: `
+void foo(int a[]) {
+}
+`,
+		exp: `
+func foo(a []int32) {
+}
+`,
+	},
+	{
 		name: "rename decl func",
 		src: `
 void foo() {}
