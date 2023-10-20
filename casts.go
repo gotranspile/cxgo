@@ -194,7 +194,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 			// *some -> int
 			return g.cPtrToInt(typ, g.ToPointer(x))
 		}
-		if x.IsConst() && xk.IsUntyped() {
+		if x.IsConst() && xk.IsUntypedInt() {
 			return x
 		}
 		if xk.IsBool() {
@@ -283,8 +283,14 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 		// incompatible function types - force error
 		return x
 	case tk.IsFloat():
-		if xk.IsUntyped() {
+		if xk.IsUntypedFloat() {
 			return x
+		}
+		if xk.IsUntypedInt() {
+			if !tk.IsUntypedFloat() {
+				typ = types.AsUntypedFloatT(types.Unwrap(typ).(types.FloatType))
+				tk = typ.Kind()
+			}
 		}
 	case tk.Is(types.Array):
 		ta := types.Unwrap(typ).(types.ArrayType)

@@ -110,7 +110,7 @@ var (
 	float64Type = FloatType{size: 8}
 )
 
-func FloatT(size int) Type {
+func FloatT(size int) FloatType {
 	switch size {
 	case 4:
 		return float32Type
@@ -118,6 +118,16 @@ func FloatT(size int) Type {
 		return float64Type
 	}
 	return FloatType{size: size}
+}
+
+func AsUntypedFloatT(t FloatType) FloatType {
+	t.untyped = true
+	return t
+}
+
+func AsTypedFloatT(t FloatType) FloatType {
+	t.untyped = false
+	return t
 }
 
 func NilT(size int) PtrType {
@@ -332,10 +342,14 @@ func (t IntType) Signed() bool {
 }
 
 type FloatType struct {
-	size int
+	size    int
+	untyped bool
 }
 
 func (t FloatType) Kind() Kind {
+	if t.untyped {
+		return UntypedFloat
+	}
 	return Float
 }
 

@@ -18,9 +18,10 @@ const (
 	Signed
 	Unsigned
 
-	UnsafePtr  = unsafeKind | Ptr
-	UntypedInt = Untyped | Int
-	Nil        = Untyped | Ptr
+	UnsafePtr    = unsafeKind | Ptr
+	UntypedInt   = Untyped | Int
+	UntypedFloat = Untyped | Float
+	Nil          = Untyped | Ptr
 )
 
 func (k Kind) Is(k2 Kind) bool {
@@ -32,6 +33,14 @@ func (k Kind) Is(k2 Kind) bool {
 
 func (k Kind) IsUntyped() bool {
 	return k.Is(Untyped)
+}
+
+func (k Kind) IsUntypedInt() bool {
+	return k.Is(UntypedInt)
+}
+
+func (k Kind) IsUntypedFloat() bool {
+	return k.Is(UntypedFloat)
 }
 
 func (k Kind) IsPtr() bool {

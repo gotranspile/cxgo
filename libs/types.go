@@ -55,7 +55,7 @@ func (c *Env) checkType(t1 reflect.Type, t2 types.Type) error {
 	case reflect.Bool:
 		return c.checkErr(t2 == types.BoolT(), t1, t2)
 	case reflect.Int:
-		return c.checkErr(t2 == c.Go().Int() || (t2.Kind().IsInt() && t2.Kind().IsUntyped()), t1, t2)
+		return c.checkErr(t2 == c.Go().Int() || (t2.Kind().IsInt() && t2.Kind().IsUntypedInt()), t1, t2)
 	case reflect.Uint:
 		return c.checkErr(t2 == c.Go().Uint(), t1, t2)
 	case reflect.UnsafePointer:

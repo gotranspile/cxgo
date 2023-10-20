@@ -157,6 +157,34 @@ func foo(a int32) {
 `,
 	},
 	{
+		name: "float const -> int",
+		src: `
+void foo() {
+	int a = 1.1 + 0.5;
+}
+`,
+		exp: `
+func foo() {
+	var a int32 = int32(math.Floor(1.1 + 0.5))
+	_ = a
+}
+`,
+	},
+	{
+		name: "float const + int",
+		src: `
+void foo(int a) {
+	int b = a + (3.0 / 2);
+}
+`,
+		exp: `
+func foo(a int32) {
+	var b int32 = int32(float64(a) + 3.0/2)
+	_ = b
+}
+`,
+	},
+	{
 		name: "stdint const override",
 		src: `
 #include <stdint.h>
@@ -396,7 +424,7 @@ void foo() {
 `,
 		exp: `
 func foo() {
-	var x float32 = float32(4 / 3.0)
+	var x float32 = 4 / 3.0
 	_ = x
 }
 `,

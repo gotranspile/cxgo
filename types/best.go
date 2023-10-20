@@ -10,7 +10,7 @@ func (e *Env) CommonType(x, y Type) (otyp Type) {
 	}
 	xk, yk := x.Kind(), y.Kind()
 	defer func() {
-		if otyp.Kind().IsUntyped() && (xk.IsInt() || yk.IsInt()) && (!xk.IsUntyped() || !yk.IsUntyped()) {
+		if otyp.Kind().IsUntyped() && (xk.IsInt() || xk.IsFloat() || yk.IsInt() || yk.IsFloat()) && (!xk.IsUntyped() || !yk.IsUntyped()) {
 			panic("returning untyped")
 		}
 	}()
@@ -18,11 +18,11 @@ func (e *Env) CommonType(x, y Type) (otyp Type) {
 	def := e.DefIntT()
 	if xk != yk && ((xk.IsInt() && !yk.IsInt()) || (!xk.IsInt() && yk.IsInt())) {
 		if xk.IsInt() && yk.IsFloat() {
-			return y
+			return AsTypedFloatT(Unwrap(y).(FloatType))
 		} else if xk.IsFloat() && yk.IsInt() {
-			return x
+			return AsTypedFloatT(Unwrap(x).(FloatType))
 		}
-		if xk.IsInt() && yk.IsUntyped() {
+		if xk.IsInt() && yk.IsUntypedInt() {
 			return x
 		}
 		if xk.IsInt() && yk.IsInt() {
@@ -36,7 +36,7 @@ func (e *Env) CommonType(x, y Type) (otyp Type) {
 			if xi.Sizeof() < def.Sizeof() && yi.Sizeof() < def.Sizeof() {
 				return def // C implicit type conversion to int
 			}
-			if xk.IsUntyped() && yk.IsInt() {
+			if xk.IsUntypedInt() && yk.IsInt() {
 				if x.Sizeof() == y.Sizeof() {
 					return y
 				}
@@ -56,10 +56,10 @@ func (e *Env) CommonType(x, y Type) (otyp Type) {
 	case IntType:
 		switch y := y.(type) {
 		case IntType:
-			if x.Kind().IsUntyped() {
+			if x.Kind().IsUntypedInt() {
 				x = AsTypedIntT(x)
 			}
-			if y.Kind().IsUntyped() {
+			if y.Kind().IsUntypedInt() {
 				y = AsTypedIntT(y)
 			}
 			if x.Sizeof() < def.Sizeof() && y.Sizeof() < def.Sizeof() {
@@ -83,7 +83,7 @@ func (e *Env) CommonType(x, y Type) (otyp Type) {
 			return y
 		case BoolType:
 			// int+bool = int
-			if x.Kind().IsUntyped() {
+			if x.Kind().IsUntypedInt() {
 				return e.DefIntT()
 			}
 			return x
@@ -92,7 +92,7 @@ func (e *Env) CommonType(x, y Type) (otyp Type) {
 		switch y := y.(type) {
 		case IntType:
 			// bool+int = int
-			if y.Kind().IsUntyped() {
+			if y.Kind().IsUntypedInt() {
 				return e.DefIntT()
 			}
 			return y

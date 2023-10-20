@@ -263,7 +263,7 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 						iot = &CBinaryExpr{Left: iot, Op: BinOpAdd, Right: val}
 					}
 				}
-				if !typ.Kind().IsUntyped() {
+				if !typ.Kind().IsUntypedInt() {
 					iot = &CCastExpr{Type: typ, Expr: iot}
 				}
 				vd.Inits[0] = iot

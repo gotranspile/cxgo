@@ -101,7 +101,7 @@ func (e *CMultiExpr) Visit(v Visitor) {
 
 func (e *CMultiExpr) CType(exp types.Type) types.Type {
 	tp := e.Exprs[len(e.Exprs)-1].CType(exp)
-	if k := tp.Kind(); k.IsInt() && k.IsUntyped() {
+	if k := tp.Kind(); k.IsUntypedInt() {
 		return e.g.env.DefIntT()
 	}
 	return tp
@@ -415,7 +415,7 @@ func (e *CTernaryExpr) CType(types.Type) types.Type {
 	et := e.Else.CType(nil)
 	tk := tt.Kind()
 	ek := et.Kind()
-	if tk.IsInt() && tk.IsUntyped() && ek.IsUntyped() {
+	if tk.IsUntypedInt() && ek.IsUntypedInt() {
 		return e.g.env.CommonType(tt, et)
 	}
 	if tk.IsUntyped() {
@@ -858,6 +858,14 @@ func (e *CCastExpr) AsExpr() GoExpr {
 		return typAssert(e.Expr.AsExpr(), tp)
 	}
 	switch to := e.Type.(type) {
+	case types.IntType:
+		if from := e.Expr.CType(to); from.Kind().Is(types.UntypedFloat) {
+			return call(tp, call(ident("math.Floor"), e.Expr.AsExpr()))
+		}
+	case types.FloatType:
+		if from := e.Expr.CType(to); from.Kind().Is(types.UntypedInt) {
+			return e.Expr.AsExpr()
+		}
 	case types.PtrType:
 		if to.Elem() != nil {
 			switch et := e.Expr.CType(nil).(type) {

@@ -307,10 +307,15 @@ func parseCFloatLit(s string) (FloatLit, error) {
 	if err != nil {
 		return FloatLit{}, err
 	}
-	return FloatLit{val: v}, nil
+	return FloatLit{typ: types.AsUntypedFloatT(types.FloatT(8)), val: v}, nil
+}
+
+func cFloatLit(typ types.FloatType, v float64) FloatLit {
+	return FloatLit{typ: typ, val: v}
 }
 
 type FloatLit struct {
+	typ types.FloatType
 	val float64
 }
 
@@ -320,7 +325,7 @@ func (l FloatLit) CType(exp types.Type) types.Type {
 	if t, ok := types.Unwrap(exp).(types.FloatType); ok {
 		return t
 	}
-	return types.FloatT(8)
+	return l.typ
 }
 
 func (l FloatLit) AsExpr() GoExpr {
