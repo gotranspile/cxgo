@@ -29,10 +29,12 @@ The project is **experimental**! Do not rely on it in production and other sensi
 Although it was successfully tested on multiple projects, it might _change the behavior_ of the code due to yet unknown bugs.
 
 **Compiler test results:**
+
 - TCC: 62/89 (70%)
 - GCC: 783/1236 (63%)
 
 **Transpiled projects:**
+
 - [Potrace](./examples/potrace) (image vectorization library)
 - [PortableGL](https://github.com/TotallyGamerJet/pgl) (OpenGL 3.x implementation)
 - [Physac](https://github.com/koteyur/physac-go) (2D physics engine)
@@ -40,7 +42,7 @@ Although it was successfully tested on multiple projects, it might _change the b
 ## Installation
 
 ```bash
-go get -u github.com/gotranspile/cxgo/cmd/cxgo
+go install github.com/gotranspile/cxgo/cmd/cxgo@latest
 ```
 
 or download the [latest release](https://github.com/gotranspile/cxgo/releases/latest) from Github.
