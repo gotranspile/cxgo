@@ -48,7 +48,7 @@ func CWString(s string) *WChar {
 }
 
 func WStrLen(str *WChar) uint64 {
-	return uint64(findnullw(str))
+	return uint64(findnull(str))
 }
 
 func GoWSlice(ptr *WChar) []WChar {
@@ -60,7 +60,12 @@ func GoWSlice(ptr *WChar) []WChar {
 }
 
 func GoWString(s *WChar) string {
-	return gostringw(s)
+	arr := GoWSlice(s)
+	runes := make([]rune, 0, len(arr))
+	for _, r := range arr {
+		runes = append(runes, rune(r))
+	}
+	return string(runes)
 }
 
 func WStrCpy(dst, src *WChar) *WChar {

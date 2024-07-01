@@ -20,6 +20,20 @@ func CBytes(b []byte) *byte {
 	return &p[0]
 }
 
+func findnull[T interface{ byte | uint16 | uint32 }](str *T) int {
+	if str == nil {
+		return 0
+	}
+	var zero T
+	size := unsafe.Sizeof(zero)
+	i := 0
+	for *str != 0 {
+		str = (*T)(unsafe.Add(unsafe.Pointer(str), size))
+		i++
+	}
+	return i
+}
+
 // GoBytes makes a Go byte slice from a pointer to a zero-terminated byte array.
 // The slice will point to the same memory as ptr.
 func GoBytes(ptr *byte) []byte {
@@ -32,7 +46,7 @@ func GoBytes(ptr *byte) []byte {
 
 // GoString makes a Go string from a pointer to a zero-terminated byte array.
 func GoString(s *byte) string {
-	return gostring(s)
+	return string(GoBytes(s))
 }
 
 // GoBytesS is a Go-friendly analog of GoBytes.
