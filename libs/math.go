@@ -44,8 +44,14 @@ func init() {
 			lib.Idents[cname] = types.NewIdentGo(cname, pkg+"."+fname, c.FuncTT(arg, arg, arg))
 			fmt.Fprintf(&buf, "%s %s(%s, %s);\n", argc, cname, argc, argc)
 		}
-		func2dfc := func(cname, name string) {
+		func2fc := func(cname, name string) {
+			func2arg("math32", name, cname, floatT, "float")
+		}
+		func2dc := func(cname, name string) {
 			func2arg("math", name, cname, doubleT, "double")
+		}
+		func2dfc := func(cname, name string) {
+			func2dc(cname, name)
 			// TODO: add Round to maze.io/x/math32
 			if cname == "round" {
 				fmt.Fprintf(&buf, "#define %sf(x) %s(x)\n", name, name)
@@ -80,8 +86,8 @@ func init() {
 		func2df("round")
 		func2df("ceil")
 		func2df("floor")
-		func2dfc("fabs", "abs")
-		func2dfc("fabsf", "abs")
+		func2dc("fabs", "abs")
+		func2fc("fabsf", "abs")
 		func3df("pow")
 		func2df("sqrt")
 		func2df("exp")
