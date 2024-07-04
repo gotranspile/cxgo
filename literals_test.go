@@ -1,6 +1,34 @@
 package cxgo
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func TestIntLitString(t *testing.T) {
+	cases := []struct {
+		name string
+		v    IntLit
+		exp  string
+	}{
+		{"int(1)", cIntLit(1, 10), "1"},
+		{"int(-1)", cIntLit(-1, 10), "-1"},
+		{"-int(-1)", cIntLit(-1, 10).NegateLit(), "1"},
+		{"uint(1)", cUintLit(1, 10), "1"},
+		{"-uint(1)", cUintLit(1, 10).NegateLit(), "-1"},
+		{"int(0x10)", cIntLit(0x10, 16), "0x10"},
+		{"uint(0x10)", cUintLit(0x10, 16), "0x10"},
+		{"-int(0x10)", cIntLit(0x10, 16).NegateLit(), "-16"},
+		{"-uint(0x10)", cUintLit(0x10, 16).NegateLit(), "-16"},
+		{"int8(0x80)", cUintLit(0x80, 16).OverflowInt(1), "-128"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.exp, c.v.String())
+		})
+	}
+}
 
 var casesTranslateLiterals = []parseCase{
 	{
@@ -94,7 +122,7 @@ void foo() {
 func foo() {
 	var a uint8
 	_ = a
-	a = math.MaxUint8
+	a = 255
 	a = 254
 }
 `,
@@ -112,7 +140,7 @@ void foo() {
 func foo() {
 	var a uint16
 	_ = a
-	a = math.MaxUint16
+	a = 65535
 	a = 65534
 }
 `,
@@ -130,7 +158,7 @@ void foo() {
 func foo() {
 	var a uint32
 	_ = a
-	a = math.MaxUint32
+	a = 4294967295
 	a = 4294967294
 }
 `,
@@ -151,7 +179,7 @@ func foo(a int32) {
 	if uint32(a)&0xFFFF0000 != 0 {
 		return
 	}
-	a = math.MinInt32
+	a = -2147483648
 	a = -1879037365
 }
 `,
@@ -185,6 +213,7 @@ func foo(a int32) {
 `,
 	},
 	{
+		// TODO: seems like cc doesn't set macro token on unary expr
 		name: "stdint const override",
 		src: `
 #include <stdint.h>
@@ -198,7 +227,7 @@ void foo() {
 func foo() {
 	var a1 int16 = math.MaxInt16
 	_ = a1
-	a1 = math.MinInt16
+	a1 = -32768
 }
 `,
 	},
@@ -412,9 +441,8 @@ int y = x - MONE;
 const MONE = -1
 
 var x int32
-var y int32 = x - int32(-1)
+var y int32 = x - (-1)
 `,
-		// TODO: x - (-1)
 	}, {
 		name: "float div literal",
 		src: `

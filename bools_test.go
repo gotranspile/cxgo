@@ -175,7 +175,7 @@ int foo(int a) {
 		exp: `
 func foo(a int32) int32 {
 	var b int32
-	b = libc.BoolToInt(a <= 0) + math.MaxInt32
+	b = libc.BoolToInt(a <= 0) + 0x7FFFFFFF
 	return b
 }
 `,

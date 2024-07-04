@@ -657,9 +657,9 @@ void foo() {
 		exp: `
 func foo() {
 	var a *byte
-	a = (*byte)(unsafe.Pointer(uintptr(math.MaxUint32)))
+	a = (*byte)(unsafe.Pointer(uintptr(4294967295)))
 	a = (*byte)(unsafe.Pointer(uintptr(4294967294)))
-	if uintptr(unsafe.Pointer(a)) == uintptr(math.MaxUint32) {
+	if uintptr(unsafe.Pointer(a)) == uintptr(4294967295) {
 		return
 	}
 }
@@ -681,10 +681,10 @@ void foo() {
 		exp: `
 func foo() {
 	var a unsafe.Pointer
-	a = unsafe.Pointer(uintptr(math.MaxUint32))
-	a = unsafe.Pointer(uintptr(math.MaxUint32))
+	a = unsafe.Pointer(uintptr(4294967295))
+	a = unsafe.Pointer(uintptr(4294967295))
 	a = unsafe.Pointer(uintptr(4294967294))
-	if uintptr(a) == uintptr(math.MaxUint32) {
+	if uintptr(a) == uintptr(4294967295) {
 		return
 	}
 }

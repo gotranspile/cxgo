@@ -59,12 +59,12 @@ func sameInt(x, y IntType) bool {
 		if x.size > y.size {
 			return false
 		}
-		return x.size < y.size || x.signed == y.signed
+		return x.signed == y.signed
 	} else if y.untyped {
 		if y.size > x.size {
 			return false
 		}
-		return y.size < x.size || x.signed == y.signed
+		return x.signed == y.signed
 	}
 	return x.Sizeof() == y.Sizeof() && x.Signed() == y.Signed()
 }

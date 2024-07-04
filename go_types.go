@@ -35,6 +35,9 @@ func intLit(v int) GoExpr {
 func formatInt(v int64, base int) string {
 	neg := v < 0
 	if neg {
+		base = 10
+	}
+	if neg {
 		v = -v
 	}
 	s := formatUint(uint64(v), base)

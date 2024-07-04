@@ -10,6 +10,8 @@ import (
 	"github.com/gotranspile/cxgo/types"
 )
 
+const minMaxLiteralToIdent = false
+
 type Number interface {
 	Expr
 	IsZero() bool
@@ -55,13 +57,13 @@ func cIntLit(v int64, base int) IntLit {
 	}
 	l := IntLit{val: uint64(-v), neg: true, base: base}
 	if v >= math.MinInt8 && v <= math.MaxInt8 {
-		l.typ = types.IntT(1)
+		l.typ = types.AsUntypedIntT(types.IntT(1))
 	} else if v >= math.MinInt16 && v <= math.MaxInt16 {
-		l.typ = types.IntT(2)
+		l.typ = types.AsUntypedIntT(types.IntT(2))
 	} else if v >= math.MinInt32 && v <= math.MaxInt32 {
-		l.typ = types.IntT(4)
+		l.typ = types.AsUntypedIntT(types.IntT(4))
 	} else {
-		l.typ = types.IntT(8)
+		l.typ = types.AsUntypedIntT(types.IntT(8))
 	}
 	return l
 }
@@ -135,11 +137,10 @@ type IntLit struct {
 func (IntLit) Visit(v Visitor) {}
 
 func (l IntLit) String() string {
-	v := strconv.FormatUint(l.val, 10)
 	if l.neg {
-		return "-" + v
+		return formatInt(-int64(l.val), l.base)
 	}
-	return v
+	return formatUint(l.val, l.base)
 }
 
 func (l IntLit) CType(exp types.Type) types.Type {
@@ -261,35 +262,39 @@ func (l IntLit) OverflowUint(sz int) IntLit {
 func (l IntLit) AsExpr() GoExpr {
 	if l.neg {
 		val := -int64(l.val)
-		switch val {
-		case math.MinInt64:
-			return ident("math.MinInt64")
-		case math.MinInt32:
-			return ident("math.MinInt32")
-		case math.MinInt16:
-			return ident("math.MinInt16")
-		case math.MinInt8:
-			return ident("math.MinInt8")
+		if minMaxLiteralToIdent {
+			switch val {
+			case math.MinInt64:
+				return ident("math.MinInt64")
+			case math.MinInt32:
+				return ident("math.MinInt32")
+			case math.MinInt16:
+				return ident("math.MinInt16")
+			case math.MinInt8:
+				return ident("math.MinInt8")
+			}
 		}
 		return intLit64(val, l.base)
 	}
-	switch l.val {
-	case math.MaxUint64:
-		return ident("math.MaxUint64")
-	case math.MaxUint32:
-		return ident("math.MaxUint32")
-	case math.MaxUint16:
-		return ident("math.MaxUint16")
-	case math.MaxUint8:
-		return ident("math.MaxUint8")
-	case math.MaxInt64:
-		return ident("math.MaxInt64")
-	case math.MaxInt32:
-		return ident("math.MaxInt32")
-	case math.MaxInt16:
-		return ident("math.MaxInt16")
-	case math.MaxInt8:
-		return ident("math.MaxInt8")
+	if minMaxLiteralToIdent {
+		switch l.val {
+		case math.MaxUint64:
+			return ident("math.MaxUint64")
+		case math.MaxUint32:
+			return ident("math.MaxUint32")
+		case math.MaxUint16:
+			return ident("math.MaxUint16")
+		case math.MaxUint8:
+			return ident("math.MaxUint8")
+		case math.MaxInt64:
+			return ident("math.MaxInt64")
+		case math.MaxInt32:
+			return ident("math.MaxInt32")
+		case math.MaxInt16:
+			return ident("math.MaxInt16")
+		case math.MaxInt8:
+			return ident("math.MaxInt8")
+		}
 	}
 	return uintLit64(l.val, l.base)
 }

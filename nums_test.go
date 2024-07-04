@@ -532,8 +532,8 @@ void foo(unsigned int a) {
 `,
 		exp: `
 func foo(a uint32) {
-	a = math.MaxUint32
-	a += math.MaxUint32
+	a = 4294967295
+	a += 4294967295
 	a = uint32(^int32(0))
 	a ^= 0
 	a ^= uint32(^int32(0))
@@ -569,6 +569,24 @@ func foo(a int32) {
 		}
 		return 99999
 	}()))
+}
+`,
+	},
+	{
+		name: "ternary overflow",
+		src: `
+void foo(int a) {
+	foo(a != 0 ? 128 : -128);
+}
+`,
+		exp: `
+func foo(a int32) {
+	foo(func() int32 {
+		if a != 0 {
+			return 128
+		}
+		return -128
+	}())
 }
 `,
 	},

@@ -1119,16 +1119,23 @@ func (g *translator) convertUnaryExpr(d *cc.UnaryExpression) Expr {
 	default:
 		panic(d.Case.String())
 	}
-	x := g.convertCastExpr(d.CastExpression)
-	if d.Operand == nil {
-		return g.NewCUnaryExpr(
+	fnc := func() Expr {
+		x := g.convertCastExpr(d.CastExpression)
+		if d.Operand == nil {
+			return g.NewCUnaryExpr(
+				op, x,
+			)
+		}
+		return g.NewCUnaryExprT(
 			op, x,
+			g.convertTypeOper(d.Operand, d.Position()),
 		)
 	}
-	return g.NewCUnaryExprT(
-		op, x,
-		g.convertTypeOper(d.Operand, d.Position()),
-	)
+	if m := d.Token.Macro(); m != 0 {
+		return g.convMacro(m.String(), fnc)
+	}
+	return fnc()
+
 }
 
 func (g *translator) convertConstExpr(d *cc.ConstantExpression) Expr {

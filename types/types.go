@@ -71,11 +71,11 @@ func ToPtrType(exp Type) PtrType {
 	return nil
 }
 
-func IntT(size int) IntType {
-	if size <= 0 {
+func IntT(byteSz int) IntType {
+	if byteSz <= 0 {
 		panic("size must be specified")
 	}
-	switch size {
+	switch byteSz {
 	case 1:
 		return int8Type
 	case 2:
@@ -85,14 +85,14 @@ func IntT(size int) IntType {
 	case 8:
 		return int64Type
 	}
-	return IntType{size: size, signed: true}
+	return IntType{size: byteSz, signed: true}
 }
 
-func UintT(size int) IntType {
-	if size <= 0 {
+func UintT(byteSz int) IntType {
+	if byteSz <= 0 {
 		panic("size must be specified")
 	}
-	switch size {
+	switch byteSz {
 	case 1:
 		return uint8Type
 	case 2:
@@ -102,7 +102,7 @@ func UintT(size int) IntType {
 	case 8:
 		return uint64Type
 	}
-	return IntType{size: size, signed: false}
+	return IntType{size: byteSz, signed: false}
 }
 
 var (
