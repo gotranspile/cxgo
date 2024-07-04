@@ -241,5 +241,5 @@ func (d *CFuncDecl) Uses() []types.Usage {
 		list = append(list, d.Body.Uses()...)
 	}
 	// TODO: use type
-	return nil
+	return list
 }
