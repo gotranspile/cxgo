@@ -49,18 +49,63 @@ CXGO_RUN_TESTS_GCC=true go test ./gcc_test.go
 
 The support for the new header can be added incrementally:
 
-1. Define an empty header. This helps avoid "not found" errors. Only useful to get one step further.
-2. Define (a subset) of declarations to the header. This will help avoid "unexpected identifier" errors, but Go compilation
-   will still fail without an implementation. Might still be useful, since functions can still be defined manually.
+1. Create an empty header file. This helps avoid "not found" errors. Only useful to get one step further.
+2. Add (a subset) of declarations to the header. This will help avoid "unexpected identifier" errors, but Go compilation
+   will still fail without an implementation. Might still be useful, since functions can be defined manually.
 3. Provide a mapping between C and Go. This will help `cxgo` automatically replace functions with Go equivalents.
 
 Let's consider each step separately.
 
 ### Adding a header stub
 
-For example, let's define a new header called `mylib/xyz.h`. All known headers are defined in a separate files in the
-[libs](./libs) package of `cxgo`. We can take one of the smaller files in that package as the reference (e.g. [assert](libs/assert.go))
-and add our own header in a new Go file (`mylib_xyz.go`):
+For example, let's define a new header called `mylib/xyz.h`. All known headers are defined in separate files in the
+[libs/includes](./libs/includes) directory of `cxgo` and are used automatically.
+
+Just create an empty file `./libs/includes/mylib/xyz.h`:
+
+```c
+# empty mylib/xyz.h
+```
+
+This header is registered with a full path, as used in `#include`. In our case the library can be used with `#include <mylib/xyz.h>`.
+
+In some cases just adding a missing file is enough, since declarations might be provided by other files that are already included in cxgo.
+
+### Adding C symbol definitions to the library
+
+The next step is adding some function stubs and other definitions to the header file:
+
+```c
+#define MY_CONST 1
+void foo(void* ptr, int n);
+```
+
+Usually C headers have `#ifdef` guards, but they are generated automatically by cxgo so could be omitted.
+
+As the first step for supporting a new library, it makes sense to add only a few declarations that you care about.
+At this stage aim for simplicity: add stub types where necessary, use builtin C types instead of copying the library 1:1.
+
+For example, if your code fails to transpile when using function `foo` from `mylib/xyz.h`, then find the declaration in
+the original header (or in online docs), simplify it as much as possible and add it to the header file.
+This way you can immediately make progress in transpilation without waiting for the whole header to work.
+
+Eventually all necessary declarations will be added. We consider adding original headers in full a bad practice since
+it will be necessary to rewrite it partially anyway to get a better Go mapping. It also allows dropping legacy declarations
+or compatibility `#ifdef` conditions that might be unused in `cxgo`.
+
+The following step will be to introduce Go mapping to the new library.
+
+### Mapping to Go
+
+For now, we only added C header file(s), which let cxgo transpile the source, but we did not specify Go implementation for it.
+
+In some cases this might be enough - you could add implementations of missing C functions directly into your project.
+But for common libraries it definitely makes sense to add library implementation to cxgo itself.
+
+For this, we need to create a new Go mapping file for our header in cxgo's [libs](./libs) package.
+A good starting point could be copying [assert.go](./libs/assert.go), since it only contains a few definitions.
+
+Here's our starting point:
 
 ```go
 package libs
@@ -74,61 +119,9 @@ func init() {
 }
 ```
 
-This is a minimal possible definition that just registers the known header without defining anything in it.
-
-Library is registered with a full path, as used in `#include`. In our case the library can be used with `#include <mylib/xyz.h>`.
-
-The second argument to `RegisterLibrary` is a constructor for a `Library` instance. The reason why it's needed because a
-library might define different symbols depending on the environment (e.g. OS), architecture, or symbols defined in other
-libraries. We will consider this in the following sections.
-
-### Adding C symbol definitions to the library
-
-C header is controlled by `Library.Header` field. We can either define it as a constant string, or build it incrementally
-depending on some environment variables.
-
-```go
-RegisterLibrary(xyzH, func(env *Env) *Library {
-	l := &Library{
-		Header: `
-#define MY_CONST 1
-`,
-    }
-    l.Header += fmt.Sprintf("#define MY_PTR_SIZE %d\n", env.PtrSize())
-	return l
-})
-```
-
-Note that you don't need to add header guards - `cxgo` takes care of that.
-
-As the first step for supporting a new library, it makes sense to add only a few declarations that we care about.
-At this stage aim for simplicity: add stub types where necessary, use builtin C types instead of copying the library 1:1.
-
-For example, if your code fails to transpile when using function `foo` from `mylib/xyz.h`, then find the declaration in
-the original header (or in online docs), simplify it as much as possible and add it to the `Header`.
-
-```go
-RegisterLibrary(xyzH, func(env *Env) *Library {
-	l := &Library{
-		Header: `
-void foo(void* ptr, int n);
-`,
-    }
-	return l
-})
-```
-
-Eventually all necessary declarations will be added. We consider adding original headers in full a bad practice since
-it will be necessary to rewrite it partially anyway to get a better Go mapping. It also allows dropping legacy declarations
-or compatibility `#ifdef` conditions that might be unused in `cxgo`.
-
-The following step will be to introduce Go mapping to the new library.
-
-### Mapping to Go
-
 Mapping to Go allows to solve the following issues:
 
-- Different names in C and Go
+- Different names for function or types in C and Go
 - Automatically importing Go package(s) for symbols
 - Using native Go types
 - Adding methods to struct types
@@ -182,9 +175,6 @@ symbol separately. There is an easier way to achieve the same and to let `cxgo` 
 ```go
 RegisterLibrary(xyzH, func(env *Env) *Library {
     l := &Library{
-        Header: `
-// no declarations here
-`,
         Imports: map[string]string{
             "mylib": "github.com/example/mylib",
         },
@@ -212,7 +202,7 @@ This project aims to provide a generic C-to-Go conversion tool. Ideally, everyth
 C compiler should be accepted and translated by `cxgo`. It means we always aim to support real-world C code and add
 any workarounds that might be required. However, no tool is perfect, so the output is provided on the best-effort basis.
 
-Note that we [don't plan](https://github.com/gotranspile/cxgo/issues/1) to support C++** yet! We do believe that full C
+Note that we [do not plan](https://github.com/gotranspile/cxgo/issues/1) to support C++ yet! We do believe that full C
 support will eventually help us bootstrap C++ support (by converting GCC), but that requires a ton of work.
 So do not file issues about C++ code, unless you are ready to bootstrap C++ support yourself :D
 

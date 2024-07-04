@@ -2,11 +2,11 @@
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/gotranspile/cxgo/master/LICENSE)
 [![Gitter](https://badges.gitter.im/gotranspile/community.svg)](https://gitter.im/gotranspile/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![GoDoc](https://godoc.org/github.com/gotranspile/cxgo?status.svg)](https://godoc.org/github.com/gotranspile/cxgo)
+[![Go Reference](https://pkg.go.dev/badge/github.com/gotranspile/cxgo.svg)](https://pkg.go.dev/github.com/gotranspile/cxgo)
 
 CxGo is a tool for translating C source code to Go (aka transpiler, source-to-source compiler).
 
-It uses [cc](https://modernc.org/cc/v3) for preprocessing and parsing C (no clang/gcc dependencies!) and
+It uses [cc v3](https://modernc.org/cc/v3) for preprocessing and parsing C (no clang/gcc dependencies!) and
 a custom type-checker and AST translation layer to make the best output possible.
 
 The only requirement is: C code **must compile** with `cxgo`, including headers.
@@ -36,6 +36,7 @@ Although it was successfully tested on multiple projects, it might _change the b
 **Transpiled projects:**
 
 - [Potrace](./examples/potrace) (image vectorization library)
+- [G722](https://github.com/gotranspile/g722) (audio codec)
 - [PortableGL](https://github.com/TotallyGamerJet/pgl) (OpenGL 3.x implementation)
 - [Physac](https://github.com/koteyur/physac-go) (2D physics engine)
 
