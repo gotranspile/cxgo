@@ -2,7 +2,6 @@ package cxgo
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -48,7 +47,7 @@ func (fs includeFS) Open(path string, sys bool) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ioutil.NopCloser(strings.NewReader(data)), nil
+	return io.NopCloser(strings.NewReader(data)), nil
 }
 
 type includeFI struct {

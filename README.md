@@ -35,7 +35,7 @@ Although it was successfully tested on multiple projects, it might _change the b
 
 **Transpiled projects:**
 
-- [Potrace](./examples/potrace) (image vectorization library)
+- [Potrace](https://github.com/gotranspile/gotrace) (image vectorization library)
 - [G722](https://github.com/gotranspile/g722) (audio codec)
 - [PortableGL](https://github.com/TotallyGamerJet/pgl) (OpenGL 3.x implementation)
 - [Physac](https://github.com/koteyur/physac-go) (2D physics engine)

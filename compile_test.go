@@ -3,7 +3,6 @@ package cxgo
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -62,7 +61,7 @@ func goTranspileAndExec(t testing.TB, cxgo, dir string, cfile string) progOut {
 	})
 	require.NoError(t, err)
 	goProjectMod(t, dir)
-	gosrc, err := ioutil.ReadFile(gofile)
+	gosrc, err := os.ReadFile(gofile)
 	require.NoError(t, err)
 	t.Logf("// === Go source ===\n%s", string(gosrc))
 	return goCompileAndExec(t, dir)
@@ -112,11 +111,11 @@ require (
 )
 replace github.com/gotranspile/cxgo v0.0.0-local => %s`, cxgo)
 
-	err = ioutil.WriteFile(filepath.Join(out, "go.mod"), []byte(gomod), 0644)
+	err = os.WriteFile(filepath.Join(out, "go.mod"), []byte(gomod), 0644)
 	require.NoError(t, err)
 
 	// allows running go mod tidy without having other source files and still keep require above
-	err = ioutil.WriteFile(filepath.Join(out, "dummy.go"), []byte(`
+	err = os.WriteFile(filepath.Join(out, "dummy.go"), []byte(`
 package main
 
 import _ "github.com/gotranspile/cxgo/runtime/libc"

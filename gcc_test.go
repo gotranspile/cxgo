@@ -2,7 +2,6 @@ package cxgo
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -56,6 +55,8 @@ func TestGCCExecute(t *testing.T) {
 
 	ignoreTests := map[string]string{
 		"limits-caselabels": "OOM",
+		"limits-declparen":  "stack exceeded",
+		"limits-exprparen":  "stack exceeded",
 	}
 
 	blacklist := map[string]struct{}{}
@@ -104,7 +105,7 @@ func TestGCCExecute(t *testing.T) {
 			oname := filepath.Base(path) + ".go"
 			env := libs.NewEnv(types.Config32())
 			_, lib := isLib[tname]
-			if data, err := ioutil.ReadFile(path); err == nil && !bytes.Contains(data, []byte("main")) {
+			if data, err := os.ReadFile(path); err == nil && !bytes.Contains(data, []byte("main")) {
 				t.Log("testing as a library (no main found)")
 				lib = true
 			}

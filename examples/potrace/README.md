@@ -533,7 +533,6 @@ package gotrace
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
@@ -553,7 +552,7 @@ func TestPotrace(t *testing.T) {
 		t.Fatal(resp.Status)
 	}
 
-	tfile, err := ioutil.TempFile("", "potrace_")
+	tfile, err := os.CreateTemp("", "potrace_")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -742,7 +741,6 @@ package gotrace
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
@@ -762,7 +760,7 @@ func TestPotrace(t *testing.T) {
 		t.Fatal(resp.Status)
 	}
 
-	tfile, err := ioutil.TempFile("", "potrace_")
+	tfile, err := os.CreateTemp("", "potrace_")
 	if err != nil {
 		t.Fatal(err)
 	}

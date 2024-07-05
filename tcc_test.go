@@ -1,7 +1,6 @@
 package cxgo
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -72,7 +71,7 @@ func TestTCCExecute(t *testing.T) {
 		"55_lshift_type":          {},
 		"60_errors_and_warnings":  {},
 		"73_arm64":                {},
-		"75_array_in_struct_init": {}, // CC type checker failure
+		"75_array_in_struct_init": {}, // FIXME: cxgo handles struct field init incorrectly?
 		"77_push_pop_macro":       {}, // FIXME: cannot detect if a macro was redefined
 		"78_vla_label":            {},
 		"79_vla_continue":         {},
@@ -81,7 +80,7 @@ func TestTCCExecute(t *testing.T) {
 		"89_nocode_wanted":        {},
 		"90_struct-init":          {},
 		"92_enum_bitfield":        {},
-		"93_integer_promotion":    {}, // TODO: some issues with char promotion
+		"93_integer_promotion":    {}, // FIXME: one issue with char promotion
 		"94_generic":              {},
 		"95_bitfields":            {},
 		"95_bitfields_ms":         {},
@@ -163,7 +162,7 @@ func TestTCCExecute(t *testing.T) {
 			if s, ok := overrideExpect[tname]; ok {
 				exp = []byte(s)
 			} else {
-				exp, err = ioutil.ReadFile(epath)
+				exp, err = os.ReadFile(epath)
 				require.NoError(t, err)
 			}
 			if string(exp) != string(got) && skip {

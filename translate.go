@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -178,10 +177,10 @@ func Translate(root, fname, out string, env *libs.Env, conf Config) error {
 		fmtdata, err := format.Source(fdata)
 		if err != nil {
 			// write anyway for examination
-			_ = ioutil.WriteFile(gopath, fdata, 0644)
+			_ = os.WriteFile(gopath, fdata, 0644)
 			return fmt.Errorf("error formatting %s: %v", filepath.Base(gofile), err)
 		}
-		err = ioutil.WriteFile(gopath, fmtdata, 0644)
+		err = os.WriteFile(gopath, fmtdata, 0644)
 		if err != nil {
 			return err
 		}

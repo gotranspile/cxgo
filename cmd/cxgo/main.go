@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"go/format"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -162,7 +161,7 @@ func mergeBool(val *bool, def bool) bool {
 func run(cmd *cobra.Command, args []string) error {
 	defer cxgo.CallFinals()
 	conf, _ := cmd.Flags().GetString("config")
-	data, err := ioutil.ReadFile(conf)
+	data, err := os.ReadFile(conf)
 	if err != nil {
 		return err
 	}
@@ -251,7 +250,7 @@ func run(cmd *cobra.Command, args []string) error {
 			if fdata, err := format.Source(data); err == nil {
 				data = fdata
 			}
-			return ioutil.WriteFile(filepath.Join(c.Out, f.Name), data, 0644)
+			return os.WriteFile(filepath.Join(c.Out, f.Name), data, 0644)
 		}
 		idents := make(map[string]cxgo.IdentConfig)
 		for _, v := range c.Idents {
@@ -368,7 +367,7 @@ require (
 	%s %s
 )
 `, c.Package, libs.RuntimePackage, libs.RuntimePackageVers)
-			if err := ioutil.WriteFile(filepath.Join(c.Out, "go.mod"), buf.Bytes(), 0644); err != nil {
+			if err := os.WriteFile(filepath.Join(c.Out, "go.mod"), buf.Bytes(), 0644); err != nil {
 				return err
 			}
 		}

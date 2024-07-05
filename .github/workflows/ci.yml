@@ -7,12 +7,12 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.18.x'
+          go-version: '1.22.x'
       - name: actions/checkout
         uses: actions/checkout@v2
       - name: actions/cache
@@ -29,12 +29,12 @@ jobs:
 
   test-tcc:
     name: TCC Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.18.x'
+          go-version: '1.22.x'
       - name: actions/checkout
         uses: actions/checkout@v2
       - name: actions/cache
@@ -56,8 +56,12 @@ jobs:
 
 #  test-gcc:
 #    name: GCC Tests
-#    runs-on: ubuntu-20.04
+#    runs-on: ubuntu-22.04
 #    steps:
+#      - name: Install Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: '1.22.x'
 #      - name: actions/checkout
 #        uses: actions/checkout@v2
 #      - name: actions/cache

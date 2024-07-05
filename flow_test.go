@@ -2,7 +2,6 @@ package cxgo
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -1215,9 +1214,9 @@ goto L_1
 func writeDotFile(name string, data []byte) {
 	name = strings.ReplaceAll(name, " ", "_")
 	fname := name + ".dot"
-	_ = ioutil.WriteFile(fname, data, 0644)
+	_ = os.WriteFile(fname, data, 0644)
 	sdata, _ := exec.Command("dot", "-Tsvg", fname).Output()
-	_ = ioutil.WriteFile(name+".svg", sdata, 0644)
+	_ = os.WriteFile(name+".svg", sdata, 0644)
 	_ = os.Remove(fname)
 }
 

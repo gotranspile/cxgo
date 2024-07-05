@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"math/rand"
 	"os"
@@ -87,7 +86,7 @@ type runConfig struct {
 }
 
 func goRun(t testing.TB, wd string, files []string, c runConfig, args ...string) []byte {
-	f, err := ioutil.TempFile("", "cxgo_bin_")
+	f, err := os.CreateTemp("", "cxgo_bin_")
 	require.NoError(t, err)
 	_ = f.Close()
 	bin := f.Name()
@@ -322,7 +321,7 @@ func TestImplicitCompat(t *testing.T) {
 }
 
 func testTranspileOut(t testing.TB, csrc string) {
-	dir, err := ioutil.TempDir("", "cxgo_cout")
+	dir, err := os.MkdirTemp("", "cxgo_cout")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
@@ -331,7 +330,7 @@ func testTranspileOut(t testing.TB, csrc string) {
 	require.NoError(t, err)
 
 	cfile := filepath.Join(cdir, "main.c")
-	err = ioutil.WriteFile(cfile, []byte(csrc), 0644)
+	err = os.WriteFile(cfile, []byte(csrc), 0644)
 	require.NoError(t, err)
 
 	// this is required for test to wait other goroutines in case it fails earlier on the main one
