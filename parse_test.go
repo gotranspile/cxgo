@@ -153,6 +153,62 @@ func foo(a int32) {
 `,
 	},
 	{
+		name: "switch unreachable",
+		src: `
+void foo(int a) {
+	switch (a) {
+		a++;
+	case 1:
+		foo(1);
+		break;
+		a++;
+	case 2:
+		foo(2);
+	default:
+		foo(0);
+	case 3:
+		foo(3);
+		break;
+	case 4:
+	case 5:
+		foo(5);
+		return;
+		a++;
+	case 6:
+		foo(6);
+	}
+}
+`,
+		exp: `
+func foo(a int32) {
+	switch a {
+	case 1:
+		foo(1)
+		break
+		a++
+		fallthrough
+	case 2:
+		foo(2)
+		fallthrough
+	default:
+		foo(0)
+		fallthrough
+	case 3:
+		foo(3)
+	case 4:
+		fallthrough
+	case 5:
+		foo(5)
+		return
+		a++
+		fallthrough
+	case 6:
+		foo(6)
+	}
+}
+`,
+	},
+	{
 		skip: true,
 		name: "switch cases everywhere",
 		src: `

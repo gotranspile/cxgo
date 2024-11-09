@@ -358,7 +358,12 @@ func (s *CSwitchStmt) addStmts(stmts []CStmt) {
 				s.addStmts(sub)
 			}
 		} else {
-			last := s.Cases[len(s.Cases)-1]
+			ci := len(s.Cases) - 1
+			if ci < 0 {
+				// statement before any cases - ignore
+				continue
+			}
+			last := s.Cases[ci]
 			last.Stmts = append(last.Stmts, st)
 		}
 	}
