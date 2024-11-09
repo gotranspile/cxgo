@@ -248,6 +248,12 @@ func (e *TakeAddr) PtrType(types.PtrType) types.PtrType {
 }
 
 func (e *TakeAddr) AsExpr() GoExpr {
+	if l, ok := e.X.(*CCompLitExpr); ok {
+		kind := l.CType(nil).Kind()
+		if len(l.Fields) == 1 && l.Fields[0].Value != nil && (kind.IsInt() || kind.IsFloat() || kind.IsBool()) {
+			return tmpVar(l.Type.GoType(), l.Fields[0].Value.AsExpr(), true)
+		}
+	}
 	return addr(e.X.AsExpr())
 }
 

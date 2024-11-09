@@ -252,6 +252,13 @@ func define(x, y GoExpr) *ast.AssignStmt {
 	return assignTok(x, token.DEFINE, y)
 }
 
+func decl(specs ...ast.Spec) *ast.DeclStmt {
+	return &ast.DeclStmt{Decl: &ast.GenDecl{
+		Tok:   token.VAR,
+		Specs: specs,
+	}}
+}
+
 func addr(x GoExpr) GoExpr {
 	if e1, ok := x.(*ast.StarExpr); ok {
 		return e1.X
@@ -298,4 +305,26 @@ func typAssert(x GoExpr, t GoType) GoExpr {
 		X:    x,
 		Type: t,
 	}
+}
+
+func tmpVar(t GoType, v GoExpr, ptr bool) GoExpr {
+	tmp := ident("tmp")
+	if ptr {
+		return callLambda(deref(t),
+			decl(&ast.ValueSpec{
+				Names:  []*ast.Ident{tmp},
+				Type:   t,
+				Values: []ast.Expr{v},
+			}),
+			returnStmt(addr(tmp)),
+		)
+	}
+	return callLambda(t,
+		decl(&ast.ValueSpec{
+			Names:  []*ast.Ident{tmp},
+			Type:   t,
+			Values: []ast.Expr{v},
+		}),
+		returnStmt(tmp),
+	)
 }

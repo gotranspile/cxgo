@@ -639,8 +639,7 @@ func (s *CBreakStmt) Uses() []types.Usage {
 }
 
 func (g *translator) NewReturnStmt(x Expr, rtyp types.Type) []CStmt {
-	x = cUnwrap(x)
-	switch x := x.(type) {
+	switch x := cUnwrap(x).(type) {
 	case *CTernaryExpr:
 		// return (v ? a : b) -> if v { return a } return b
 		var stmts []CStmt
@@ -648,12 +647,17 @@ func (g *translator) NewReturnStmt(x Expr, rtyp types.Type) []CStmt {
 		stmts = append(stmts, g.NewReturnStmt(x.Else, rtyp)...)
 		return stmts
 	}
+	return []CStmt{g.NewReturnStmt1(x, rtyp)}
+}
+
+func (g *translator) NewReturnStmt1(x Expr, rtyp types.Type) CStmt {
+	x = cUnwrap(x)
 	if rtyp != nil {
 		x = g.cCast(rtyp, x)
 	}
-	return []CStmt{&CReturnStmt{
+	return &CReturnStmt{
 		Expr: x,
-	}}
+	}
 }
 
 func (g *translator) NewZeroReturnStmt(rtyp types.Type) []CStmt {

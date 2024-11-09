@@ -385,6 +385,23 @@ var x outer = outer{C: 100, B: inner{G: 200, F: 400}, A: 300}
 	`,
 	},
 	{
+		name: "primitive type as struct",
+		src: `
+float* a = &(float){0.5};
+float b = (float){0.5};
+	`,
+		exp: `
+var a *float32 = func() *float32 {
+	var tmp float32 = 0.5
+	return &tmp
+}()
+var b float32 = func() float32 {
+	var tmp float32 = 0.5
+	return tmp
+}()
+	`,
+	},
+	{
 		name: "string literal ternary",
 		src: `
 int a;
@@ -443,7 +460,8 @@ const MONE = -1
 var x int32
 var y int32 = x - (-1)
 `,
-	}, {
+	},
+	{
 		name: "float div literal",
 		src: `
 void foo() {

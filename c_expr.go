@@ -1351,8 +1351,12 @@ func (e *CCompLitExpr) AsExpr() GoExpr {
 			Type: e.Type.GoType(),
 		}
 	}
+	kind := e.CType(nil).Kind()
+	if len(e.Fields) == 1 && e.Fields[0].Value != nil && (kind.IsInt() || kind.IsFloat() || kind.IsBool()) {
+		return tmpVar(e.Type.GoType(), e.Fields[0].Value.AsExpr(), false)
+	}
 	var items []GoExpr
-	isArr := e.CType(nil).Kind().Is(types.Array)
+	isArr := kind.Is(types.Array)
 	ordered := false
 	if isArr {
 		// check if array elements are ordered so we can skip indexes in the init
