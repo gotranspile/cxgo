@@ -620,6 +620,21 @@ func foo(a int32, b int32, c float32) {
 `,
 	},
 	{
+		name: "implicit and explicit bool",
+		src: `
+void foo(float a, float b, int c, float d) {
+	d = (a < b) + c;
+	d = (float)(a < b) + c;
+}
+`,
+		exp: `
+func foo(a float32, b float32, c int32, d float32) {
+	d = float32(libc.BoolToInt(a < b) + c)
+	d = float32(libc.BoolToInt(a < b)) + float32(c)
+}
+`,
+	},
+	{
 		name: "sizeof and shift",
 		src: `
 #include <stdlib.h>

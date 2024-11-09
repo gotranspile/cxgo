@@ -292,6 +292,9 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 				tk = typ.Kind()
 			}
 		}
+		if xk.IsBool() {
+			return g.cCast(typ, &BoolToInt{X: g.ToBool(x)})
+		}
 	case tk.Is(types.Array):
 		ta := types.Unwrap(typ).(types.ArrayType)
 		if xa, ok := types.Unwrap(xt).(types.ArrayType); ok && ta.Len() == 0 && xa.Len() != 0 {
