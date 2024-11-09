@@ -691,6 +691,39 @@ func foo() {
 `,
 	},
 	{
+		name: "assign expr side effect",
+		src: `
+
+int global = 0;
+int* calc(int v) {
+	global += v;
+	return &global;
+}
+
+void foo() {
+	int a;
+	a = *calc(1) += *calc(2);
+}
+`,
+		exp: `
+var global int32 = 0
+
+func calc(v int32) *int32 {
+	global += v
+	return &global
+}
+func foo() {
+	var a int32
+	_ = a
+	a = func() int32 {
+		p := calc(1)
+		*p += *calc(2)
+		return *p
+	}()
+}
+`,
+	},
+	{
 		name: "stdint override",
 		src: `
 #include <stdint.h>

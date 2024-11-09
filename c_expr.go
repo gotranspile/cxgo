@@ -1193,7 +1193,7 @@ func (e *CAssignExpr) AsExpr() GoExpr {
 		define(pg, x.AsExpr()),
 	)
 	stmts = append(stmts,
-		e.Stmt.g.NewCAssignStmtP(e.Stmt.g.cDeref(x), e.Stmt.Op, y).AsStmt()...,
+		e.Stmt.g.NewCAssignStmtP(e.Stmt.g.cDeref(PtrIdent{p}), e.Stmt.Op, y).AsStmt()...,
 	)
 	stmts = append(stmts,
 		returnStmt(deref(pg)),
