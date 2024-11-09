@@ -38,3 +38,26 @@ func TestSameInt(t *testing.T) {
 		})
 	}
 }
+
+func TestCommonType(t *testing.T) {
+	cases := []struct {
+		name string
+		x    Type
+		y    Type
+		exp  Type
+	}{
+		{"bool and int", BoolT(), IntT(1), IntT(1)},
+		{"bool and untyped int", BoolT(), AsUntypedIntT(IntT(1)), IntT(8)},
+		{"bool and float", BoolT(), FloatT(8), FloatT(8)},
+		{"bool and untyped float", BoolT(), AsUntypedFloatT(FloatT(8)), FloatT(8)},
+	}
+	e := NewEnv(Default())
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := e.CommonType(c.x, c.y)
+			require.Equal(t, c.exp, got)
+			got = e.CommonType(c.y, c.x)
+			require.Equal(t, c.exp, got)
+		})
+	}
+}

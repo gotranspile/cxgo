@@ -148,6 +148,11 @@ func (e *Env) DefUintT() Type {
 	return UintT(e.conf.IntSize)
 }
 
+// DefFloatT returns a default float type.
+func (e *Env) DefFloatT() Type {
+	return FloatT(e.conf.IntSize)
+}
+
 // FuncT returns a function type with a given return type and named arguments.
 // It's mostly useful for function declarations. See FuncTT for simplified version.
 func (e *Env) FuncT(ret Type, args ...*Field) *FuncType {

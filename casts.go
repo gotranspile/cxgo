@@ -7,20 +7,20 @@ import (
 	"github.com/gotranspile/cxgo/types"
 )
 
-func (g *translator) cCast(typ types.Type, x Expr) Expr {
-	if typ == nil {
+func (g *translator) cCast(toType types.Type, x Expr) Expr {
+	if toType == nil {
 		panic("no type")
 	}
-	tk := typ.Kind()
-	xt := x.CType(typ)
-	xk := xt.Kind()
-	if xt == g.env.Go().Any() {
-		return &CCastExpr{Assert: true, Type: typ, Expr: x}
+	toKind := toType.Kind()
+	xType := x.CType(toType)
+	xKind := xType.Kind()
+	if xType == g.env.Go().Any() {
+		return &CCastExpr{Assert: true, Type: toType, Expr: x}
 	}
-	if typ == g.env.Go().Any() {
+	if toType == g.env.Go().Any() {
 		return x
 	}
-	if at, ok := typ.(types.ArrayType); ok && at.IsSlice() {
+	if at, ok := toType.(types.ArrayType); ok && at.IsSlice() {
 		switch x := x.(type) {
 		case Nil:
 			return g.Nil()
@@ -29,7 +29,7 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 				return g.Nil()
 			}
 		case *TakeAddr:
-			if ind, ok := x.X.(*CIndexExpr); ok && types.Same(ind.Expr.CType(nil), typ) {
+			if ind, ok := x.X.(*CIndexExpr); ok && types.Same(ind.Expr.CType(nil), toType) {
 				if ind.IndexZero() {
 					// special case: unwrap unnecessary cast to slice
 					return ind.Expr
@@ -42,30 +42,30 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 				switch f.Identifier() {
 				case gg.SliceFunc(),
 					gg.AppendFunc():
-					if types.Same(typ, fc.Args[0].CType(nil)) {
+					if types.Same(toType, fc.Args[0].CType(nil)) {
 						return x
 					}
 				}
 			}
 		}
 	}
-	if xk.Is(types.Array) && !tk.Is(types.Array) {
+	if xKind.Is(types.Array) && !toKind.Is(types.Array) {
 		x = g.cAddr(x)
-		return g.cCast(typ, x)
+		return g.cCast(toType, x)
 	}
 	// equal or same type: no conversion
-	if types.Same(typ, xt) {
+	if types.Same(toType, xType) {
 		return x
 	}
 	// unknown types: bypass
-	if tk.Is(types.Unknown) {
+	if toKind.Is(types.Unknown) {
 		// special cases for well-known types
-		switch typ {
+		switch toType {
 		case g.env.Go().String():
 			var fnc *types.Ident
-			if types.Same(xt, g.env.C().String()) {
+			if types.Same(xType, g.env.C().String()) {
 				fnc = g.env.StringC2Go()
-			} else if types.Same(xt, g.env.C().WString()) {
+			} else if types.Same(xType, g.env.C().WString()) {
 				fnc = g.env.WStringC2Go()
 			} else {
 				return g.cCast(g.env.C().String(), x)
@@ -76,28 +76,28 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 	}
 	if c1, ok := cUnwrap(x).(*CCastExpr); ok {
 		// casts A(A(x)) -> A(x)
-		if types.Same(c1.Type, typ) {
+		if types.Same(c1.Type, toType) {
 			return c1
 		}
 	}
 	// conversions to bool - we have a specialized function for that
-	if tk.IsBool() {
+	if toKind.IsBool() {
 		return g.ToBool(x)
 	}
 	// nil should be first, because it's an "untyped ptr"
-	if xk.Is(types.Nil) {
-		if tk.IsPtr() || tk.IsFunc() {
+	if xKind.Is(types.Nil) {
+		if toKind.IsPtr() || toKind.IsFunc() {
 			return cUnwrap(x)
 		}
 	}
 	// strings are immutable, so call a specialized function for conversion
-	if types.Same(xt, g.env.Go().String()) {
+	if types.Same(xType, g.env.Go().String()) {
 		// string -> []byte
-		if at, ok := types.Unwrap(typ).(types.ArrayType); ok && at.IsSlice() && at.Elem() == g.env.Go().Byte() {
+		if at, ok := types.Unwrap(toType).(types.ArrayType); ok && at.IsSlice() && at.Elem() == g.env.Go().Byte() {
 			return &CCastExpr{Type: at, Expr: x}
 		}
 		// [N]byte = "xyz"
-		if at, ok := types.Unwrap(typ).(types.ArrayType); ok && (types.Same(at.Elem(), g.env.Go().Byte()) || xk == types.Unknown) {
+		if at, ok := types.Unwrap(toType).(types.ArrayType); ok && (types.Same(at.Elem(), g.env.Go().Byte()) || xKind == types.Unknown) {
 			if !at.IsSlice() {
 				tmp := types.NewIdent("t", at)
 				copyF := FuncIdent{g.env.Go().CopyFunc()}
@@ -124,46 +124,46 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 				return g.NewCCallExpr(lit, nil)
 			}
 		}
-		if types.Same(typ, g.env.C().WString()) {
-			return g.cCast(typ, g.NewCCallExpr(FuncIdent{g.env.WStringGo2C()}, []Expr{x}))
+		if types.Same(toType, g.env.C().WString()) {
+			return g.cCast(toType, g.NewCCallExpr(FuncIdent{g.env.WStringGo2C()}, []Expr{x}))
 		}
-		return g.cCast(typ, g.NewCCallExpr(FuncIdent{g.env.StringGo2C()}, []Expr{x}))
+		return g.cCast(toType, g.NewCCallExpr(FuncIdent{g.env.StringGo2C()}, []Expr{x}))
 	}
-	if xt == g.env.Go().String() {
+	if xType == g.env.Go().String() {
 		var conv *types.Ident
-		if types.Same(typ, g.env.C().String()) {
+		if types.Same(toType, g.env.C().String()) {
 			conv = g.env.StringGo2C()
-		} else if types.Same(typ, g.env.C().WString()) {
+		} else if types.Same(toType, g.env.C().WString()) {
 			conv = g.env.WStringGo2C()
 		}
 		if conv != nil {
-			return g.cCast(typ, g.NewCCallExpr(FuncIdent{conv}, []Expr{x}))
+			return g.cCast(toType, g.NewCCallExpr(FuncIdent{conv}, []Expr{x}))
 		}
 	}
 	// any casts from array to other types should go through pointer to an array
-	if xk.Is(types.Unknown) {
+	if xKind.Is(types.Unknown) {
 		return &CCastExpr{
-			Type: typ,
+			Type: toType,
 			Expr: x,
 		}
 	}
 	switch {
-	case tk.IsPtr():
-		return g.cPtrToPtr(typ, g.ToPointer(x))
-	case tk.IsInt():
+	case toKind.IsPtr():
+		return g.cPtrToPtr(toType, g.ToPointer(x))
+	case toKind.IsInt():
 		if l, ok := cUnwrap(x).(IntLit); ok {
-			ti, ok := types.Unwrap(typ).(types.IntType)
+			ti, ok := types.Unwrap(toType).(types.IntType)
 			if l.IsUint() && ok && ti.Signed() && !litCanStore(ti, l) {
 				// try overflowing it
 				return l.OverflowInt(ti.Sizeof())
 			}
 			if l.IsUint() || (ok && ti.Signed()) {
 				return &CCastExpr{
-					Type: typ,
+					Type: toType,
 					Expr: x,
 				}
 			}
-			sz := typ.Sizeof()
+			sz := toType.Sizeof()
 			var uv uint64
 			switch sz {
 			case 1:
@@ -176,36 +176,36 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 				uv = math.MaxUint64
 			default:
 				return &CCastExpr{
-					Type: typ,
+					Type: toType,
 					Expr: x,
 				}
 			}
 			uv -= uint64(-l.Int()) - 1
 			return cUintLit(uv, l.base)
 		}
-		if xk.IsFunc() {
+		if xKind.IsFunc() {
 			// func() -> int
 			return &FuncToInt{
 				X:  g.ToFunc(x, nil),
-				To: types.Unwrap(typ).(types.IntType),
+				To: types.Unwrap(toType).(types.IntType),
 			}
 		}
-		if xk.IsPtr() {
+		if xKind.IsPtr() {
 			// *some -> int
-			return g.cPtrToInt(typ, g.ToPointer(x))
+			return g.cPtrToInt(toType, g.ToPointer(x))
 		}
-		if x.IsConst() && xk.IsUntypedInt() {
+		if x.IsConst() && xKind.IsUntypedInt() {
 			return x
 		}
-		if xk.IsBool() {
-			return g.cCast(typ, &BoolToInt{X: g.ToBool(x)})
+		if xKind.IsBool() {
+			return g.cCast(toType, &BoolToInt{X: g.ToBool(x)})
 		}
-		xi, ok1 := types.Unwrap(xt).(types.IntType)
-		ti, ok2 := types.Unwrap(typ).(types.IntType)
+		xi, ok1 := types.Unwrap(xType).(types.IntType)
+		ti, ok2 := types.Unwrap(toType).(types.IntType)
 		if ok1 && ok2 && xi.Signed() != ti.Signed() {
 			if ti.Sizeof() > xi.Sizeof() {
 				return &CCastExpr{
-					Type: typ,
+					Type: toType,
 					Expr: x,
 				}
 			} else if ti.Sizeof() < xi.Sizeof() {
@@ -216,16 +216,16 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 					t2 = types.UintT(ti.Sizeof())
 				}
 				return &CCastExpr{
-					Type: typ,
+					Type: toType,
 					Expr: g.cCast(t2, x),
 				}
 			}
 		}
 		return &CCastExpr{
-			Type: typ,
+			Type: toType,
 			Expr: x,
 		}
-	case tk.IsFunc():
+	case toKind.IsFunc():
 		switch x := cUnwrap(x).(type) {
 		case Nil:
 			return x
@@ -234,11 +234,11 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 				return g.Nil()
 			}
 		}
-		if !xk.IsFunc() {
-			x = g.ToFunc(x, types.Unwrap(typ).(*types.FuncType))
-			return g.cCast(typ, x)
+		if !xKind.IsFunc() {
+			x = g.ToFunc(x, types.Unwrap(toType).(*types.FuncType))
+			return g.cCast(toType, x)
 		}
-		ft, fx := types.Unwrap(typ).(*types.FuncType), types.Unwrap(xt).(*types.FuncType)
+		ft, fx := types.Unwrap(toType).(*types.FuncType), types.Unwrap(xType).(*types.FuncType)
 		if (ft.Variadic() == fx.Variadic() || !ft.Variadic()) && ft.ArgN() >= fx.ArgN() && ((ft.Return() != nil) == (fx.Return() != nil) || (ft.Return() == nil && fx.Return() != nil)) {
 			// cannot cast directly, but can return lambda instead
 			callArgs := make([]Expr, 0, ft.ArgN())
@@ -282,25 +282,25 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 		}
 		// incompatible function types - force error
 		return x
-	case tk.IsFloat():
-		if xk.IsUntypedFloat() {
+	case toKind.IsFloat():
+		if xKind.IsUntypedFloat() {
 			return x
 		}
-		if xk.IsUntypedInt() {
-			if !tk.IsUntypedFloat() {
-				typ = types.AsUntypedFloatT(types.Unwrap(typ).(types.FloatType))
-				tk = typ.Kind()
+		if xKind.IsUntypedInt() {
+			if !toKind.IsUntypedFloat() {
+				toType = types.AsUntypedFloatT(types.Unwrap(toType).(types.FloatType))
+				toKind = toType.Kind()
 			}
 		}
-		if xk.IsBool() {
-			return g.cCast(typ, &BoolToInt{X: g.ToBool(x)})
+		if xKind.IsBool() {
+			return g.cCast(toType, &BoolToInt{X: g.ToBool(x)})
 		}
-	case tk.Is(types.Array):
-		ta := types.Unwrap(typ).(types.ArrayType)
-		if xa, ok := types.Unwrap(xt).(types.ArrayType); ok && ta.Len() == 0 && xa.Len() != 0 {
+	case toKind.Is(types.Array):
+		ta := types.Unwrap(toType).(types.ArrayType)
+		if xa, ok := types.Unwrap(xType).(types.ArrayType); ok && ta.Len() == 0 && xa.Len() != 0 {
 			return &SliceExpr{Expr: x}
 		}
-	case tk.Is(types.Struct):
+	case toKind.Is(types.Struct):
 		isZero := false
 		switch x := cUnwrap(x).(type) {
 		case Nil:
@@ -311,11 +311,11 @@ func (g *translator) cCast(typ types.Type, x Expr) Expr {
 			}
 		}
 		if isZero {
-			return g.NewCCompLitExpr(typ, nil)
+			return g.NewCCompLitExpr(toType, nil)
 		}
 	}
 	return &CCastExpr{
-		Type: typ,
+		Type: toType,
 		Expr: x,
 	}
 }

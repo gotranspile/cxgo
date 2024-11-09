@@ -635,6 +635,21 @@ func foo(a float32, b float32, c int32, d float32) {
 `,
 	},
 	{
+		name: "implicit and explicit bool const",
+		src: `
+void foo(float a) {
+	a = (4 < 4.5) + 3;
+	a = (4 < 4.5) + 3.5;
+}
+`,
+		exp: `
+func foo(a float32) {
+	a = float32(libc.BoolToInt(4 < 4.5) + 3)
+	a = float32(libc.BoolToInt(4 < 4.5)) + 3.5
+}
+`,
+	},
+	{
 		name: "sizeof and shift",
 		src: `
 #include <stdlib.h>

@@ -330,7 +330,9 @@ func (g *translator) newCBinaryExpr(exp types.Type, x Expr, op BinaryOp, y Expr)
 			Right: y,
 		}
 	}
-	typ := g.env.CommonType(x.CType(exp), y.CType(exp))
+	xt := x.CType(exp)
+	yt := y.CType(exp)
+	typ := g.env.CommonType(xt, yt)
 	x = g.cCast(typ, x)
 	y = g.cCast(typ, y)
 	return g.cCast(typ, &CBinaryExpr{

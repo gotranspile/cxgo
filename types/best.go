@@ -88,12 +88,35 @@ func (e *Env) CommonType(x, y Type) (otyp Type) {
 			}
 			return x
 		}
+	case FloatType:
+		switch y := y.(type) {
+		case FloatType:
+			if x.Kind().IsUntypedFloat() {
+				x = AsTypedFloatT(x)
+			}
+			if y.Kind().IsUntypedFloat() {
+				y = AsTypedFloatT(y)
+			}
+			return y
+		case BoolType:
+			// float+bool = float
+			if x.Kind().IsUntyped() {
+				return e.DefFloatT()
+			}
+			return x
+		}
 	case BoolType:
 		switch y := y.(type) {
 		case IntType:
 			// bool+int = int
 			if y.Kind().IsUntypedInt() {
 				return e.DefIntT()
+			}
+			return y
+		case FloatType:
+			// bool+float = float
+			if y.Kind().IsUntyped() {
+				return e.DefFloatT()
 			}
 			return y
 		}
