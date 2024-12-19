@@ -3,6 +3,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/gotranspile/cxgo/master/LICENSE)
 [![Gitter](https://badges.gitter.im/gotranspile/community.svg)](https://gitter.im/gotranspile/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Go Reference](https://pkg.go.dev/badge/github.com/gotranspile/cxgo.svg)](https://pkg.go.dev/github.com/gotranspile/cxgo)
+[![go-recipes](https://raw.githubusercontent.com/nikolaydubina/go-recipes/main/badge.svg?raw=true)](https://github.com/nikolaydubina/go-recipes)
 
 CxGo is a tool for translating C source code to Go (aka transpiler, source-to-source compiler).
 
