@@ -107,6 +107,9 @@ func init() {
 		buf.WriteString("float hypotf(float x, float y);\n")
 		buf.WriteString("double fmax(double x, double y);\n")
 		buf.WriteString("float fmaxf(float x, float y);\n")
+		buf.WriteString("double fmin(double x, double y);\n")
+		buf.WriteString("float fminf(float x, float y);\n")
+		buf.WriteString("int isfinite(double x);\n")
 		lib.Header = buf.String()
 		return lib
 	})
