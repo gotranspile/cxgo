@@ -75,6 +75,8 @@ float fmaxf(float x, float y);
 double fmin(double x, double y);
 float fminf(float x, float y);
 int isfinite(double x);
+double fabsl(double x);
+double lround(double x);
 
 
 #endif // _cxgo_MATH_H
