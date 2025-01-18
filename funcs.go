@@ -305,7 +305,7 @@ func (e *CallExpr) Visit(v Visitor) {
 func (e *CallExpr) CType(types.Type) types.Type {
 	typ := e.Fun.FuncType(nil)
 	if typ.Return() == nil {
-		panic("function doesn't return")
+		panic(fmt.Errorf("function doesn't return: %q", e.Fun))
 	}
 	return typ.Return()
 }
