@@ -145,10 +145,12 @@ func (g *translator) inCurFile(p positioner) bool {
 	name := strings.TrimLeft(p.Position().Filename, "./")
 	if g.cur == name {
 		return true
-	} else if !strings.HasSuffix(g.cur, ".c") {
+	}
+	base, ok := strings.CutSuffix(g.cur, ".c")
+	if !ok {
 		return false
 	}
-	return g.cur[:len(g.cur)-2]+".h" == name
+	return base+".h" == name
 }
 
 func (g *translator) convertInitList(typ types.Type, list *cc.InitializerList) Expr {

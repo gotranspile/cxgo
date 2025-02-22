@@ -169,6 +169,10 @@ func run(cmd *cobra.Command, args []string) error {
 	if err = yaml.Unmarshal(data, &c); err != nil {
 		return err
 	}
+	return Run(filepath.Dir(conf), &c)
+}
+
+func Run(root string, c *Config) error {
 	if c.VCS != "" {
 		name := strings.TrimSuffix(c.VCS, ".git")
 		if i := strings.LastIndex(name, "/"); i > 0 {
@@ -189,7 +193,7 @@ func run(cmd *cobra.Command, args []string) error {
 		c.Root = filepath.Join(dir, c.Root)
 	}
 	if !filepath.IsAbs(c.Root) {
-		c.Root = filepath.Join(filepath.Dir(conf), c.Root)
+		c.Root = filepath.Join(root, c.Root)
 	}
 	for _, f := range c.SrcFiles {
 		if f.Name == "" {
@@ -205,7 +209,7 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if !filepath.IsAbs(c.Out) {
-		c.Out = filepath.Join(filepath.Dir(conf), c.Out)
+		c.Out = filepath.Join(root, c.Out)
 		if abs, err := filepath.Abs(c.Out); err == nil {
 			c.Out = abs
 		}
@@ -242,9 +246,15 @@ func run(cmd *cobra.Command, args []string) error {
 	seen := make(map[string]struct{})
 	processFile := func(f *File) error {
 		if _, ok := seen[f.Name]; ok {
-			return fmt.Errorf("ducplicate entry for file: %q", f.Name)
+			return fmt.Errorf("duplicate entry for file: %q", f.Name)
 		}
 		seen[f.Name] = struct{}{}
+		if base, ok := strings.CutSuffix(f.Name, ".h"); ok {
+			if _, ok := seen[base+".c"]; ok {
+				log.Println("skipping", f.Name) // Already included declarations from it.
+				return nil
+			}
+		}
 		if f.Content != "" {
 			data := []byte(f.Content)
 			if fdata, err := format.Source(data); err == nil {
@@ -361,7 +371,7 @@ func run(cmd *cobra.Command, args []string) error {
 			var buf bytes.Buffer
 			fmt.Fprintf(&buf, `module %s
 
-go 1.18
+go 1.19
 
 require (
 	%s %s
