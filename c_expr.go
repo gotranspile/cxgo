@@ -907,11 +907,15 @@ func (g *translator) cSizeofE(x Expr) Expr {
 			return g.newUnaryExpr(UnarySizeof, x)
 		}
 	}
-	switch cUnwrap(x).(type) {
-	case Bool:
-	case BoolExpr:
+	switch x := cUnwrap(x).(type) {
+	case Bool, BoolExpr:
 		// workaround for C bools (they should be reported as int in some cases)
 		return g.SizeofT(g.env.DefIntT(), nil)
+	case StringLit:
+		return &CallExpr{
+			Fun:  FuncIdent{g.env.Go().LenFunc()},
+			Args: []Expr{x},
+		}
 	}
 	return g.SizeofT(x.CType(nil), nil)
 }

@@ -60,6 +60,23 @@ func foo() {
 `,
 	},
 	{
+		name:     "string len",
+		builtins: true,
+		src: `
+void foo() {
+	int a;
+	a = sizeof("abc");
+}
+`,
+		exp: `
+func foo() {
+	var a int32
+	_ = a
+	a = int32(len("abc"))
+}
+`,
+	},
+	{
 		name: "rune -> int",
 		src: `
 void foo() {
