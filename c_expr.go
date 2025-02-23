@@ -912,9 +912,13 @@ func (g *translator) cSizeofE(x Expr) Expr {
 		// workaround for C bools (they should be reported as int in some cases)
 		return g.SizeofT(g.env.DefIntT(), nil)
 	case StringLit:
-		return &CallExpr{
-			Fun:  FuncIdent{g.env.Go().LenFunc()},
-			Args: []Expr{x},
+		return &CBinaryExpr{
+			Left: &CallExpr{
+				Fun:  FuncIdent{g.env.Go().LenFunc()},
+				Args: []Expr{x},
+			},
+			Op:    BinOpAdd,
+			Right: cIntLit(1, 10),
 		}
 	}
 	return g.SizeofT(x.CType(nil), nil)

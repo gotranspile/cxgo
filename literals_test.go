@@ -72,7 +72,7 @@ void foo() {
 func foo() {
 	var a int32
 	_ = a
-	a = int32(len("abc"))
+	a = int32(len("abc") + 1)
 }
 `,
 	},
