@@ -887,6 +887,39 @@ const MY_CONST_2 = 2
 var a int32 = MY_CONST
 `,
 	},
+	{
+		name: "tmp var names",
+		src: `
+typedef struct {
+	int x, y;
+} vec_t;
+
+void foo(vec_t* p) {
+	int x;
+	x = p->x = p->y = 0;
+}
+`,
+		exp: `
+type vec_t struct {
+	X int32
+	Y int32
+}
+
+func foo(p *vec_t) {
+	var x int32
+	_ = x
+	x = func() int32 {
+		p_ := &p.X
+		*p_ = func() int32 {
+			p_ := &p.Y
+			*p_ = 0
+			return *p_
+		}()
+		return *p_
+	}()
+}
+`,
+	},
 }
 
 func TestDecls(t *testing.T) {

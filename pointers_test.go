@@ -619,9 +619,9 @@ func foo() {
 		b int32
 	)
 	*func() *int32 {
-		p := &a
-		x := *p
-		*p = (*int32)(unsafe.Add(unsafe.Pointer(*p), unsafe.Sizeof(int32(0))*1))
+		p_ := &a
+		x := *p_
+		*p_ = (*int32)(unsafe.Add(unsafe.Pointer(*p_), unsafe.Sizeof(int32(0))*1))
 		return x
 	}() = b
 }

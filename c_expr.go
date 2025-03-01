@@ -782,7 +782,7 @@ func (e *CIncrExpr) ToStmt() []CStmt {
 }
 
 func (e *CIncrExpr) AsExpr() GoExpr {
-	pi := types.NewIdent("p", e.g.env.PtrT(e.Expr.CType(nil)))
+	pi := types.NewIdent("p_", e.g.env.PtrT(e.Expr.CType(nil)))
 	p := pi.GoIdent()
 	y := e.g.cAddr(e.Expr).AsExpr()
 	stmts := []GoStmt{
@@ -1195,7 +1195,7 @@ func (e *CAssignExpr) AsExpr() GoExpr {
 		)
 	}
 	x, y := &TakeAddr{g: e.Stmt.g, X: e.Stmt.Left}, e.Stmt.Right
-	p := types.NewIdent("p", x.CType(nil))
+	p := types.NewIdent("p_", x.CType(nil))
 	pg := p.GoIdent()
 	stmts = append(stmts,
 		define(pg, x.AsExpr()),
