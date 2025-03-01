@@ -31,9 +31,9 @@ func fixedIntTypeDefs(buf *strings.Builder, part string) {
 			name = "uint"
 		}
 		for _, sz := range intSizes {
-			_, _ = fmt.Fprintf(buf, "#define %s%s%d_t %s\n",
-				name, part, sz,
+			_, _ = fmt.Fprintf(buf, "typedef %s %s%s%d_t;\n",
 				buildinFixedIntName(sz, unsigned),
+				name, part, sz,
 			)
 		}
 		buf.WriteByte('\n')
@@ -164,16 +164,26 @@ func incStdInt(e *types.Env, m map[string]*types.Ident) string {
 	return buf.String()
 }
 
+func stdintFixedIntName(sz int, unsigned bool) string {
+	name := "int"
+	if unsigned {
+		name = "uint"
+	}
+	return name + strconv.Itoa(sz) + "_t"
+}
+
 func typesStdInt(e *types.Env) map[string]types.Type {
 	m := make(map[string]types.Type, 2*len(intSizes))
 	for _, unsigned := range []bool{false, true} {
 		for _, sz := range intSizes {
-			name := buildinFixedIntName(sz, unsigned)
+			var typ types.Type
 			if unsigned {
-				m[name] = types.UintT(sz / 8)
+				typ = types.UintT(sz / 8)
 			} else {
-				m[name] = types.IntT(sz / 8)
+				typ = types.IntT(sz / 8)
 			}
+			m[buildinFixedIntName(sz, unsigned)] = typ
+			m[stdintFixedIntName(sz, unsigned)] = typ
 		}
 	}
 	m["intptr_t"] = e.IntPtrT()

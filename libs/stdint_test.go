@@ -17,35 +17,35 @@ func TestStdInt(t *testing.T) {
 #define _cxgo_STDINT_H
 #include <cxgo_builtin.h>
 
-#define int8_t _cxgo_sint8
-#define int16_t _cxgo_sint16
-#define int32_t _cxgo_sint32
-#define int64_t _cxgo_sint64
+typedef _cxgo_sint8 int8_t;
+typedef _cxgo_sint16 int16_t;
+typedef _cxgo_sint32 int32_t;
+typedef _cxgo_sint64 int64_t;
 
-#define uint8_t _cxgo_uint8
-#define uint16_t _cxgo_uint16
-#define uint32_t _cxgo_uint32
-#define uint64_t _cxgo_uint64
+typedef _cxgo_uint8 uint8_t;
+typedef _cxgo_uint16 uint16_t;
+typedef _cxgo_uint32 uint32_t;
+typedef _cxgo_uint64 uint64_t;
 
-#define int_least8_t _cxgo_sint8
-#define int_least16_t _cxgo_sint16
-#define int_least32_t _cxgo_sint32
-#define int_least64_t _cxgo_sint64
+typedef _cxgo_sint8 int_least8_t;
+typedef _cxgo_sint16 int_least16_t;
+typedef _cxgo_sint32 int_least32_t;
+typedef _cxgo_sint64 int_least64_t;
 
-#define uint_least8_t _cxgo_uint8
-#define uint_least16_t _cxgo_uint16
-#define uint_least32_t _cxgo_uint32
-#define uint_least64_t _cxgo_uint64
+typedef _cxgo_uint8 uint_least8_t;
+typedef _cxgo_uint16 uint_least16_t;
+typedef _cxgo_uint32 uint_least32_t;
+typedef _cxgo_uint64 uint_least64_t;
 
-#define int_fast8_t _cxgo_sint8
-#define int_fast16_t _cxgo_sint16
-#define int_fast32_t _cxgo_sint32
-#define int_fast64_t _cxgo_sint64
+typedef _cxgo_sint8 int_fast8_t;
+typedef _cxgo_sint16 int_fast16_t;
+typedef _cxgo_sint32 int_fast32_t;
+typedef _cxgo_sint64 int_fast64_t;
 
-#define uint_fast8_t _cxgo_uint8
-#define uint_fast16_t _cxgo_uint16
-#define uint_fast32_t _cxgo_uint32
-#define uint_fast64_t _cxgo_uint64
+typedef _cxgo_uint8 uint_fast8_t;
+typedef _cxgo_uint16 uint_fast16_t;
+typedef _cxgo_uint32 uint_fast32_t;
+typedef _cxgo_uint64 uint_fast64_t;
 
 typedef _cxgo_sint32 intptr_t;
 typedef _cxgo_uint32 uintptr_t;

@@ -3,13 +3,15 @@ package cxgo
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"path/filepath"
 	"strconv"
 	"strings"
 
+	"modernc.org/cc/v3"
+
 	"github.com/gotranspile/cxgo/libs"
 	"github.com/gotranspile/cxgo/libs/libcc"
-	"modernc.org/cc/v3"
 )
 
 type SourceConfig struct {
@@ -85,7 +87,7 @@ type ParseConfig struct {
 	Sources     []cc.Source
 }
 
-func ParseSource(env *libs.Env, c ParseConfig) (*cc.AST, error) {
+func newCCConfigs(env *libs.Env, c ParseConfig) (*cc.Config, []string, []string, []cc.Source) {
 	var srcs []cc.Source
 	if len(c.Define) != 0 {
 		var buf bytes.Buffer
@@ -106,7 +108,7 @@ func ParseSource(env *libs.Env, c ParseConfig) (*cc.AST, error) {
 	srcs = append(srcs, c.Sources...)
 	includes := addIncludeOverridePath(c.Includes)
 	sysIncludes := addIncludeOverridePath(c.SysIncludes)
-	return cc.Translate(&cc.Config{
+	cconf := &cc.Config{
 		Config3: cc.Config3{
 			WorkingDir: c.WorkDir,
 			Filesystem: cc.Overlay(cc.LocalFS(), newIncludeFS(env)),
@@ -145,5 +147,17 @@ func ParseSource(env *libs.Env, c ParseConfig) (*cc.AST, error) {
 				p.PopMacro(def)
 			}
 		},
-	}, includes, sysIncludes, srcs)
+	}
+	return cconf, includes, sysIncludes, srcs
+}
+
+func PreprocessSource(w io.Writer, env *libs.Env, c ParseConfig) error {
+	cconf, includes, sysIncludes, srcs := newCCConfigs(env, c)
+	err := cc.Preprocess(cconf, includes, sysIncludes, srcs, w)
+	return err
+}
+
+func ParseSource(env *libs.Env, c ParseConfig) (*cc.AST, error) {
+	cconf, includes, sysIncludes, srcs := newCCConfigs(env, c)
+	return cc.Translate(cconf, includes, sysIncludes, srcs)
 }

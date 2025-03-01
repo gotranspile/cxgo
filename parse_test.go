@@ -716,9 +716,9 @@ func foo() {
 	var a int32
 	_ = a
 	a = func() int32 {
-		p := calc(1)
-		*p += *calc(2)
-		return *p
+		p_ := calc(1)
+		*p_ += *calc(2)
+		return *p_
 	}()
 }
 `,
@@ -940,6 +940,30 @@ func foo() {
 `,
 		configFuncs: []configFunc{withDoNotEdit(true)},
 	},
+	{
+		name: "issue 87",
+		src: `
+#include <stdint.h>
+
+#define ARRAY_DEFINE_FUNCTIONS(typeName)  \
+typeName typeName##_DEFAULT = {0};               \
+void Get() {                                    \
+    (void)&typeName##_DEFAULT;                 \
+}                                               \
+
+#define ARRAY_DEFINE(typeName)     \
+ARRAY_DEFINE_FUNCTIONS(typeName)   \
+
+ARRAY_DEFINE(uint32_t)
+`,
+		exp: `
+var uint32_t_DEFAULT uint32 = uint32{}
+
+func Get() {
+	&uint32_t_DEFAULT
+}
+`,
+	},
 }
 
 func TestTranslate(t *testing.T) {
@@ -1149,4 +1173,123 @@ struct bar *f1(int_t c, struct bar e) {
 	require.True(t, ok)
 	assert.True(t, IdentExpr{a1d.Names[0]} == e1.Left, "invalid ref 1")  // global
 	assert.True(t, IdentExpr{b2d.Names[0]} == e1.Right, "invalid ref 2") // local
+}
+
+var casesPreprocess = []preprocessCase{
+	{
+		name: "issue 87",
+		src: `
+#include <stdint.h>
+
+#define ARRAY_DEFINE_FUNCTIONS(typeName)  \
+typeName typeName##_DEFAULT = {0};               \
+void Get() {                                    \
+    (void)&typeName##_DEFAULT;                 \
+}                                               \
+
+#define ARRAY_DEFINE(typeName)     \
+ARRAY_DEFINE_FUNCTIONS(typeName)   \
+
+ARRAY_DEFINE(uint32_t)
+`,
+		exp: `
+uint32_t uint32_t_DEFAULT = {0}; void Get() { (void)&uint32_t_DEFAULT; }
+`,
+	},
+}
+
+type preprocessCase struct {
+	name        string
+	inc         string
+	src         string
+	exp         string
+	skipExp     string
+	skip        bool
+	builtins    bool
+	configFuncs []configFunc
+	envFuncs    []envFunc
+}
+
+func (c preprocessCase) shouldSkip() bool {
+	return c.skip || c.skipExp != ""
+}
+
+func runTestPreprocessCase(t *testing.T, c preprocessCase) {
+	if c.shouldSkip() {
+		defer func() {
+			if r := recover(); r != nil {
+				defer debug.PrintStack()
+				t.Skip(r)
+			}
+		}()
+	}
+	fname := strings.ReplaceAll(c.name, " ", "_") + ".c"
+	var srcs []cc.Source
+	if c.inc != "" {
+		srcs = append(srcs, cc.Source{
+			Name:  strings.TrimSuffix(fname, ".c") + "_predef.h",
+			Value: c.inc,
+		})
+	}
+	const include = "#include"
+	if i := strings.Index(c.src, include); i != -1 {
+		if j := strings.Index(c.src[i:], "\n"); j != -1 {
+			i += j + 1
+			c.src = c.src[:i] + "\nint CXGO_TEST_MARK;\n" + c.src[i:]
+		}
+	}
+	srcs = append(srcs, cc.Source{
+		Name:  fname,
+		Value: c.src,
+	})
+	econf := types.Config32()
+	for _, f := range c.envFuncs {
+		f(&econf)
+	}
+	env := libs.NewEnv(econf)
+	var buf bytes.Buffer
+	err := PreprocessSource(&buf, env, ParseConfig{
+		WorkDir:    "",
+		Predefines: c.builtins,
+		Sources:    srcs,
+	})
+	if c.skip {
+		t.SkipNow()
+	} else {
+		require.NoError(t, err)
+	}
+	got := buf.String()
+	const mark = "CXGO_TEST_MARK;"
+	if i := strings.Index(got, mark); i != -1 {
+		got = got[i+len(mark):]
+	}
+
+	exp := c.exp
+	a, b := strings.TrimSpace(exp), strings.TrimSpace(got)
+	if a != b {
+		if c.skipExp != "" {
+			a = strings.TrimSpace(c.skipExp)
+			require.Equal(t, a, b)
+			t.SkipNow()
+		} else if c.skip {
+			t.SkipNow()
+		} else {
+			require.Equal(t, a, b)
+		}
+	}
+	if c.skip && !t.Failed() {
+		require.Fail(t, "skipped test passes")
+	}
+}
+
+func runTestPreprocess(t *testing.T, cases []preprocessCase) {
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			runTestPreprocessCase(t, c)
+		})
+	}
+}
+
+func TestPreprocess(t *testing.T) {
+	runTestPreprocess(t, casesPreprocess)
 }
