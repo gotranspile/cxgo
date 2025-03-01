@@ -663,6 +663,26 @@ func foo(x int32) {
 	`,
 	},
 	{
+		name: "for iter void",
+		src: `
+void inc(int* i) {
+	(*i)++;
+}
+void foo(int x) {
+	for (int i = 0; i < 5; inc(&i)) {}
+}
+	`,
+		exp: `
+func inc(i *int32) {
+	(*i)++
+}
+func foo(x int32) {
+	for i := int32(0); i < 5; inc(&i) {
+	}
+}
+	`,
+	},
+	{
 		name: "extern var",
 		src: `
 extern int a;
