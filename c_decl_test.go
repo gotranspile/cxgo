@@ -379,6 +379,24 @@ const (
 	`,
 	},
 	{
+		name: "enum neg",
+		src: `
+	enum {
+	   VALUE_1 = -1,
+	   VALUE_2 = 0,
+	   VALUE_3,
+	};
+	`,
+		exp: `
+
+const (
+	VALUE_1 = -1
+	VALUE_2 = 0
+	VALUE_3 = 1
+)
+	`,
+	},
+	{
 		name: "enum start",
 		src: `
 	enum Enum

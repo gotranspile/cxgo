@@ -212,7 +212,9 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 	if d.EnumeratorList == nil {
 		return nil
 	}
+	implicitType := false
 	if typ == nil {
+		implicitType = true
 		typ = types.UntypedIntT(g.env.IntSize())
 	}
 	vd := &CVarDecl{
@@ -230,6 +232,12 @@ func (g *translator) convertEnum(b *cc.Declaration, typ types.Type, d *cc.EnumSp
 			init := g.convertConstExpr(e.ConstantExpression)
 			vd.Inits = append(vd.Inits, init)
 			values++
+			if l, ok := cUnwrap(init).(IntLit); ok {
+				if implicitType && l.IsNegative() {
+					typ = types.AsSignedIntT(types.UntypedIntT(g.env.IntSize()))
+					vd.Type = typ
+				}
+			}
 			continue
 		}
 		vd.Inits = append(vd.Inits, nil)

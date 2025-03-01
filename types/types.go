@@ -54,6 +54,16 @@ func UntypedIntT(minSize int) IntType {
 	return IntType{size: minSize, untyped: true}
 }
 
+func AsUnsignedIntT(t IntType) IntType {
+	t.signed = false
+	return t
+}
+
+func AsSignedIntT(t IntType) IntType {
+	t.signed = true
+	return t
+}
+
 func AsUntypedIntT(t IntType) IntType {
 	t.untyped = true
 	return t
