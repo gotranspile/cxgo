@@ -300,7 +300,7 @@ func (g *translator) newCBinaryExpr(exp types.Type, x Expr, op BinaryOp, y Expr)
 		return g.newCBinaryExpr(exp, g.cCast(g.env.PtrT(nil), x), op, y)
 	}
 	if xt, ok := types.Unwrap(x.CType(nil)).(types.PtrType); ok && op.IsArithm() {
-		if addr, ok := cUnwrap(x).(*TakeAddr); ok && op == BinOpAdd {
+		if addr, ok := cUnwrap(x).(*TakeAddr); ok && (op == BinOpAdd || op == BinOpSub) {
 			if ind, ok := addr.X.(*CIndexExpr); ok {
 				// adding another component to an existing index expression
 				return g.cAddr(g.NewCIndexExpr(ind.Expr,

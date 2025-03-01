@@ -1386,6 +1386,7 @@ void foo(A x, int y) {
 	y = *(x.ptr + 1);
 	y = *(x.ptr + 2*y + 1);
 	y = *(&(x.ptr + 2*y + 1)[y]);
+	y = *(x.ptr + 2 - 1);
 }
 `,
 		exp: `
@@ -1399,6 +1400,7 @@ func foo(x A, y int32) {
 	y = x.Ptr[1]
 	y = x.Ptr[y*2+1]
 	y = x.Ptr[y*2+1+y]
+	y = x.Ptr[2-1]
 }
 `,
 		configFuncs: []configFunc{
