@@ -623,6 +623,46 @@ func foo() {
 	`,
 	},
 	{
+		name: "for init ternary define",
+		src: `
+void foo(int x) {
+	for (int i = x ? 1 : 0; i < 5; i++) {}
+}
+	`,
+		exp: `
+func foo(x int32) {
+	for i := int32(func() int32 {
+		if x != 0 {
+			return 1
+		}
+		return 0
+	}()); i < 5; i++ {
+	}
+}
+	`,
+	},
+	{
+		name: "for init ternary reuse",
+		src: `
+void foo(int x) {
+	int i;
+	for (i = x ? 1 : 0; i < 5; i++) {}
+}
+	`,
+		exp: `
+func foo(x int32) {
+	var i int32
+	for i = func() int32 {
+		if x != 0 {
+			return 1
+		}
+		return 0
+	}(); i < 5; i++ {
+	}
+}
+	`,
+	},
+	{
 		name: "extern var",
 		src: `
 extern int a;

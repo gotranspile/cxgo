@@ -574,7 +574,7 @@ func (cf *ControlFlow) slitDecls(decl *varDecls, stmts []CStmt) []CStmt {
 		})
 		for j, val := range d.Inits {
 			if val != nil {
-				out = append(out, d.g.NewCAssignStmt(IdentExpr{d.Names[j]}, "", val)...)
+				out = append(out, d.g.NewCAssignStmt(IdentExpr{d.Names[j]}, "", val, false)...)
 			}
 		}
 	}

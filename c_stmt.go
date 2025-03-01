@@ -23,7 +23,7 @@ type CCompStmt interface {
 }
 
 type CStmtConv interface {
-	ToStmt() []CStmt
+	ToStmt(inline bool) []CStmt
 }
 
 func cEachBlockStmt(fnc func([]CStmt), stmts []CStmt) {
@@ -116,7 +116,7 @@ func NewCExprStmt(e Expr) []CStmt {
 		return out
 	}
 	if s, ok := e.(CStmtConv); ok {
-		return s.ToStmt()
+		return s.ToStmt(false)
 	}
 	if ie, ok := e.(Ident); ok {
 		return []CStmt{&UnusedVar{Name: ie.Identifier()}}
@@ -130,7 +130,7 @@ func NewCExprStmt1(e Expr) CStmt {
 	}
 	e = cUnwrap(e)
 	if s, ok := e.(CStmtConv); ok {
-		arr := s.ToStmt()
+		arr := s.ToStmt(true)
 		if len(arr) == 1 {
 			return arr[0]
 		}
@@ -1355,7 +1355,7 @@ func (g *translator) NewCDeclStmt(decl CDecl) []CStmt {
 				dt.Inits = nil
 				dt.Names = []*types.Ident{d.Names[i]}
 				stmts = append(stmts, g.NewCDeclStmt(&dt)...)
-				stmts = append(stmts, g.NewCAssignStmt(IdentExpr{d.Names[i]}, "", v)...)
+				stmts = append(stmts, g.NewCAssignStmt(IdentExpr{d.Names[i]}, "", v, false)...)
 				if post := d.Inits[i+1:]; len(post) > 0 {
 					dc := *d
 					dc.Inits = post
@@ -1416,7 +1416,7 @@ func (s *CIncrStmt) AsStmt() []GoStmt {
 			arg = cIntLit(+1, 10)
 		}
 		x := cPtrOffset(s.g.ToPointer(s.Expr), arg)
-		return asStmts(s.g.NewCAssignStmt(s.Expr, "", x))
+		return asStmts(s.g.NewCAssignStmt(s.Expr, "", x, false))
 	}
 	var tok token.Token
 	if s.Decr {
@@ -1449,7 +1449,7 @@ func (g *translator) NewCAssignStmtP(x Expr, op BinaryOp, y Expr) *CAssignStmt {
 	}
 }
 
-func (g *translator) NewCAssignStmt(x Expr, op BinaryOp, y Expr) []CStmt {
+func (g *translator) NewCAssignStmt(x Expr, op BinaryOp, y Expr, inline bool) []CStmt {
 	x = cUnwrap(x)
 	y = cUnwrap(y)
 	if !x.HasSideEffects() {
@@ -1457,21 +1457,25 @@ func (g *translator) NewCAssignStmt(x Expr, op BinaryOp, y Expr) []CStmt {
 		case *CUnaryExpr:
 			switch z := unwrapCasts(y.Expr).(type) {
 			case *CTernaryExpr:
-				// v = -(x ? a : b) -> if x { v = -a } else { v = -b }
-				return []CStmt{
-					g.NewCIfStmt(z.Cond,
-						g.NewCAssignStmt(x, op, g.NewCUnaryExpr(y.Op, z.Then)),
-						g.toElseStmt(g.NewCAssignStmt(x, op, g.NewCUnaryExpr(y.Op, z.Else))...),
-					),
+				if !inline {
+					// v = -(x ? a : b) -> if x { v = -a } else { v = -b }
+					return []CStmt{
+						g.NewCIfStmt(z.Cond,
+							g.NewCAssignStmt(x, op, g.NewCUnaryExpr(y.Op, z.Then), false),
+							g.toElseStmt(g.NewCAssignStmt(x, op, g.NewCUnaryExpr(y.Op, z.Else), false)...),
+						),
+					}
 				}
 			}
 		case *CTernaryExpr:
-			// v = (x ? a : b) -> if x { v = a } else { v = b }
-			return []CStmt{
-				g.NewCIfStmt(y.Cond,
-					g.NewCAssignStmt(x, op, y.Then),
-					g.toElseStmt(g.NewCAssignStmt(x, op, y.Else)...),
-				),
+			if !inline {
+				// v = (x ? a : b) -> if x { v = a } else { v = b }
+				return []CStmt{
+					g.NewCIfStmt(y.Cond,
+						g.NewCAssignStmt(x, op, y.Then, false),
+						g.toElseStmt(g.NewCAssignStmt(x, op, y.Else, false)...),
+					),
+				}
 			}
 		}
 	}

@@ -459,7 +459,7 @@ func (e *CTernaryExpr) AsExpr() GoExpr {
 	)
 }
 
-func (e *CTernaryExpr) ToStmt() []CStmt {
+func (e *CTernaryExpr) ToStmt(inline bool) []CStmt {
 	return []CStmt{e.g.NewCIfStmt(
 		e.Cond,
 		NewCExprStmt(e.Then),
@@ -777,7 +777,7 @@ func (e *CIncrExpr) HasSideEffects() bool {
 	return true
 }
 
-func (e *CIncrExpr) ToStmt() []CStmt {
+func (e *CIncrExpr) ToStmt(inline bool) []CStmt {
 	return []CStmt{e.g.NewCIncStmt(e.Expr, e.Decr)}
 }
 
@@ -1175,8 +1175,8 @@ func (e *CAssignExpr) HasSideEffects() bool {
 	return true
 }
 
-func (e *CAssignExpr) ToStmt() []CStmt {
-	return e.Stmt.g.NewCAssignStmt(e.Stmt.Left, e.Stmt.Op, e.Stmt.Right)
+func (e *CAssignExpr) ToStmt(inline bool) []CStmt {
+	return e.Stmt.g.NewCAssignStmt(e.Stmt.Left, e.Stmt.Op, e.Stmt.Right, inline)
 }
 
 func (e *CAssignExpr) AsExpr() GoExpr {
