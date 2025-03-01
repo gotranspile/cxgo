@@ -371,7 +371,7 @@ func Run(root string, c *Config) error {
 			var buf bytes.Buffer
 			fmt.Fprintf(&buf, `module %s
 
-go 1.19
+go 1.20
 
 require (
 	%s %s

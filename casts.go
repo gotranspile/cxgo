@@ -3,6 +3,7 @@ package cxgo
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/gotranspile/cxgo/types"
 )
@@ -99,6 +100,17 @@ func (g *translator) cCast(toType types.Type, x Expr) Expr {
 		// [N]byte = "xyz"
 		if at, ok := types.Unwrap(toType).(types.ArrayType); ok && (types.Same(at.Elem(), g.env.Go().Byte()) || xKind == types.Unknown) {
 			if !at.IsSlice() {
+				if lit, ok := x.(StringLit); ok {
+					if slen, alen := len(lit.Value()), at.Len(); slen >= alen {
+						// string -> []byte -> [N]byte
+						return &CCastExpr{Type: at, Expr: &CCastExpr{Type: types.SliceT(at.Elem()), Expr: x}}
+					} else if dn := alen - slen; dn < 8 {
+						// string+"\x00" -> []byte -> [N]byte
+						zeros := strings.Repeat("\x00", dn)
+						x2 := g.stringLit(lit.Value() + zeros)
+						return &CCastExpr{Type: at, Expr: &CCastExpr{Type: types.SliceT(at.Elem()), Expr: x2}}
+					}
+				}
 				tmp := types.NewIdent("t", at)
 				copyF := FuncIdent{g.env.Go().CopyFunc()}
 				// declare a function literal returning an array of the same size

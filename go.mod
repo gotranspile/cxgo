@@ -1,6 +1,6 @@
 module github.com/gotranspile/cxgo
 
-go 1.19
+go 1.20
 
 require (
 	github.com/bmatcuk/doublestar v1.3.4

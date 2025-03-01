@@ -440,9 +440,45 @@ var b *byte = libc.CString(func() string {
 char b[] = "===";
 `,
 		exp: `
-var b [4]byte = func() [4]byte {
-	var t [4]byte
-	copy(t[:], []byte("==="))
+var b [4]byte = [4]byte([]byte("===\x00"))
+`,
+	},
+	{
+		name: "init byte string fixed",
+		src: `
+char b[3] = "===";
+`,
+		exp: `
+var b [3]byte = [3]byte([]byte("==="))
+`,
+	},
+	{
+		name: "init byte string smaller",
+		src: `
+char b[2] = "====";
+`,
+		exp: `
+var b [2]byte = [2]byte([]byte("===="))
+`,
+	},
+	{
+		name: "init byte string larger",
+		src: `
+char b[4] = "=";
+`,
+		exp: `
+var b [4]byte = [4]byte([]byte("=\x00\x00\x00"))
+`,
+	},
+	{
+		name: "init byte string huge",
+		src: `
+char b[512] = "=";
+`,
+		exp: `
+var b [512]byte = func() [512]byte {
+	var t [512]byte
+	copy(t[:], []byte("="))
 	return t
 }()
 `,
@@ -457,11 +493,7 @@ MYubyte vendor[] = "something here";
 		exp: `
 type MYubyte uint8
 
-var vendor [15]MYubyte = func() [15]MYubyte {
-	var t [15]MYubyte
-	copy(t[:], []MYubyte("something here"))
-	return t
-}()
+var vendor [15]MYubyte = [15]MYubyte([]MYubyte("something here\x00"))
 `,
 	},
 	{
