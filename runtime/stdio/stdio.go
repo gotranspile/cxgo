@@ -143,6 +143,10 @@ type File struct {
 	c    *int
 }
 
+func (f *File) File() FileI {
+	return f.file
+}
+
 func (f *File) SetErr(err error) {
 	f.err = err
 }
