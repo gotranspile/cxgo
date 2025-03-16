@@ -142,7 +142,7 @@ const int _cxgo_EOF = -1;
 #define ftell(f) ((FILE*)(f))->Tell()
 #define getc(f) ((FILE*)(f))->GetC()
 #define ungetc(c, f) ((FILE*)(f))->UnGetC(c)
-#define putchar(v) ((FILE*)stdout)->PutC(c)
+#define putchar(c) ((FILE*)stdout)->PutC(c)
 
 void     clearerr(FILE *);
 char    *ctermid(char *);
