@@ -694,7 +694,9 @@ func (g *translator) setReturnType(ret types.Type, stmts []CStmt) {
 	for _, s := range stmts {
 		switch s := s.(type) {
 		case *CReturnStmt:
-			s.Expr = g.cCast(ret, s.Expr)
+			if s.Expr != nil {
+				s.Expr = g.cCast(ret, s.Expr)
+			}
 		case *BlockStmt:
 			g.setReturnType(ret, s.Stmts)
 		case *CIfStmt:
