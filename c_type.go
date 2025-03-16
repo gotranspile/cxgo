@@ -42,6 +42,8 @@ func (g *translator) convertType(conf IdentConfig, t cc.Type, where token.Positi
 	// note that we don't save them since they might depend
 	// not only on the input type, but also on a field name
 	switch conf.Type {
+	case HintVoid:
+		return nil
 	case HintBool:
 		return g.env.Go().Bool()
 	case HintIface:

@@ -44,6 +44,7 @@ type Config struct {
 type TypeHint string
 
 const (
+	HintVoid   = TypeHint("void")   // force function return type to nothing
 	HintBool   = TypeHint("bool")   // force the type to Go bool
 	HintSlice  = TypeHint("slice")  // force type to Go slice (for pointers and arrays)
 	HintIface  = TypeHint("iface")  // force type to Go interface{}
